@@ -9,13 +9,16 @@
     "typecheck": "tsc --noEmit",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "tsx src/db/migrate.ts",
+    "db:seed": "tsx src/db/seed.ts",
     "db:studio": "drizzle-kit studio",
     "verify:auth": "node scripts/verify-auth-flow.mjs",
     "verify:records": "node scripts/verify-record-flow.mjs",
     "verify:public": "node scripts/verify-public-pages.mjs",
     "verify:db": "node scripts/verify-db-constraints.mjs",
     "verify:pg": "node scripts/verify-postgres-migration.mjs",
-    "capture:acceptance": "node scripts/capture-acceptance.mjs"
+    "verify:saas": "node scripts/verify-saas-flow.mjs",
+    "capture:acceptance": "node scripts/capture-acceptance.mjs",
+    "verify:subscribe": "tsx scripts/verify-subscribe-flow.mts"
   },
   "dependencies": {
     "@radix-ui/react-label": "^2.1.17",

@@ -39,6 +39,11 @@ npm run dev          # http://localhost:3000
 | 路由 | 说明 |
 | --- | --- |
 | `/` | 首页。只显示 `record_status = 'published'` 的记录；完整前台在 T5 实现 |
+| `/pricing` | 定价页。**公开**，匿名可读；说明四种身份的差异 |
+| `/account` | 账户：当前套餐、全量 CSV 导出、API key 管理。需登录 |
+| `/api/export/records` | 全量 CSV（pro）。免费 / 匿名会被引导到定价页，不是 403 |
+| `/api/v1/records` | 只读 JSON（pro），用 API key 鉴权 |
+| `/api/billing/webhook` | Stripe 测试模式 webhook，签名校验后改写 plan |
 | `/register` | 注册（T2 阶段开放自助注册，T4 会收紧为邀请制） |
 | `/login` | 登录 |
 | `/admin` | 后台首页：各状态记录数与入口。**以下全部需登录**，未登录跳 `/login` |
@@ -59,6 +64,7 @@ npm run dev          # http://localhost:3000
 | `npm run db:studio` | Drizzle Studio |
 | `npm run verify:auth` | 对**已启动**的服务跑注册/登录/登出全链路检查 |
 | `npm run verify:records` | 对**已启动**的服务跑录入 / 发布 / 筛选 / 下架全链路检查（38 项） |
+| `npm run verify:saas` | 对**已启动**的服务跑分档 / 导出 / 升级 / API key 全链路检查（51 项） |
 | `npm run verify:db` | 不启服务：在临时 PGlite 库上跑迁移并直接用 SQL 验证数据库约束（26 项） |
 | `npm run verify:pg` | 不启服务：验证 `DATABASE_URL` 这条路径能建表（走真实 `pg` 驱动） |
 
@@ -156,6 +162,13 @@ Schema 的唯一来源是 `src/db/schema.ts`；枚举取值从 `src/lib/enums.ts
 - `users` — `id`、`email`（唯一索引，存小写规范化后的值）、`password_hash`、时间戳。
 - `sessions` — `id`（token 的 SHA-256）、`user_id`（级联删除）、`expires_at`。
 
+### 计费（T6）
+
+- `users.plan` — `free` / `pro`，外加 `plan_source`（`stripe_test` / `simulated` / `manual`）
+  与 Stripe 的测试模式 id。**公开页面不读这一列，也不许开始读**。
+- `api_keys` — `token_hash`（SHA-256，唯一）、`token_prefix`（列表里认人用）、`revoked_at`。
+- `billing_events` — 套餐变更流水，同时是 webhook 的幂等账本（`external_id` 唯一）。
+
 ### 业务表（T3）
 
 ```
@@ -206,6 +219,56 @@ company 1 ──< ai_impact 1 ──< source
 
 数据字典 §0 规定不做物理删除：下架用 `record_status = 'archived'`，行与来源留痕都保留在库里。
 唯一的例外是**从未发布过的草稿**可以真删（录入手误），后台只在 `draft` 状态下显示「删除草稿」。
+
+## 分档与付费（T6）
+
+实测记录见 [`docs/SAAS_VERIFICATION.md`](docs/SAAS_VERIFICATION.md)。
+
+### 先说最重要的一条：阅读不是付费功能，也不是账号功能
+
+| 身份 | 能做什么 |
+| --- | --- |
+| **匿名访客** | 榜单、搜索、全部筛选、详情页的**全部**来源与引述、统计仪表盘 |
+| **邮件订阅者** | 以上全部 + 新增记录的邮件通知（只要邮箱，不要账号；见 T10） |
+| **账号 free** | 以上全部。注册**不解锁任何阅读权限**，它只是付费主体 |
+| **账号 pro** | 全量 CSV 导出 + API key 与只读查询接口 |
+
+所以公开页面上没有试读截断、没有模糊遮挡、没有弹窗登录墙，
+`src/lib/plans.ts` 里的 `ENTITLEMENTS` 也**没有** `canRead` 这种键 —— 这个问题从不被提出。
+往公开页面加任何「登录可见」都是对 ZCZ-7 §0 的违反。
+
+### 计费模式
+
+`src/lib/billing/config.ts` 按环境变量解析出两种模式之一：
+
+- **`simulated`**（默认，什么都不配）：定价页的升级按钮直接把账号置为 pro，
+  界面与 `billing_events` 都标注为「本地模拟升级」。没有 Stripe 账号也能演示完整链路。
+- **`stripe_test`**（配了 `STRIPE_SECRET_KEY`）：走 Stripe 测试模式的 Checkout。
+
+**live key 会被硬拒**：`sk_live_…` 在解析阶段直接抛错，定价页显示拒绝原因而不是升级按钮。
+判错的代价是按钮坏掉，判漏的代价是从别人卡里扣到钱 —— 所以这里不留警告日志，只留硬失败。
+
+套餐**只在 webhook 里改写**。Checkout 的 `success_url` 只是一个任何人都能打开的 URL，
+拿它当升级凭据就等于谁都能把自己升级成 pro。
+
+`billing_events` 用 Stripe 的事件 id 做唯一索引：Stripe 会重投直到拿到 2xx，
+重复投递是常态，幂等是靠这张表而不是靠运气。
+
+### 导出的形状
+
+`GET /api/export/records`，**一行一条来源**，公司与事件字段重复，
+带 `source_index` / `source_count` 以便还原成事件视角。
+把多条来源塞进一个单元格会让这个数据集存在的理由（URL 与逐字引述）在表格里没法用。
+
+每行都带 `attribution_confidence`：没有评级的导出会让「低」置信度的记录一出站就被当成既定事实。
+文件带 UTF-8 BOM（Excel 双击不乱码），以 `=` `+` `-` `@` 开头的单元格会被前置单引号
+（引述是从公开网页抄来的文本，Excel 会把它们当公式执行）。
+
+### API key
+
+`rip_test_` + 32 字节随机数，库里只存 SHA-256，明文只在生成那一次出现。
+鉴权时**每次都查套餐**而不是签发时查一次 —— 订阅结束后已签发的 key 立刻停用，
+否则「取消订阅」就等于没取消。吊销是打时间戳不是删行。
 
 ## 部署
 

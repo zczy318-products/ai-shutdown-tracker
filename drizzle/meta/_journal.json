@@ -22,6 +22,20 @@
       "when": 1793713912083,
       "tag": "0002_record_integrity",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1793715506429,
+      "tag": "0003_saas_plans_api_keys",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1793715803648,
+      "tag": "0004_subscriber_double_optin",
+      "breakpoints": true
     }
   ]
 }
