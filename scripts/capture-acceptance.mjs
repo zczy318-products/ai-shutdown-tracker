@@ -53,6 +53,11 @@ function pending(message) {
 const captured = new Set();
 
 async function shoot(page, name) {
+  // Guard against shooting mid-navigation. If a step triggered a navigation
+  // that has not committed yet, the outgoing document can already be gone
+  // while the incoming one has no <head>, and addStyleTag then throws on a
+  // null appendChild target — which is exactly how 02 failed once.
+  await page.waitForLoadState("domcontentloaded");
   // The Next.js dev-tools badge floats over every page in `npm run dev` and is
   // pure noise in an acceptance screenshot. No-op against a production build.
   await page.addStyleTag({ content: "nextjs-portal { display: none !important; }" });
@@ -139,10 +144,17 @@ const anonymousSteps = [
     async run(page) {
       await visit(page, "/", { expect: "#f-confidence" });
       await page.selectOption("#f-confidence", "high");
-      await Promise.all([
-        page.waitForLoadState("networkidle"),
-        page.locator("form").filter({ has: page.locator("#f-confidence") }).locator('button[type="submit"]').click(),
-      ]);
+      await page
+        .locator("form")
+        .filter({ has: page.locator("#f-confidence") })
+        .locator('button[type="submit"]')
+        .click();
+      // Wait for the *filtered* URL, not just for the network to fall idle.
+      // Racing `waitForLoadState` against the click resolves against the page
+      // we are leaving — it is already idle — so the shot could land before
+      // the new document existed.
+      await page.waitForURL(/[?&]confidence=high\b/);
+      await page.waitForLoadState("networkidle");
       await assertAnonymous(page);
       await shoot(page, "02-filter");
     },
