@@ -24,6 +24,11 @@
 
 驱动选择逻辑在 `src/db/config.ts`，应用、迁移脚本、`drizzle.config.ts` 共用同一份解析，不会各自为政。
 
+**当前线上只需要填 `DATABASE_URL` 一个变量**，其余全部留空（默认值就是为这个部署形态挑的）。
+会话用的是存在数据库里的不透明 token，不依赖任何签名密钥变量，所以没有 `AUTH_SECRET` 之类的东西要配。
+T6 引入 Stripe 测试模式变量时，**必须同步更新本节的表、`.env.example`，并标明哪些必填、哪些可留空**
+（§1.2 已经先列了清单）。
+
 ### 1.4 两处和 Neon 免费档直接相关的默认值
 
 **连接池默认 `max: 1`，`idleTimeoutMillis: 10000`。** 这里在 PM 给的两条路里选了 **(a) pooled 连接串 + `pg` 收紧池子**，没有选 (b) `@neondatabase/serverless` + `drizzle-orm/neon-http`。理由：
@@ -79,21 +84,25 @@ cp .env.example .env.local   # .env.local 已在 .gitignore 中，不会被提�
 
 ## 2. 操作顺序（总览）
 
-必须按这个顺序，否则第一次部署会打到一个空库上：
+**推代码这一条已经打通，且与数据库那条线互不依赖**（GitHub 连接已接通，仓库见 §6.1）。
+所以现在是两条线，只有「Vercel 导入」需要等两边都就位：
 
 ```
-① Neon 建项目拿连接串
-      ↓
-② 本地用 Neon 的 direct 连接串跑 migration
-      ↓
-③ 本地跑种子导入脚本，核对条数与置信度分布
-      ↓
-④ 推代码到用户的 GitHub 仓库
-      ↓
-⑤ 用户在 Vercel 控制台导入仓库 + 填环境变量 → 首次部署
-      ↓
-⑥ 走全链路验收并截图（见 docs/ACCEPTANCE.md）
+代码线（已通，持续进行）        数据库线（等 Neon 授权）
+────────────────────        ──────────────────────
+每个任务完成即 commit + push      ① Neon 建项目拿两条连接串
+                                      ↓
+                                ② 本地用 direct 连接串跑 migration
+                                      ↓
+                                ③ 本地跑种子导入，核对条数与置信度分布
+                ↘                     ↙
+          ④ 用户在 Vercel 控制台导入仓库 + 填 DATABASE_URL（pooled）→ 首次部署
+                          ↓
+          ⑤ 走全链路验收并截图（见 docs/ACCEPTANCE.md）
 ```
+
+顺序上唯一的硬约束：**Neon 建库 + 迁移 + 导数据要在 Vercel 首次部署之前完成**，否则第一次打开的
+线上站点连的是一个空库——构建会成功（构建期不查库，§6.3），但一登录就 500。
 
 ---
 
@@ -169,15 +178,31 @@ select count(*) from shutdown_records r                                 -- 必�
 
 ---
 
-## 6. ④⑤ 推 GitHub 与 Vercel 导入
+## 6. 推 GitHub 与 Vercel 导入
 
-### 6.1 推代码（需要用户授权，见 §8）
+### 6.1 推代码（已打通）
+
+GitHub 已通过 Paperclip 托管连接接通，仓库已建好并完成首次推送，`origin` 已配置且跟踪 `origin/main`：
+
+| 项 | 值 |
+| --- | --- |
+| 仓库 | `zczy318-products/ai-shutdown-tracker`（私有） |
+| 默认分支 | `main` |
+| 首次推送的提交 | `a0a7bad`（T2 脚手架 + 数据库生产路径加固） |
+
+**推送约定：每个任务做完、提交之后立刻 push，不要攒到最后一次性推。**
 
 ```bash
 git add -A
-git commit -m "feat: AI shutdown tracker"
-git remote add origin git@github.com:<user>/<repo>.git
-git push -u origin main
+git commit -m "<type>: <what changed>"
+git push          # origin/main 已跟踪，不需要再 -u
+```
+
+**由此产生一条硬性要求：`main` 上的每个提交都必须是能构建通过的状态。**
+Vercel 导入之后 push 即部署，一个构建不过的提交就是一次失败的线上部署。推之前至少跑：
+
+```bash
+npm run typecheck && npm run build
 ```
 
 ### 6.2 Vercel 导入（由用户在控制台操作，我们不碰 Vercel API）
@@ -190,9 +215,27 @@ git push -u origin main
    - T6 合并后再加 Stripe 的那几个（全部 test 模式）
 4. Deploy。之后往 `main` push 即自动部署，Preview 分支自动出预览环境。
 
-构建期**不会连数据库**：`build` 脚本就是 `next build`，迁移只在 `npm run db:migrate` 里手动跑（§4）。所以即使 `DATABASE_URL` 填错，构建也会成功——错误要到运行时才暴露，看 §6.3 的自查。
+### 6.3 构建期不碰数据库（必须保持的不变量）
 
-### 6.3 部署后自查
+Vercel 的**第一次**构建发生在用户填环境变量之前，所以构建必须在没有 `DATABASE_URL` 的情况下成功。
+这条已实测通过：
+
+```bash
+env -u DATABASE_URL NODE_ENV=production npm run build
+```
+
+当前输出里 `/`、`/admin`、`/login`、`/register` 全部是动态渲染 `ƒ`，只有 `/_not-found` 是静态 `○`，
+构建期一次库都没查。
+
+**往后加页面时要守住这条**：榜单页、公司详情、仪表盘**不要在构建期预渲染时查库**——那会让 Vercel
+首次构建直接失败在「环境变量还没填」上。需要缓存/静态化时用 ISR（`export const revalidate = N`）或
+`unstable_cache`，让查询发生在运行时的第一次请求，而不是构建期。
+加完页面后用上面那条命令复核一遍：**新路由如果出现在 `○ (Static)` 一侧且它要读库，就是踩了这条线。**
+
+迁移同理不在构建期跑：`build` 脚本就是 `next build`，DDL 只在 `npm run db:migrate` 手动执行（§4）。
+所以即使 `DATABASE_URL` 填错构建也会成功——错误要到运行时才暴露，看 §6.4 的自查。
+
+### 6.4 部署后自查
 
 - [ ] 首页能打开（第一次可能有 Neon 冷启动延迟）。**注意：首页匿名访问不碰数据库，打得开不代表库连通了**，必须继续走下一条
 - [ ] `/register` 能注册、`/login` 能登录 —— 这是第一个真正打数据库的动作；cookie 的 `Secure` 标记在线上生效（`NODE_ENV=production` 时自动打开）
@@ -215,15 +258,15 @@ git push -u origin main
 
 本项目也**不需要 `vercel.json`**：构建命令、输出目录、Node 版本全部走 Vercel 对 Next.js 的默认约定，手写一份只会多一个会过期的配置文件。
 
-## 8. 授权状态（当前卡在这里）
+## 8. 授权状态
 
 | 事项 | 需要什么 | 状态 |
 | --- | --- | --- |
-| 推代码到用户 GitHub | GitHub 连接授权卡片 | **待用户批准** |
-| 建 Neon 库 | Neon 连接授权卡片 | **待用户批准** |
-| Vercel 导入仓库 | 用户自己在控制台操作（其 GitHub 已关联 Vercel） | 等 ①④ 完成后由用户执行 |
+| 推代码到 GitHub | GitHub 连接 | ✅ **已接通**（账号 `andrewdeng318` / ZCZY318），仓库见 §6.1，首次推送已完成 |
+| 建 Neon 库 + 跑迁移 + 导种子数据 | Neon 连接授权卡片 | **待用户批准** —— §3/§4/§5 全部卡在这里 |
+| Vercel 导入仓库 | 用户自己在控制台操作（其 GitHub 已关联 Vercel） | 等 Neon 那条线完成后由用户执行 |
 
-在授权到位之前：本文档、构建验证、脚本契约这些准备工作照做；**不执行** `git push`、不建 Neon 项目、不注册任何第三方账号、不发生任何支出。
+Neon 授权到位之前：**不建任何数据库、不注册任何第三方账号、不发生任何支出**；代码该推照推（§6.1）。
 
 ---
 
@@ -231,10 +274,11 @@ git push -u origin main
 
 - **种子导入脚本还没写**：依赖 T3 领域表 + T4 数据集（§5）。
 - **Stripe 相关环境变量还没进代码**：依赖 T6（§1.2）。
-- **线上这条路还没有被真实跑过一次。** 本机既没有 GitHub 凭证也没有 Neon 授权（§8），所以
-  node-postgres 这一侧只做到了「配置解析 + `pg.Pool` 接受这些参数」级别的验证，**没有真实连过一个
-  Postgres**。生产抛错、trace 排除、PGlite 冒烟都是在本地实测过的；首次部署时请按 §6.3 逐条核对，
+- **node-postgres 这一侧还没有真实连过一个 Postgres。** Neon 授权未到（§8），所以只做到了
+  「配置解析 + `pg.Pool` 接受这些参数」级别的验证。生产抛错、trace 排除、PGlite 冒烟、以及
+  §6.3 的无 `DATABASE_URL` 生产构建都是本地实测过的；首次部署时请按 §6.4 逐条核对，
   真连上之后才算验证完整。
+- **代码推送这一半已不再是阻塞点**（§6.1）。剩下的线上阻塞只有 Neon 建库。
 - `npm run build` 当前通过。修掉的两个会影响线上的问题：
   - `globals.css` 引了 `tw-animate-css` 导致构建失败。**最终处理是移除该依赖与那行 `@import`**，不是补装：
     该包只通过 `style` export 条件暴露自身，而 Turbopack 的 CSS 解析器不套用这个条件，裸包名和
