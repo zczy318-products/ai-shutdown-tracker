@@ -152,7 +152,14 @@ export function ChartCard({
   return (
     <section className="bg-card space-y-3 rounded-xl border p-5">
       <div className="space-y-1">
-        <h3 className="text-sm font-medium">{title}</h3>
+        {/*
+          h2, not h3: these cards sit directly under the dashboard's h1, and
+          the «统计口径» section after them is already an h2. As h3 the page
+          jumped h1 → h3, which is the kind of gap that makes a screen
+          reader's heading list misrepresent the structure. The visual size
+          is set by the classes, so the level costs nothing to get right.
+        */}
+        <h2 className="text-sm font-medium">{title}</h2>
         <p className="text-muted-foreground text-xs">{note}</p>
       </div>
       {legend}

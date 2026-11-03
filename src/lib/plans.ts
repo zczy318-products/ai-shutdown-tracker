@@ -25,14 +25,20 @@ export const PLAN = {
   free: {
     zh: "免费",
     en: "Free",
-    /** Shown on the pricing page. Test mode: the number is illustrative. */
-    priceZh: "￥0",
+    /**
+     * A display string, not a money amount. It is *not* localised by language
+     * — the price is USD for everyone — so do not reintroduce a `Zh`/`En`
+     * split here, and do not parse it: the amount actually charged comes from
+     * the Stripe price behind `STRIPE_PRICE_ID_PRO`, and this label only has
+     * to agree with it. Billing runs in test mode, so nothing is captured.
+     */
+    priceLabel: "US$0",
     taglineZh: "注册只是为了成为付费主体，它不解锁任何阅读权限。",
   },
   pro: {
     zh: "专业版",
     en: "Pro",
-    priceZh: "￥49 / 月",
+    priceLabel: "US$9.90 / 月",
     taglineZh: "给需要把整个数据集拿走、或接进自己系统的人。",
   },
 } as const;
