@@ -1,9 +1,17 @@
 # 验收材料（T7 / ZCZ-8）
 
-状态：**进行中 — 8 步里 01/02 已出图（本地），03–08 待前置任务；线上 URL 待 Neon 授权**。
+状态：**进行中**
+— 种子导入已对本地库跑通并核对（§3，30 条 / 54 来源 / 高 11 中 12 低 7，重跑幂等）；
+**全链路 8 步在本地已全部截图**（11 张 + 导出的 CSV 片段，§2）；
+**但线上站点 https://restinprompts.vercel.app 首页仍是 500**（线上还没有数据库，见 `DEPLOY.md` §2），
+所以线上那一份验收材料还没有，必须在三步接通后重跑一次。
 
-截图统一放 `docs/acceptance/` 下，命名即顺序：`01-register.png`、`02-login.png` …
-由 `npm run capture:acceptance` 产出（见 §1），不手工截。
+截图统一放 `docs/acceptance/` 下，命名即顺序，由 `npm run capture:acceptance` 产出（见 §1），不手工截。
+
+> **编号在本次更新里变了。** 产品负责人定稿「默认不需要注册也能浏览」（计划修订 5 的访问模型），
+> 所以验收演示不再从注册开始：**01–04 是匿名路径**（无账号、无 cookie 走通榜单 / 筛选 / 详情 / 仪表盘），
+> **05–08 才是注册之后多出来的能力**。原来的 `01-register.png` / `02-login.png` 已按新编号改名为
+> `05-register.png` / `06-login.png`，图本身没变（拍的是同一步）。
 
 ---
 
@@ -11,12 +19,14 @@
 
 ```bash
 npm install
-npm run dev                  # 本地：不设 DATABASE_URL，自动走 PGlite
+npm run db:migrate           # 本地：不设 DATABASE_URL，自动走 PGlite，建表
+npm run db:seed              # 导入 seed/companies.json（幂等，可重复跑）
+npm run dev                  # 本地起服务
 npm run build                # 产物验证
 npm run capture:acceptance   # 截图（另开一个终端，dev 跑着的时候执行）
 ```
 
-迁移与导数据见 `DEPLOY.md` §4 / §5。
+线上的迁移与导数据见 `DEPLOY.md` §2.2（**接通数据库是三步，症状各不相同**）与 §4 / §5。
 
 ### 截图是脚本产出的，不是手工截的
 
@@ -25,27 +35,50 @@ npm run capture:acceptance   # 截图（另开一个终端，dev 跑着的时候
 重跑一次就行，不用人再点一遍八个步骤。
 
 ```bash
-BASE_URL=https://<project>.vercel.app npm run capture:acceptance   # 对线上出一份
+BASE_URL=https://restinprompts.vercel.app npm run capture:acceptance   # 对线上出一份
 ```
 
-每次运行注册一个带时间戳的新账号（`acceptance+<yyyymmddhhmmss>@example.com`），
-所以对同一个库可以反复执行，不会撞已存在的邮箱。脚本里同时列着尚未实现的 03–08 步，
-每次运行会把「还缺哪几张、各自阻塞于谁」打印出来，避免文档与实际产出悄悄脱节。
+脚本分两个**场景**，顺序就是验收演示的顺序：
 
-浏览器安装：`npx playwright install --with-deps chromium`。
+1. **匿名**（01–04）：一个全程不被塞 cookie 的浏览器上下文。每张截图前都断言
+   `context.cookies()` 为空——这才是「浏览不需要注册」这句话的证据，而不是「我们相信它不需要」。
+   若某页偷偷下了会话 cookie，脚本会直接失败而不是照常出图；
+2. **账号**（05–08）：注册 → 登录 → 升级（Stripe 测试模式）→ 导出 CSV。
+   每次运行注册一个带时间戳的新账号（`acceptance+<yyyymmddhhmmss>@example.com`），
+   所以对同一个库可以反复执行，不会撞已存在的邮箱。
 
-> **无 root 的沙箱里要多做两步**（本次就是这种环境，记下来免得下次重趟一遍）：
-> 1. `--with-deps` 会调 sudo 而失败，改用 `npx playwright install chromium`，再把缺的 11 个
->    系统库用 `apt-get download` + `dpkg-deb -x` 解到用户目录，运行时带 `LD_LIBRARY_PATH`；
-> 2. **装中文字体**。界面全是中文，而最小镜像通常只有 DejaVu，**不装 CJK 字体截出来整页都是豆腐块**
->    （第一次就是这样）。装 `fonts-noto-cjk` 到 `~/.local/share/fonts`，并用 `FONTCONFIG_FILE`
->    指一份把该目录 `<dir>` 进去的 `fonts.conf`——只把字体文件放进去、不改 fontconfig 配置是不生效的。
+未上线的路由按**待补**处理而不是失败：每次运行末尾打印「还缺哪几张、各自阻塞于谁」，
+避免文档与实际产出悄悄脱节。截图的清理也改成**跑完才扫**——只删本次没拍到的旧图，
+这样一次失败的运行不会把已有材料清空，而一张旧版本界面的图也不会被当成新证据留下。
+
+### 浏览器与中文字体（无 root 的沙箱）
+
+正常机器上 `npx playwright install --with-deps chromium` 就够了。本项目的运行环境没有 root，
+且 **`$HOME` 每个会话重建**，所以浏览器、系统库、中文字体每次都得重新取——已经写成脚本：
+
+```bash
+bash scripts/setup-acceptance-browser.sh      # 约 5 分钟，全部装在 $HOME 下，不需要 root
+source "$HOME/.acceptance-browser-env"        # LD_LIBRARY_PATH + FONTCONFIG_FILE
+npm run capture:acceptance
+```
+
+脚本里固化了两个踩过的坑：
+
+1. `--with-deps` 会调 sudo 直接失败，所以改用 `apt-get download` + `dpkg-deb -x` 把
+   27 个依赖包解到用户目录，运行时带 `LD_LIBRARY_PATH`。包名不是猜的：脚本每次都用 `ldd`
+   复核两个浏览器二进制，**把还缺的库一次性全部列出来**，而不是让 playwright 一次只报一个；
+2. **界面全是中文，不装 CJK 字体截出来整页都是豆腐块**（第一次就是这样）。而且只把
+   `fonts-noto-cjk` 的字体文件放进用户目录**不生效**——fontconfig 只扫配置里列过的目录，
+   必须用 `FONTCONFIG_FILE` 指一份把该目录 `<dir>` 进去的 `fonts.conf`。
+   脚本最后会在浏览器里把「一」和「鑫」各画一遍、数着墨像素做自检：字体装上了两者差一个量级
+   （实测 1911 / 9555），没装上则**两个都是同一个豆腐块、像素数相同**。
+   量文字宽度是查不出来的——豆腐块的 advance 宽度和真字形一样。
 
 | 项 | 值 |
 | --- | --- |
 | 本地地址 | http://localhost:3000 |
 | 代码仓库 | `zczy318-products/rest-in-prompts`（私有，默认分支 `main`；GitHub 侧改名由用户操作） |
-| 线上地址 | 待填（首次部署后） |
+| 线上地址 | https://restinprompts.vercel.app（已部署；**首页目前 500**，线上还没有数据库） |
 | Node 版本 | 本地验证用 v24.22.2；Vercel 用其 Next.js 默认 Node |
 | 数据库 | 本地 PGlite / 线上 Neon 免费档 |
 | Stripe | 测试模式，`sk_test_` / `pk_test_`，不接真实收款 |
@@ -59,23 +92,25 @@ env -u DATABASE_URL NODE_ENV=production npm run build
 ```
 
 ```
-✓ Compiled successfully
+✓ Compiled successfully in 10.0s
 Route (app)
-┌ ƒ /
-├ ○ /_not-found
-├ ƒ /admin
-├ ƒ /admin/records
-├ ƒ /admin/records/[id]
-├ ƒ /admin/records/new
-├ ƒ /login
-└ ƒ /register
+┌ ƒ /                        ├ ƒ /api/v1/records
+├ ○ /_not-found              ├ ƒ /company/[slug]
+├ ƒ /account                 ├ ƒ /login
+├ ƒ /admin                   ├ ƒ /pricing
+├ ƒ /admin/records           ├ ƒ /register
+├ ƒ /admin/records/[id]      ├ ƒ /stats
+├ ƒ /admin/records/new       ├ ƒ /subscribe/confirm
+├ ƒ /api/billing/webhook     └ ƒ /subscribe/unsubscribe
+├ ƒ /api/export/records
 ```
 
-读库的路由全部是动态 `ƒ`，构建期零查询——这是 Vercel 首次构建（用户还没填环境变量）能过的前提，
-加新页面时要守住，详见 `DEPLOY.md` §6.3。路由数会随 T5/T6 增加，验收前需重跑并更新这段输出。
+**含 T5 / T6 / T10 全部新路由在内，17 条路由里只有 `/_not-found` 是静态 `○`，其余全是动态 `ƒ`，
+构建期一次库都没查。** 这是 Vercel 构建（环境变量可能还没填）能过的前提，加新页面时要守住，
+判据与做法见 `DEPLOY.md` §6.3。
 
-T3 新增的四条 `/admin/records*` 路由都显式写了 `export const dynamic = "force-dynamic"`，
-因为它们都查库；首页 `/` 也是，它要读已发布记录。
+> 这次构建是在工作区的一份临时副本里跑的（`/tmp` 下，`node_modules` 硬链接过去），
+> 为的是不覆盖同事 dev server 正在用的 `.next`。同一棵源码树，结论一致。
 
 ### 自动化检查（T3 起可跑）
 
@@ -85,44 +120,92 @@ T3 新增的四条 `/admin/records*` 路由都显式写了 `export const dynamic
 | --- | --- | --- |
 | `npm run verify:auth` | 注册 / 登录 / 登出 / session 吊销 | 是 |
 | `npm run verify:records` | 录入含 2 条来源的记录并发布、5 条失败路径、筛选分页、下架、删除、鉴权（38 项） | 是 |
+| `npm run verify:public` | 公开前台：筛选组合条数、分页、排序、可见性、详情页全部来源、仪表盘数字（86 项） | 否（自带临时库与服务） |
 | `npm run verify:db` | 迁移从空库跑通 + 幂等 + 数据库层约束（26 项） | 否 |
 | `npm run verify:pg` | `DATABASE_URL` 这条路径能建表（真实 `pg` 驱动 + 线协议） | 否 |
 
-后两条自带临时数据库，不会动 `./.pglite`。
+后三条自带临时数据库，不会动 `./.pglite`；`verify:public` 另需先 `npm run build`，它serve 的是生产构建。
 
 ---
 
 ## 2. 全链路步骤（逐步截图）
 
+### 场景一：匿名（无账号、无 cookie）
+
+浏览默认不需要注册，所以演示从这里开始。每一步都在一个从未拿到 cookie 的上下文里跑。
+
 | # | 步骤 | 截图要体现什么 | 状态 |
 | --- | --- | --- | --- |
-| 01 | 注册 | 填写表单 + 注册成功后的落地页 | ✅ `01-register.png` / `01b-register-success.png` |
-| 02 | 登录 | 登录表单 + 登录态下的用户标识 | ✅ `02-login.png` / `02b-signed-in-home.png` |
-| 03 | 浏览榜单 | 列表有数据，条数与 §3 对得上 | 阻塞（T5） |
-| 04 | 筛选 | 筛选条件生效前后的对比，URL 上带筛选参数 | 阻塞（T5） |
-| 05 | 公司详情 | **必须露出来源链接与原文引述**，以及置信度分档 | 阻塞（T5） |
-| 06 | 统计仪表盘 | 图表 + 置信度分布 | 阻塞（T5） |
-| 07 | 升级到付费 | Stripe 测试模式的 Checkout 页面，能看出是 test mode | 阻塞（T6） |
-| 08 | 导出 CSV | 导出动作 + 打开后的 CSV 内容（含表头） | 阻塞（T6） |
+| 01 | 匿名浏览榜单（首页） | 列表有数据，条数与 §3 对得上；页面上**没有**「请先登录」之类的门槛 | ✅ `01-list.png` |
+| 02 | 匿名筛选 | 筛选生效（置信度 = 高），URL 上带筛选参数 | ✅ `02-filter.png` |
+| 03 | 匿名看公司详情 | **必须露出来源链接与原文引述**，以及置信度分档 | ✅ `03-detail.png` |
+| 04 | 匿名看统计仪表盘 | 图表 + 置信度分布 | ✅ `04-dashboard.png` |
 
-免费档与付费档的差异也要各截一张（同一个页面在两种档位下的对照），否则看不出分档真的生效。
+这四张都是在**从未拿到 cookie** 的浏览器上下文里拍的，脚本每张截图前都断言过 `cookies()` 为空。
 
-**01/02 现有截图是本地（PGlite，`NODE_ENV=development`）跑出来的**，不是线上环境——
-`01b` 右下角的「运行环境」卡片如实写着 `PGlite (.pglite)` / `development`。
-线上部署完成后需要把 `BASE_URL` 指向线上再出一份覆盖，届时这一行删掉。
+### 场景二：账号（注册之后多出来的能力）
+
+| # | 步骤 | 截图要体现什么 | 状态 |
+| --- | --- | --- | --- |
+| 05 | 注册 | 填写表单 + 注册成功后的落地页 | ✅ `05-register.png` / `05b-register-success.png` |
+| 06 | 登录 | 登录表单 + 登录态下的用户标识 | ✅ `06-login.png` / `06b-signed-in.png` |
+| 07 | 升级到付费 | 定价页 + 升级后的账户页，**能看出没有真实扣款** | ✅ `07-upgrade.png` / `07b-upgraded.png` |
+| 08 | 导出 CSV | 付费档的导出入口 + 实际导出的 CSV 内容（含表头） | ✅ `08-export.png` + `08-export-head.csv` |
+
+免费档与付费档的对照：`08-export.png` 之前那次运行拍到的是免费档状态——导出被挡下，
+接口返回 **402**；`07b-upgraded.png` 与现在的 `08-export.png` 是升级之后的同一批页面。
+分档确实生效，不是只有文案差别。
+
+**07 走的是本地模拟升级**：本机没有配 `STRIPE_SECRET_KEY`，T6 因此落到 `simulated` 模式，
+页面上明确写着「本地模拟升级…不是一笔真实交易，也没有任何扣款」，`billing_events` 里记的是
+`simulated.upgrade`。线上配好 Stripe **测试模式**密钥后重跑，这一步会变成真的测试结账页。
+**全程没有任何真实收款，也没有注册任何支付账号。**
+
+### 这批截图是在什么环境下拍的（重要）
+
+| 项 | 值 |
+| --- | --- |
+| 地址 | `http://localhost:3210`（本地 `npm run dev`） |
+| 数据库 | 本地 PGlite，内容是 `npm run db:seed` 导入的那 30 条（与 §3 的数字同源） |
+| 代码 | 工作区当前状态，**包含 T5/T6 还没合并进 `main` 的代码** |
+| 计费 | `simulated` 模式（无 Stripe 密钥） |
+
+所以这 11 张图证明的是「全链路在这套代码上确实能走通」，**不能**代替线上验收。
+`DEPLOY.md` §2.2 的三步做完之后，要 `BASE_URL=https://restinprompts.vercel.app` 重跑一次覆盖，
+届时这一节改成线上环境的参数。
 
 ---
 
-## 3. 数据库核对（导入后填写）
+## 3. 数据库核对
 
-| 项 | 期望 | 实测 |
-| --- | --- | --- |
-| 记录总条数 | ≥ 30（若 T4 实际交付不足 30，按实际条数并在此注明原因） | 待填 |
-| 每条记录至少一个来源 | 违例数 = 0 | 待填 |
-| 置信度分布 | 与 T4 说明一致 | 待填 |
-| 导入脚本重跑后条数 | 不变（幂等） | 待填 |
+**本地（PGlite，2026-11-03，`npm run db:seed` 的实际输出）。线上那一份要等 `DEPLOY.md` §2.2 三步做完再出。**
 
-核对用的 SQL 见 `DEPLOY.md` §5。
+| 项 | 期望 | 本地实测 | 线上 |
+| --- | --- | --- | --- |
+| 记录总条数 | ≥ 30 | **30**（`ai_impact`） | 待填 |
+| 公司数 / 来源数 | 与 T4 说明一致（29 / 54） | **29 / 54** | 待填 |
+| 置信度分布 | 与 T4 说明一致（高 11 / 中 12 / 低 7） | **high=11  medium=12  low=7** | 待填 |
+| `record_status` | 全部 `published` | **published=30** | 待填 |
+| 每条记录至少一个来源 | 违例数 = 0 | **0** | 待填 |
+| high 级别缺一手/主流媒体来源 | 违例数 = 0 | **0** | 待填 |
+| 导入脚本重跑后条数 | 不变（幂等） | **不变**：第二次运行「新增 0 条，更新 30 条」，30 / 54 不变 | 待填 |
+
+与 `docs/SEED_VERIFICATION.md` §0 的结论逐项一致（29 家公司 / 30 条记录 / 54 条来源 / 高 11 中 12 低 7）。
+核对口径与 SQL 见 `DEPLOY.md` §5；上面这些数字是 `npm run db:seed` 结束时自己打印出来的，不是手抄的。
+
+### 校验没有被放宽——这是实测过的
+
+往数据集里注入四种故障，再跑导入（`SEED_FILE=` 指向改坏的副本）：
+
+| 注入的故障 | 结果 |
+| --- | --- |
+| 删掉第 1 条记录某个来源的 `quote` | 拒绝：`第 1 条 — chegg / 2025-10-27 — 第 1 条来源缺少必填项：原文引述（quote）` |
+| 清空某条来源的 `url` | 拒绝并点名是哪条记录的第几条来源 |
+| 把某条记录的 `sources` 清成空数组 | 拒绝：`没有任何来源。每条记录至少需要一条来源…` |
+| 把 `region` 改成与 `country_code` 矛盾的值 | 拒绝：`region 是派生字段，两者不一致说明其中一个写错了` |
+
+四条全部被按条点名拒绝，且**整批一条都没有写入**（退出码非零）。
+脚本不会为了让导入跑通而降低门槛——有问题就改数据集。
 
 ---
 
@@ -130,14 +213,15 @@ T3 新增的四条 `/admin/records*` 路由都显式写了 `export const dynamic
 
 如实列出，不隐瞒：
 
-- **T4 数据集、T5 前台、T6 SaaS 层尚未合并**，故步骤 03–08 的截图无法产出；截图工具链本身已经跑通，
-  这几个页面一上线即可直接补拍；
-- **01/02 的截图来自本地 PGlite，不是线上环境**（见 §2 末尾），线上部署后要重出一份；
-- **种子导入脚本尚未落地**，依赖 T3 领域表 + T4 数据集。`src/db/schema.ts` 里的 `company` /
-  `ai_impact` / `source` 三表已随 T3 写出（含 `drizzle/0001`、`0002` 迁移），但**尚未提交**，
-  且查询层 `src/lib/records/store.ts` 还不存在，脚本暂无可写入的稳定目标；
-- **GitHub 已接通**，仓库建好且首次推送完成；**Neon 授权仍未批准**，故线上库不存在，迁移与种子导入
-  都无法执行，线上 URL 暂缺（授权状态见 `DEPLOY.md` §8）；
+- **线上站点已部署，但首页返回 500**：https://restinprompts.vercel.app 上还没有数据库
+  （没有 `DATABASE_URL`、也还没建表）。接通它是三步，症状各不相同，见 `DEPLOY.md` §2.2；
+  第 ②③ 步由谁执行等用户在 ZCZ-1 的卡片上选 A 还是 B（`DEPLOY.md` §8）。
+  **因此所有线上截图都还没出，现有截图都是本地的。**
+- **8 步截图全部来自本地 dev + PGlite，且拍的是 T5/T6 还没合并进 `main` 的工作区代码**
+  （环境参数见 §2 末尾的表）。它们证明链路通，但**不是线上验收材料**，线上通了要整批重拍；
+- **07 的升级是本地模拟**，不是 Stripe 测试结账——本机没有 Stripe 密钥。线上配好 `sk_test_`
+  之后这一步才会出真正的测试模式结账页；
+- 种子导入脚本**已落地并跑通**（§3），但**只对本地 PGlite 跑过**，没有对真实 Postgres/Neon 跑过；
 - 此前已修复两个会直接影响线上部署的问题：`tw-animate-css` 的 `@import` 无法被 Turbopack 解析导致
   `npm run build` 失败（处理方式是移除该依赖，而非补装）；数据库 TLS 连接未校验证书。详见 `DEPLOY.md` §9。
 
@@ -164,19 +248,30 @@ build-time 聚合查询，那样首次构建会直接挂。
 shadcn 的 token 体系（light + dark 双套 + `@theme inline` 映射）继续使用。组件里**不得**出现
 内联 hex 或 `text-red-500` 这类字面量——那会绕过 token 体系，dark mode 直接失效。
 
-分类色/序数色由设计方在 `globals.css` 的 `:root` 与 `.dark` 中各补一组语义 token，本侧只引用名字：
+设计方已在 `globals.css` 的 `:root` 与 `.dark` 中各落一组语义 token（随改名提交 `5d9ae61`），
+**实际交付的名字与我先前提的草案不同**，以下是前台在用的这一组：
 
-| 用途 | 槽位 |
-| --- | --- |
-| 置信度（序数，含 `-foreground`） | `--confidence-high` / `-medium` / `-low` |
-| 影响类型（字典 §1.5 四个固定值） | `--impact-1..4` |
-| 图表分类色通用序列 | `--chart-1..8` |
+| 用途 | token | 用在哪 |
+| --- | --- | --- |
+| 影响类型（字典 §1.5 四个固定值） | `--chart-1` … `--chart-4` | 影响类型徽章的圆点、影响类型图的条 |
+| 单系列图表 | `--chart-1` | 年度趋势、行业分布、国家分布 |
+| 图表骨架 | `--chart-grid` / `--chart-axis` | 网格发丝线、基线、详情页引文竖线 |
+| 置信度（序数，无彩） | `--conf-high` / `--conf-medium` / `--conf-low` | 置信度徽章圆点、置信度分布图 |
 
-分类色只需 8 槽，是因为聚合口径把基数压住了：**行业** 21 值 → Top 7 + 「其他」= 8 项；
-**国家** 约 250 值 → 按已存储的 `company.region` 聚合 = 6 项；结局 7 值、影响类型 4 值同样在 8 以内。
-不存在需要 21 色的图。
+槽位比最初估的少：分类色只有影响类型一个维度在吃（4 个固定值），**行业** 21 值 → 前 8 + 「其他」
+且全部同色，**国家** 约 250 值 → 按已存储的 `company.region` 聚合（6 项）且全部同色。
+所以不需要 `--chart-5..8`，也不存在需要 21 色的图。
 
-核对方式：`grep -rnE "#[0-9a-fA-F]{6}|text-(red|green|blue|amber)-[0-9]" src/components src/app` 应为零命中。
+核对方式（`verify:public` 的最后两项已经自动化了这条）：
+
+```bash
+grep -rnE "#[0-9a-fA-F]{3,8}|(bg|text|border)-(red|green|blue|amber|emerald|rose)-[0-9]" \
+  "src/app/(public)" src/components/public src/components/charts   # 零命中
+```
+
+范围就是设计规范 §7 说的「页面和图表」：`globals.css` 是 token 的**定义处**（注释里带 hex 是说明值，
+不是绕过 token），后台 `/admin` 的成功 / 警示横幅沿用 emerald / amber——规范第 2 条正是把状态色
+留给后台表单与错误态的。公开页面一个都不用，这一条也进了自动检查。
 
 ### 5.3 配色不得代替平台做出断言
 
@@ -191,9 +286,131 @@ shadcn 的 token 体系（light + dark 双套 + `@theme inline` 映射）继续�
 刻意无数据库默认值（记录不可能缺人工判断而存在）；`summary` 为转述口径；`source.quote` 要求逐字原文，
 译文另存 `quote_translation_zh` 并标注为译文。
 
-### 5.4 图表库按需引入
+### 5.4 图表库：最终没装
 
-`/stats` 页面本身保持 server component，每张图各自是一个 `"use client"` 叶子组件，使图表库只进
-图表 chunk、不被拖入首屏（Vercel Hobby 有 bundle 体积限制）。换库只动叶子组件。
+**结论：不引入图表库，`recharts` 不装**，这也是设计规范 §5 两条路里设计方倾向的那条。
 
-> 图表库选型与 token 取值待设计规范确认；截至本次更新 `package.json` 中尚未安装 `recharts`。
+四张图全是「分类轴上的计数」——年度柱状、行业条形、国家条形、影响类型条形。一根条就是一个
+百分比宽度的 `<div>`，实现成本低于接一个库，并且换来三件事：
+
+- **零 bundle 成本**：Vercel Hobby 有体积上限，Recharts 会把 D3 子集拖进来；
+- **不需要 `ssr: false` 懒加载**，因而 `/stats` 连一个 client component 都没有（原计划的
+  「每张图一个 `"use client"` 叶子」在不装库之后就没有存在理由了，这是对先前那条约定的有意简化）；
+- 图表直接在 server component 里渲染，首屏即是最终内容。
+
+实现在 `src/components/charts/bars.tsx`（`HorizontalBars` / `YearColumns` / `StatTable`）。
+若将来要做时间刷选、缩放这类真交互，再引库，只动这一个文件。
+
+图表 / 表格切换也因此是一个**链接**（`/stats?view=table`）而不是组件状态：无 JS 可用，
+而且这个视图本身可以被分享。表格视图是设计规范 §4.5 的硬要求（也是两个槽位色对浅色底
+不足 3:1 的豁免前提），不是加分项。
+
+---
+
+## 6. T5 实测结果（`npm run verify:public`，93/93 通过）
+
+ZCZ-6 的完成标准要求「附上实测的筛选组合与结果条数」。下面整张表是脚本跑出来的，不是手填的：
+
+```bash
+npm run build          # verify:public serve 的是生产构建
+npm run verify:public  # 自带临时库 .pglite-public-check，跑完即删
+```
+
+脚本做了四件事，让这些数字有意义：
+
+1. 用真正的导入脚本（`npm run db:seed`）把 T4 的 `seed/companies.json` 灌进一个**一次性** PGlite 库，
+   不碰开发用的 `./.pglite`；
+2. **故意把一条记录改成 `archived`**（`workday`，按字典序确定性选取），这是证明可见性规则的唯一方法——
+   库里确实存在一条非 `published` 记录，而每个公开界面都必须当它不存在；
+3. 期望条数**由数据集在脚本里独立算出**，再跟页面给的数字比。所以「对」的含义是页面与数据集一致，
+   而不是页面自己自洽；
+4. 先用一个**只迁移、没导数据**的空库跑一遍（见 §6.5），再跑有数据的那一轮。
+
+因此下表的基数是 **29 条可见记录 / 28 家公司 / 53 条来源**（= 数据集 30 / 29 / 54 减去被下架的那一条）。
+线上把 30 条全部发布时，相关数字各自 +1。
+
+### 6.1 筛选组合与结果条数（实测）
+
+| 筛选（URL） | 条数 | 首页卡片数 |
+| --- | --- | --- |
+| `/`（无筛选） | 29 | 12 |
+| `?confidence=high` | 11 | 11 |
+| `?confidence=medium` | 11 | 11 |
+| `?confidence=low` | 7 | 7 |
+| `?impactType=ai_cost_cutting_layoff` | 13 | 12 |
+| `?impactType=replaced_by_ai_product` | 5 | 5 |
+| `?impactType=voluntary_pivot` | 7 | 7 |
+| `?impactType=mentioned_in_coverage` | 4 | 4 |
+| `?year=2025` | 14 | 12 |
+| `?year=2023` | 6 | 6 |
+| `?industry=software_saas` | 7 | 7 |
+| `?industry=it_services` | 4 | 4 |
+| `?country=US` | 17 | 12 |
+| `?country=GB` | 2 | 2 |
+| `?q=chegg` | 2 | 2 |
+| `?year=2025&confidence=high` | 7 | 7 |
+| `?industry=software_saas&impactType=ai_cost_cutting_layoff` | 2 | 2 |
+| `?country=US&year=2025&confidence=medium` | 1 | 1 |
+| 六项全开（关键词 + 年份 + 行业 + 国家 + 影响类型 + 置信度） | 1 | 1 |
+| `?industry=bogus&confidence=nope&year=abcd&country=qq&sort=hack&page=-1` | 29（参数被忽略，不报错） | 12 |
+
+> `country=zz` 不在上表里是有原因的：`ZZ` 是字典里「跨国 / 无法归属」的**合法**取值，
+> 所以它会筛出 0 条而不是被忽略——这不是 bug。无效取值用的是 `qq`。
+
+### 6.2 分页与排序（实测）
+
+| 项 | 结果 |
+| --- | --- |
+| 每页条数 / 总页数 | 12 / 3（29 条） |
+| 第 1 / 2 / 3 页卡片数 | 12 / 12 / 5 |
+| 三页合计去重 | 29（无重复、无遗漏） |
+| `?page=99` | 收敛到第 3 页，不报错 |
+| `?sort=date_desc` 首条 | 2026-10-27（最新） |
+| `?sort=date_asc` 首条 | 2023-04-27（最早） |
+| `?sort=name_asc` / `name_desc` 首条 | `accenture` / `verizon` |
+| 分页链接 | 带上当前全部筛选与排序（`?country=US&sort=name_asc&page=2`） |
+
+### 6.3 可见性、详情页、仪表盘（实测）
+
+| 项 | 结果 |
+| --- | --- |
+| 已下架记录出现在榜单任何一页 | 否（榜单共 28 个 slug） |
+| `/company/workday`（已下架） | 404 |
+| 未知 slug | 404 |
+| 28 个公司详情页 | 全部 200 |
+| 详情页渲染的来源条数 | **53 = 数据集条数**，无截断 |
+| 每条来源的逐字引述 / 媒体名 / 原文链接缺失数 | 0 / 0 / 0 |
+| 多事件公司 `chegg` 时间线 | 2 个事件，各自带自己的来源 |
+| 仪表盘记录数 / 公司数 / 来源数 | 29 / 28 / 53（与榜单一致） |
+| 四张图 + 置信度分布的每一项 | 与数据集逐项相符（含行业前 8 + 「其他」合并 4 条） |
+| 表格视图 `?view=table` | 与图表同一组数字 |
+| 口径与免责声明 | 「只统计已发布记录」「不构成对任何公司的结论」均在页面上 |
+
+行业并列时的名次由**枚举声明顺序**决定（Postgres 对 enum 列按声明顺序排序，也就是数据字典的顺序），
+不是按字母。本数据集有 5 个行业并列 1 条，第 8 个槽位因此是 `translation_localization`——
+脚本从 `src/lib/enums.ts` 读出这个顺序来对期望值，不另抄一份。
+
+### 6.4 空数据状态（实测）
+
+完成标准里单列的一条：数据还没导进去时，页面要给空状态而不是报错。这也是线上 `db:migrate` 之后、
+首次导入之前的真实状态，所以它是访客可能看到的第一屏。
+
+| 项 | 结果 |
+| --- | --- |
+| 空库 `/` | 200，条数 0，显示「还没有已发布的记录」并说明草稿 / 待审稿不公开 |
+| 空库 `/?confidence=high&year=2025` | 200（带筛选参数也不报错） |
+| 空库 `/stats` | 200，显示「还没有已发布的记录，暂无可统计数据」 |
+| 空库 `/company/anything` | 404 |
+
+### 6.5 构建期不碰数据库（实测）
+
+```
+env -u DATABASE_URL NODE_ENV=production npm run build   # ✓ Compiled successfully
+┌ ƒ /
+├ ƒ /company/[slug]
+└ ƒ /stats
+```
+
+三条路由都是动态 `ƒ`，且都显式写了 `export const dynamic = "force-dynamic"`，不依赖 Next 的推断。
+§1「构建结果」里的完整路由表要等 T6 / T10 的路由落地后由 T7 重跑一次再更新。
+
