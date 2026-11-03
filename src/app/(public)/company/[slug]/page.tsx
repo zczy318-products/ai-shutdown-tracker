@@ -86,7 +86,10 @@ export default async function CompanyPage({ params }: { params: Promise<{ slug: 
   return (
     <article className="space-y-10">
       <nav className="text-muted-foreground text-xs">
-        <Link href="/" className="hover:text-foreground underline">
+        <Link
+          href="/"
+          className="hover:text-foreground -my-1.5 inline-flex items-center py-1.5 underline"
+        >
           记录榜单
         </Link>
         <span className="mx-2">/</span>
@@ -275,12 +278,20 @@ function EventSection({ event }: { event: PublicEvent }) {
                 ) : null}
               </blockquote>
 
+              {/*
+                These two are the whole point of the page — the link that lets
+                a reader check the quote against the original. At one line of
+                `text-xs` they measured 16 CSS px tall, under WCAG 2.2 §2.5.8's
+                24 px minimum. Same trick as the header nav: pad the hit area,
+                pull the padding back out with a negative margin so the row
+                keeps its spacing.
+              */}
               <div className="flex flex-wrap items-center gap-3 text-xs">
                 <a
                   href={item.url}
                   target="_blank"
                   rel="noopener noreferrer nofollow"
-                  className="underline"
+                  className="-my-1.5 inline-flex items-center py-1.5 underline"
                 >
                   打开原文 · {hostnameOf(item.url)}
                 </a>
@@ -289,7 +300,7 @@ function EventSection({ event }: { event: PublicEvent }) {
                     href={item.archiveUrl}
                     target="_blank"
                     rel="noopener noreferrer nofollow"
-                    className="text-muted-foreground hover:text-foreground underline"
+                    className="text-muted-foreground hover:text-foreground -my-1.5 inline-flex items-center py-1.5 underline"
                   >
                     归档快照
                   </a>

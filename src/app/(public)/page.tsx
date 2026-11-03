@@ -144,7 +144,17 @@ export default async function ListingPage({
 
                   <div className="space-y-1">
                     <h3 className="leading-tight font-medium">
-                      <Link href={`/company/${company.slug}`} className="hover:underline">
+                      {/*
+                        The card's primary link, and at one tight line it came
+                        out 19 CSS px tall — under WCAG 2.2 §2.5.8's 24 px.
+                        `inline-block` rather than `inline-flex`, so a long
+                        company name still wraps; the negative margin keeps the
+                        card's vertical rhythm unchanged.
+                      */}
+                      <Link
+                        href={`/company/${company.slug}`}
+                        className="-my-1 inline-block py-1 hover:underline"
+                      >
                         {company.nameZh && company.nameZh !== company.name
                           ? `${company.name}（${company.nameZh}）`
                           : company.name}

@@ -147,7 +147,7 @@ export default async function PricingPage({ searchParams }: { searchParams: Sear
               <CardTitle>{PLAN.free.zh}</CardTitle>
               {plan === "free" ? <Badge variant="secondary">当前套餐</Badge> : null}
             </div>
-            <CardDescription>{PLAN.free.priceZh}</CardDescription>
+            <CardDescription>{PLAN.free.priceLabel}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4 text-sm">
             <p className="text-muted-foreground">{PLAN.free.taglineZh}</p>
@@ -182,7 +182,7 @@ export default async function PricingPage({ searchParams }: { searchParams: Sear
               <CardTitle>{PLAN.pro.zh}</CardTitle>
               {plan === "pro" ? <Badge>当前套餐</Badge> : null}
             </div>
-            <CardDescription>{PLAN.pro.priceZh}</CardDescription>
+            <CardDescription>{PLAN.pro.priceLabel}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4 text-sm">
             <p className="text-muted-foreground">{PLAN.pro.taglineZh}</p>
