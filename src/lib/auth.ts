@@ -2,6 +2,7 @@ import { createHash, randomBytes } from "node:crypto";
 
 import { eq, lt } from "drizzle-orm";
 import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 
 import { getDb } from "@/db";
 import { sessions, users, type User } from "@/db/schema";
@@ -65,6 +66,26 @@ export async function getCurrentUser(): Promise<User | null> {
   }
 
   return row.user;
+}
+
+/**
+ * The gate every protected page has to call **itself**, in its own body, before
+ * it reads anything.
+ *
+ * A layout's `redirect()` is not enough on its own. Next renders a layout and
+ * the page under it concurrently, so an anonymous request to
+ * `/admin/subscribers` still ran the subscriber query — and the dev server put
+ * the rendered result, every email address included, into the body of the 307
+ * that was supposed to be turning the visitor away. `npm run verify:subscribe`
+ * asserts that body no longer contains an address.
+ *
+ * Calling this first is what closes it, because the data is never fetched: the
+ * redirect is thrown before the queries start, not raced against them.
+ */
+export async function requireUser(): Promise<User> {
+  const user = await getCurrentUser();
+  if (!user) redirect("/login");
+  return user;
 }
 
 export async function destroyCurrentSession(): Promise<void> {

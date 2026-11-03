@@ -424,6 +424,24 @@ console.log("\n-- 鉴权 --");
     (r.res.headers.get("x-action-redirect") ?? "").includes("/login") ||
     r.body.includes("/login");
   check("an anonymous POST to the record action is refused", redirected, `status=${r.res.status}`);
+
+  // Reads, too — and not only the status code. A layout that calls `redirect()`
+  // does not stop the page under it from rendering, so the 307 turning an
+  // anonymous visitor away used to carry the rendered backoffice list in its
+  // body. Every /admin page that reads anything now calls `requireUser()`
+  // itself; this is what holds that line.
+  const list = await get("/admin/records");
+  check(
+    "an anonymous GET of the backoffice list is redirected",
+    [302, 303, 307].includes(list.res.status) &&
+      (list.res.headers.get("location") ?? "").includes("/login"),
+    `status=${list.res.status} → ${list.res.headers.get("location")}`,
+  );
+  check(
+    "and that redirect leaks no record content in its body",
+    !list.body.includes(SLUG) && !list.body.includes(COMPANY_NAME),
+    `${list.body.length}B, looked for ${SLUG} / ${COMPANY_NAME}`,
+  );
   cookie = saved;
 }
 

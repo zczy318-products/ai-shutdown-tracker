@@ -2,19 +2,30 @@
  * The one place that sends email, and the one place that decides whether we are
  * able to send email at all.
  *
- * There is **no email provider wired up yet** — nobody has credentials, and
- * registering one needs an authorization card from the user (T10 / ZCZ-11:
- * "不注册任何第三方账号"). So the default driver is `log`, which writes the
- * message to the server log and reports `delivered: false`.
+ * **There is exactly one driver, `log`, and that is the finished state of this
+ * module** — not a placeholder waiting on credentials. The product decision
+ * (2026-11-03) was to collect subscriptions and not send anything: no provider,
+ * no provider SDK, no provider environment variable, no third-party account.
+ * So `log` writes the message to the server log and reports `delivered: false`.
  *
- * That `false` is the important part of this module. A `log` driver that
- * returned success would make every caller — and therefore every page — tell a
- * visitor "check your inbox" about a message that does not exist. They would
- * wait for it, conclude the site is broken, and be right. Returning "not
- * delivered" is what lets `src/app/subscribe` render honest copy instead.
+ * That `false` is the important part. A `log` driver that returned success would
+ * make every caller — and therefore every page — tell a visitor "check your
+ * inbox" about a message that does not exist. They would wait for it, conclude
+ * the site is broken, and be right. Returning "not delivered" is what lets
+ * `src/app/subscribe` render honest copy instead, and what keeps
+ * `/admin/subscribers` honest about why every row says «待确认».
  *
- * Wiring a provider later means adding one entry to `PROVIDER_ADAPTERS` below.
- * Nothing else in the app looks at `MAIL_*`.
+ * If a provider is ever authorized, the shape of the change is: add a second
+ * factory beside `createLogMailer`, pick between them in `resolveMailer`, and
+ * obey two rules while doing it —
+ *
+ *  - map a non-2xx provider response to `delivered: false`, do not throw it
+ *    away; everything downstream reads that flag to decide what to promise a
+ *    human;
+ *  - send *outside* the request (queue, `after()`), because a provider
+ *    round-trip only happens on some branches of the subscribe action and a
+ *    visible latency difference reintroduces the email enumeration oracle the
+ *    response wording was written to close.
  */
 
 export type MailMessage = {
@@ -52,11 +63,6 @@ export type Mailer = {
   send(message: MailMessage): Promise<MailResult>;
 };
 
-/** `From:` header. Only meaningful once a provider is wired. */
-export function mailFrom(env: NodeJS.ProcessEnv = process.env): string {
-  return env.MAIL_FROM?.trim() || "Rest In Prompts <no-reply@localhost>";
-}
-
 /**
  * Development / unwired driver: log the message, report it undelivered.
  *
@@ -84,49 +90,22 @@ function createLogMailer(): Mailer {
       return {
         delivered: false,
         driver: "log",
-        detail: "no email provider configured (MAIL_PROVIDER unset)",
+        detail: "no email provider is wired up; nothing was sent",
       };
     },
   };
 }
 
 /**
- * Provider adapters, by `MAIL_PROVIDER` value. Empty on purpose.
+ * Takes no configuration, on purpose.
  *
- * To add one (after the user has authorized the account):
- *
- *   resend: (env) => ({
- *     driver: "resend",
- *     canDeliver: true,
- *     async send(message) { ...; return { delivered: res.ok, ... } },
- *   }),
- *
- * Two rules for whoever writes the first one:
- *
- *  - map a non-2xx response to `delivered: false`, do not throw it away;
- *  - send *outside* the request if you can (queue, `after()`), because a
- *    provider round-trip only happens on some branches of the subscribe action
- *    and a visible latency difference reintroduces the email enumeration oracle
- *    the response wording was written to close.
+ * An env var that selects a provider would be a switch with one position, and
+ * the day somebody set it to `resend` they would get the log driver and a site
+ * that had not changed — the worst outcome of the three. There is nothing to
+ * configure until a provider is actually authorized and written.
  */
-const PROVIDER_ADAPTERS: Record<string, (env: NodeJS.ProcessEnv) => Mailer> = {};
-
-export function resolveMailer(env: NodeJS.ProcessEnv = process.env): Mailer {
-  const requested = env.MAIL_PROVIDER?.trim();
-  if (!requested || requested === "log") return createLogMailer();
-
-  const adapter = PROVIDER_ADAPTERS[requested];
-  if (!adapter) {
-    // Falling back rather than throwing: a typo in an env var should not take
-    // the site down. Loud, because the alternative is silence about mail that
-    // is not going out.
-    console.error(
-      `[mailer] MAIL_PROVIDER="${requested}" has no adapter in src/lib/mailer.ts; ` +
-        "falling back to the log driver. No email is being delivered.",
-    );
-    return createLogMailer();
-  }
-  return adapter(env);
+export function resolveMailer(): Mailer {
+  return createLogMailer();
 }
 
 const globalForMailer = globalThis as typeof globalThis & { __aistMailer?: Mailer };

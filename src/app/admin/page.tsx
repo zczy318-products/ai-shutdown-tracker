@@ -3,14 +3,31 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { resolveDbTarget, describeDbTarget } from "@/db/config";
-import { RECORD_STATUS, RECORD_STATUS_VALUES, labelOf } from "@/lib/enums";
+import { requireUser } from "@/lib/auth";
+import {
+  RECORD_STATUS,
+  RECORD_STATUS_VALUES,
+  SUBSCRIBER_STATUS,
+  SUBSCRIBER_STATUS_VALUES,
+  labelOf,
+} from "@/lib/enums";
+import { getMailer } from "@/lib/mailer";
 import { countByStatus } from "@/lib/records/store";
+import { countSubscribersByStatus } from "@/lib/subscribe/store";
 
 export const dynamic = "force-dynamic";
 
 export default async function AdminPage() {
-  const counts = await countByStatus();
+  // Gated here and not only in the layout — see `requireUser`.
+  await requireUser();
+
+  const [counts, subscriberCounts] = await Promise.all([countByStatus(), countSubscribersByStatus()]);
   const total = Object.values(counts).reduce((sum, value) => sum + value, 0);
+  const subscriberTotal = SUBSCRIBER_STATUS_VALUES.reduce(
+    (sum, status) => sum + subscriberCounts[status],
+    0,
+  );
+  const mailer = getMailer();
 
   return (
     <div className="space-y-6">
@@ -53,6 +70,33 @@ export default async function AdminPage() {
 
       <Card>
         <CardHeader>
+          <CardTitle>订阅者</CardTitle>
+          <CardDescription>
+            共 {subscriberTotal} 个邮箱
+            {mailer.canDeliver
+              ? ""
+              : " · 邮件服务未接通，订阅会停在「待确认」，这是预期结果"}
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <dl className="grid gap-2 text-sm sm:grid-cols-3">
+            {SUBSCRIBER_STATUS_VALUES.map((status) => (
+              <div key={status} className="rounded-md border p-3">
+                <dt className="text-muted-foreground text-xs">
+                  {labelOf(SUBSCRIBER_STATUS, status)}
+                </dt>
+                <dd className="font-mono text-lg">{subscriberCounts[status]}</dd>
+              </div>
+            ))}
+          </dl>
+          <Button asChild variant="outline">
+            <Link href="/admin/subscribers">订阅者列表</Link>
+          </Button>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
           <CardTitle>运行环境</CardTitle>
           <CardDescription>当前进程实际连接的数据库驱动。</CardDescription>
         </CardHeader>
@@ -60,6 +104,11 @@ export default async function AdminPage() {
           <dl className="grid gap-2 text-sm sm:grid-cols-[8rem_1fr]">
             <dt className="text-muted-foreground">数据库</dt>
             <dd className="font-mono">{describeDbTarget(resolveDbTarget())}</dd>
+            <dt className="text-muted-foreground">邮件驱动</dt>
+            <dd className="font-mono">
+              {mailer.driver}
+              {mailer.canDeliver ? "（可发信）" : "（只写日志，不发信）"}
+            </dd>
             <dt className="text-muted-foreground">NODE_ENV</dt>
             <dd className="font-mono">{process.env.NODE_ENV}</dd>
           </dl>

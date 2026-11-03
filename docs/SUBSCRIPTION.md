@@ -3,9 +3,23 @@
 匿名订阅 + 双重确认 + 一键退订。**订阅不走账号系统**：订阅者只给一个邮箱，没有密码、没有
 用户记录、不需要登录。
 
-> 当前状态：**没有接通任何邮件服务**。邮件适配器默认用 `log` 驱动，把邮件写进服务端日志
-> 并返回「未送达」；页面文案照这个事实说话，不会显示「确认邮件已发送」。选哪家 provider
-> 需要用户的授权卡，由 Master PM 申请，本任务没有注册任何第三方账号。
+> 用户 2026-11-03 定稿：**先只收集订阅，暂不发信。** 这不是临时兜底，而是本功能当前的最终
+> 形态——邮件适配器只有一个 `log` 驱动，把邮件写进服务端日志并返回「未送达」；不集成任何
+> provider，不加 provider SDK，**没有任何邮件相关环境变量**，没有注册任何第三方账号。
+>
+> 由此有三个后果，都是有意的：
+>
+> 1. **订阅者会长期停在 `pending`，这是正确结果。** 没有「无邮件服务时自动确认」的开关，
+>    `/admin` 也没有「手动确认」按钮。`confirmed` 的含义是「这个人点过邮件里的链接」；没发
+>    过邮件就没人点过，把它写成 `confirmed` 等于在库里存一句假话，而且将来真发信时会往一批
+>    从未同意过的地址发。
+> 2. **confirm / unsubscribe 两条路由照常实现、照常实测**，测法见 §7：从服务端日志里取出
+>    token 直接访问。将来接通 provider 只需换驱动，链路不用重做。
+> 3. **页面文案是长期文案。** 「已登记，确认邮件会在邮件服务接通后发出」现在是终态，所以它
+>    读起来是一个可接受的结果，不是一条报错：没有红色样式，没有「失败」字样；同时仍然不出现
+>    任何「已发送」类表述。
+>
+> 选哪家 provider 需要用户的授权卡，由 Master PM 申请。
 
 ---
 
@@ -97,12 +111,9 @@ IP 的取值依次看 `x-vercel-forwarded-for`、`x-real-ip`、`x-forwarded-for`
 
 ## 4. 邮件适配器与「诚实文案」
 
-`src/lib/mailer.ts` 暴露 `send({to, subject, html})`，驱动按环境选：
-
-- `MAIL_PROVIDER` 未设置或为 `log` → **`log` 驱动**：把邮件写服务端日志，返回
-  `delivered: false`。
-- `MAIL_PROVIDER` 指向一个还没注册适配器的名字 → 打一条 error 日志并**退回 `log`**。一个
-  环境变量拼错不该让站点挂掉，但也绝不能安静地假装邮件发出去了。
+`src/lib/mailer.ts` 暴露 `send({to, subject, html})`，并且**只有一个驱动**：`log`，把邮件写
+服务端日志，返回 `delivered: false`。`resolveMailer()` 不读任何环境变量——一个只有一个档位的
+开关没有意义，而且最糟的结果是有人把它设成 `resend` 之后拿到的还是 log 驱动，却以为接通了。
 
 那个 `false` 是这个模块存在的理由。如果 `log` 驱动返回成功，每个调用方、也就是每个页面，都
 会对访客说「去查收邮件」——他会一直刷收件箱等一封不存在的信，最后认定这站是坏的，而他是对的。
@@ -114,11 +125,15 @@ IP 的取值依次看 `x-vercel-forwarded-for`、`x-real-ip`、`x-forwarded-for`
 <div role="status" class="mt-4 space-y-1"><p class="text-sm font-medium">已登记，确认邮件会在邮件服务接通后发出。</p><p class="text-muted-foreground text-sm">本站目前还没有接通邮件服务，所以现在不会有邮件到达你的收件箱——不用等。订阅在接通后生效，仍然需要你点一次确认链接。</p></div>
 ```
 
-### 接 provider 的人要知道的两件事
+### 将来接 provider 的人要知道的三件事
 
-1. 非 2xx 响应要映射成 `delivered: false`，不要吞掉；
+改动的形状是：在 `createLogMailer` 旁边加第二个工厂，在 `resolveMailer()` 里二选一。
+
+1. 非 2xx 响应要映射成 `delivered: false`，不要吞掉。下游全靠这个标志决定对人承诺什么；
 2. **尽量把发信挪到请求之外**（队列、`after()`）。订阅动作只有部分分支会去请求 provider，
-   一旦这个往返体现在响应耗时上，就重新打开了下面这个枚举信道。
+   一旦这个往返体现在响应耗时上，就重新打开了下面这个枚举信道；
+3. 接通那天，库里会有一批 `pending`。**它们不能被当成「待补发」批量确认**，只能收到一封确认
+   信，各自再点一次。
 
 ## 5. 邮箱枚举防护
 
@@ -135,7 +150,29 @@ HTTP 状态码，同一段 `role="status"` HTML。不这样做的话，这个不
 
 剩下的信道是时序，见上一节。
 
-## 6. 验收
+## 6. `/admin/subscribers`（只读）
+
+`/admin` 下的订阅者视图，在原有的 session 门后面（`src/app/admin/layout.tsx`，未登录访问会
+302 到 `/login`）。有它的理由很直接：「只收集、暂不发信」这个决定的唯一价值就是这些行将来
+能用，而**看不见的行等于没有的行**。
+
+页面回答两个问题：有多少（总数 + `pending` / `confirmed` / `unsubscribed` 三档分布，全库统计），
+以及这些是不是真的（最近 200 个邮箱，连同 `source` 与三个时间戳）。`/admin` 首页也有一张同
+样数据的概览卡，外加当前的邮件驱动。
+
+四条设计约束：
+
+- **严格只读。** 没有表单、没有 server action、不写任何东西。特别是**没有「标记为已确认」
+  按钮**：替别人确认等于记录一份他从没给过的同意，还会把他放进第一次真实发信的名单。
+- **不查询、也不渲染 token 摘要。** `listRecentSubscribers()` 的 `select` 里根本没有这两列。
+  摘要本身不算能直接利用的东西，但页面上的摘要就是截图里、工单里、浏览器缓存里的摘要，而这
+  个视图并不需要它——把列排除在查询之外，比「记得不要渲染」更靠得住。
+- **邮箱明文显示。** 这页在登录门后面，而打码的清单无法回答运营真正的问题：这些是真实订阅
+  还是垃圾提交。
+- 分布来自 `countSubscribersByStatus()`（全库聚合），不是列表长度——列表有上限，统计不能跟着
+  上限一起失真。
+
+## 7. 验收
 
 ```bash
 npm run verify:subscribe
@@ -148,15 +185,17 @@ npm run verify:subscribe
 它必须拥有那个进程，是因为没有 provider 时确认链接只存在于**服务端日志**里——这同时也是被
 验证的东西之一：`log` 驱动得把一个能用的链接放到某个地方，并且把邮件报成未送达。
 
-两个阶段：
+三个阶段：
 
 1. **HTTP**：真实页面 + 真实 server action，全程不带 cookie（匿名访客路径）。表单以
    「浏览器禁用 JS」的方式提交，这也顺带绕过了 `required` / `type="email"`，才能证明服务端
    自己在校验。
-2. **直连**：server 退出、释放文件锁之后，断言 `subscriber` 里到底落了什么，并直接调用
-   store 里 HTTP 阶段够不到的两个用例（token 过期、发信查询）。
+2. **`/admin` 只读视图**：先用匿名请求打一次，再注册一个操作员账号、带 session 打一次。
+   脚本里唯一的一个 session 就在这里，而且它属于 `users`，跟任何订阅者无关。
+3. **直连**：server 退出、释放文件锁之后，断言 `subscriber` 里到底落了什么，并直接调用
+   store 里 HTTP 阶段够不到的用例（token 过期、发信查询、`/admin` 的两个读函数）。
 
-2026-11-03 一次完整运行：**39 项全部 PASS**。其中对应任务完成标准的几条：
+2026-11-03 一次完整运行：**55 项全部 PASS**。其中对应任务完成标准的几条：
 
 ```
 PASS  an anonymous visitor (no cookie) can subscribe — HTTP 200
@@ -175,6 +214,33 @@ PASS  the stored value is the SHA-256 digest of the mailed token
 PASS  the throttle table stores digests, not addresses or IPs — ip:11 email:4 email:3
 ```
 
+`/admin` 只读视图这一组：
+
+```
+PASS  an anonymous visitor is redirected away from the subscriber view — HTTP 307 → /login
+PASS  and the body of that redirect contains no subscriber address — 15760B, 0 of 17 addresses
+PASS  the subscriber view reports the total number of collected addresses — expected 共 17 个邮箱 (HTTP 200)
+PASS  the distribution matches what the flows actually did — 待确认 15 · 已确认 1 · 已退订 1
+PASS  the view explains that pending is the expected state, not a failure
+PASS  the subscriber view is strictly read-only — the only form and button are 登出 — 1 form(s), 1 button(s)
+PASS  the view renders no token digest
+PASS  only addresses whose confirm link was actually visited are confirmed — t10-erin, t10-dave
+PASS  listRecentSubscribers() never selects a token column — id,email,status,source,createdAt,confirmedAt,unsubscribedAt
+PASS  countSubscribersByStatus() matches a direct GROUP BY and zero-fills the rest
+```
+
+### 写这个视图时发现并修掉的一个真实泄露
+
+第二条断言不是摆设。`/admin/layout.tsx` 里的 `redirect("/login")` **挡不住它下面的页面**：
+Next 会并发渲染 layout 和 page，所以匿名请求 `/admin/subscribers` 时页面照样跑了查询，而
+dev server 把渲染结果——**每一个邮箱地址**——塞进了那个本该把人劝走的 307 的响应体里。
+第一次跑这条断言就是红的。
+
+修法是 `src/lib/auth.ts` 的 `requireUser()`：每个会读数据的 `/admin` 页面在自己的函数体里
+先调用它，重定向在查询开始之前就抛出来，于是根本没有数据可被序列化。`/admin/records`、
+`/admin/records/[id]`、`/admin` 首页之前是同一个漏洞（泄露的是草稿记录），一并改掉了，
+`npm run verify:records` 现在也有对应的两条断言。
+
 构建门槛（不得在构建期查库）：
 
 ```bash
@@ -182,7 +248,7 @@ env -u DATABASE_URL NODE_ENV=production npm run build   # ✓ /subscribe/confirm
 npm run typecheck                                       # ✓
 ```
 
-## 7. 没有做、也不该做的事
+## 8. 没有做、也不该做的事
 
 - 没有注册任何第三方账号，没有产生任何真实支出；
 - 没有导入或购买任何现成邮件列表；

@@ -1,17 +1,22 @@
 import Link from "next/link";
-import { redirect } from "next/navigation";
 
 import { logout } from "@/app/(auth)/actions";
 import { Button } from "@/components/ui/button";
-import { getCurrentUser } from "@/lib/auth";
+import { requireUser } from "@/lib/auth";
 
 /**
- * The single auth gate for everything under /admin. Server-side by design —
- * middleware can only see that a cookie exists, not that the session is valid.
+ * The chrome and the *outer* auth gate for everything under /admin.
+ * Server-side by design — middleware can only see that a cookie exists, not
+ * that the session is valid.
+ *
+ * It is not the only gate, and must not be treated as one: Next renders this
+ * layout and the page under it concurrently, so redirecting here does not stop
+ * the page from running its queries. Every page under /admin that reads
+ * anything calls `requireUser()` in its own body as well. See the note on
+ * `requireUser` for the leak that proved it.
  */
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
-  const user = await getCurrentUser();
-  if (!user) redirect("/login");
+  const user = await requireUser();
 
   return (
     <div className="min-h-screen">
@@ -32,6 +37,9 @@ export default async function AdminLayout({ children }: { children: React.ReactN
             </Link>
             <Link href="/admin/records/new" className="text-muted-foreground hover:text-foreground">
               新建
+            </Link>
+            <Link href="/admin/subscribers" className="text-muted-foreground hover:text-foreground">
+              订阅者
             </Link>
           </nav>
         </div>
