@@ -1,10 +1,14 @@
 # 验收材料（T7 / ZCZ-8）
 
-状态：**进行中**
-— 种子导入已对本地库跑通并核对（§3，30 条 / 54 来源 / 高 11 中 12 低 7，重跑幂等）；
-**全链路 8 步在本地已全部截图**（11 张 + 导出的 CSV 片段，§2）；
-**但线上站点 https://restinprompts.vercel.app 首页仍是 500**（线上还没有数据库，见 `DEPLOY.md` §2），
-所以线上那一份验收材料还没有，必须在三步接通后重跑一次。
+状态：**线上已打通并完成验收实测**
+
+- 线上地址 **https://restinprompts.vercel.app** ，**匿名**访问首页 200、榜单 **30 条**；
+- 种子数据已导入**线上 Neon** 并核对（§3：29 公司 / 30 记录 / 54 来源 / 高 11 中 12 低 7，重跑幂等）；
+- **匿名全链路已对线上逐项实测**（§7）：榜单 → 筛选 → 详情（29 页全测，54/54 来源与原文引述）→ 仪表盘；
+- 全链路 8 步截图见 §2。
+
+> 本节先前写着「线上首页仍是 500，线上还没有数据库」。**那已经过期**：数据库已挂、
+> 迁移已到 `0004`、种子已导入、`main` 已包含全部功能（见 `DEPLOY.md` §2.1–§2.4）。
 
 截图统一放 `docs/acceptance/` 下，命名即顺序，由 `npm run capture:acceptance` 产出（见 §1），不手工截。
 
@@ -77,11 +81,12 @@ npm run capture:acceptance
 | 项 | 值 |
 | --- | --- |
 | 本地地址 | http://localhost:3000 |
-| 代码仓库 | `zczy318-products/rest-in-prompts`（私有，默认分支 `main`；GitHub 侧改名由用户操作） |
-| 线上地址 | https://restinprompts.vercel.app（已部署；**首页目前 500**，线上还没有数据库） |
+| 代码仓库 | `zczy318-products/ai-shutdown-tracker`（私有，默认分支 `main`；GitHub 侧改名由用户操作） |
+| 线上地址 | **https://restinprompts.vercel.app** —— 已部署、库已通、数据已导，匿名首页 200 / 30 条 |
+| 线上 `main` | `abd3206`（PR #1 已合并，含 T4 数据集 + T5 前台 + T6 SaaS 层 + T7 产出） |
 | Node 版本 | 本地验证用 v24.22.2；Vercel 用其 Next.js 默认 Node |
-| 数据库 | 本地 PGlite / 线上 Neon 免费档 |
-| Stripe | 测试模式，`sk_test_` / `pk_test_`，不接真实收款 |
+| 数据库 | 本地 PGlite / 线上 Neon（经 Vercel Marketplace 开通，**Launch 付费档**，非免费档，见 `DEPLOY.md` §8） |
+| Stripe | 测试模式口径；线上目前**没有任何 `STRIPE_*` 变量**，升级动作落在 `simulated` 模式，不接真实收款 |
 
 ### 构建结果（最近一次本地验证）
 
@@ -152,43 +157,81 @@ Route (app)
 | 07 | 升级到付费 | 定价页 + 升级后的账户页，**能看出没有真实扣款** | ✅ `07-upgrade.png` / `07b-upgraded.png` |
 | 08 | 导出 CSV | 付费档的导出入口 + 实际导出的 CSV 内容（含表头） | ✅ `08-export.png` + `08-export-head.csv` |
 
-免费档与付费档的对照：`08-export.png` 之前那次运行拍到的是免费档状态——导出被挡下，
-接口返回 **402**；`07b-upgraded.png` 与现在的 `08-export.png` 是升级之后的同一批页面。
-分档确实生效，不是只有文案差别。
+免费档与付费档的对照在**线上**也复核过，而且是在服务端挡的、不只是文案差别：
+匿名 / 免费档请求 `GET /api/export/records` 被挡下（匿名实测 **401 `account_required`**，
+文案明确写着浏览榜单与筛选是免费的）；升级之后同一个接口返回 **55 行 CSV**（表头 + 54 条来源，
+每行一条来源，含 URL、媒体、发布日期、原文引述、置信度），行数与线上库里的 `source` 条数一致。
 
-**07 走的是本地模拟升级**：本机没有配 `STRIPE_SECRET_KEY`，T6 因此落到 `simulated` 模式，
-页面上明确写着「本地模拟升级…不是一笔真实交易，也没有任何扣款」，`billing_events` 里记的是
-`simulated.upgrade`。线上配好 Stripe **测试模式**密钥后重跑，这一步会变成真的测试结账页。
-**全程没有任何真实收款，也没有注册任何支付账号。**
+**07 的升级是 `simulated` 模式，不是 Stripe 测试结账**：线上 Vercel 项目里**没有任何 `STRIPE_*` 变量**，
+T6 因此落到模拟分支，页面上明确写着「不是一笔真实交易，也没有任何扣款」，
+`billing_events` 里记的是 `simulated.upgrade`（已在线上库里核对到）。
+要出真正的测试模式结账页，需要先配 `sk_test_` 等变量，这需要用户授权（见 §4）。
+**全程没有任何真实收款，没有注册任何支付账号，没有任何支出。**
 
 ### 这批截图是在什么环境下拍的（重要）
 
+**已经是线上的了。** 先前这一节写的是本地 dev + PGlite，本轮已按
+`BASE_URL=https://restinprompts.vercel.app npm run capture:acceptance` 整批重拍：
+
 | 项 | 值 |
 | --- | --- |
-| 地址 | `http://localhost:3210`（本地 `npm run dev`） |
-| 数据库 | 本地 PGlite，内容是 `npm run db:seed` 导入的那 30 条（与 §3 的数字同源） |
-| 代码 | 工作区当前状态，**包含 T5/T6 还没合并进 `main` 的代码** |
-| 计费 | `simulated` 模式（无 Stripe 密钥） |
+| 地址 | **https://restinprompts.vercel.app**（线上，Vercel 生产部署） |
+| 代码 | **`main` = `abd3206`**，部署 `dpl_9SBkFfpSTH9Hx9j6CjXsiQ9otZi5`（READY） |
+| 数据库 | **线上 Neon**，内容是 `npm run db:seed` 导入的那 30 条（与 §3 线上那一列同源） |
+| 验收账号 | `acceptance+20261103150708@example.com`（本次运行新注册） |
+| 计费 | `simulated` 模式 —— 线上**没有配任何 `STRIPE_*`**，不是真实交易，无扣款 |
 
-所以这 11 张图证明的是「全链路在这套代码上确实能走通」，**不能**代替线上验收。
-`DEPLOY.md` §2.3 的三步做完之后，要 `BASE_URL=https://restinprompts.vercel.app` 重跑一次覆盖，
-届时这一节改成线上环境的参数。
+**怎么证明这批图确实来自线上而不是本地**：08 导出的 CSV 里那几条 `ai_impact_id`
+（`728b8216…` / `24aa81a9…` / `096f5224…`）拿回**线上库**里查，**3/3 命中**，
+分别对应 `rws-holdings` / `uber` / `verizon`；线上 `users` 表里也确实只有上面那一个验收账号
+（`plan=pro`、`plan_source=simulated`），`billing_events` 里是一条 `simulated.upgrade`。
+
+> 01–04、07 这几张与上一轮本地截图**字节完全相同**，一开始我以为是没重拍。核对后不是：
+> 同一份代码、同一批 30 条数据、同一视口与字体，渲染本来就是确定性的，而截图里不含地址栏。
+> 变的是 05 / 06 / 08（账号邮箱带时间戳）与 CSV（`exported_at` 与线上 UUID）。
+
+另外说明一个容易被误读的细节：01 截图里关键词框显示的 `chegg` 是 **placeholder 示例文字**
+（HTML 上是 `placeholder="chegg"`、`value=""`），不是被预填的筛选条件——
+所以那一页同时显示「全部记录 30 条」是对的，不是筛选失灵。
 
 ---
 
 ## 3. 数据库核对
 
-**本地（PGlite，2026-11-03，`npm run db:seed` 的实际输出）。线上那一份要等 `DEPLOY.md` §2.3 三步做完再出。**
+两列都是 `npm run db:seed` 结束时**自己打印**出来的，不是手抄的。
+线上那一列的连接串用 `DATABASE_URL_UNPOOLED`（直连）临时覆盖 `DATABASE_URL`，口径见 `DEPLOY.md` §2.4。
 
-| 项 | 期望 | 本地实测 | 线上 |
+| 项 | 期望 | 本地实测（PGlite） | **线上实测（Neon）** |
 | --- | --- | --- | --- |
-| 记录总条数 | ≥ 30 | **30**（`ai_impact`） | 待填 |
-| 公司数 / 来源数 | 与 T4 说明一致（29 / 54） | **29 / 54** | 待填 |
-| 置信度分布 | 与 T4 说明一致（高 11 / 中 12 / 低 7） | **high=11  medium=12  low=7** | 待填 |
-| `record_status` | 全部 `published` | **published=30** | 待填 |
-| 每条记录至少一个来源 | 违例数 = 0 | **0** | 待填 |
-| high 级别缺一手/主流媒体来源 | 违例数 = 0 | **0** | 待填 |
-| 导入脚本重跑后条数 | 不变（幂等） | **不变**：第二次运行「新增 0 条，更新 30 条」，30 / 54 不变 | 待填 |
+| 记录总条数 | ≥ 30 | **30**（`ai_impact`） | **30** |
+| 公司数 / 来源数 | 与 T4 说明一致（29 / 54） | **29 / 54** | **29 / 54** |
+| 置信度分布 | 与 T4 说明一致（高 11 / 中 12 / 低 7） | **high=11  medium=12  low=7** | **high=11  medium=12  low=7** |
+| `record_status` | 全部 `published` | **published=30** | **published=30** |
+| 每条记录至少一个来源 | 违例数 = 0 | **0** | **0** |
+| high 级别缺一手/主流媒体来源 | 违例数 = 0 | **0** | **0** |
+| 来源缺 `quote` / 缺 `url` | 0 / 0 | — | **0 / 0**（直接 SQL 复核 54 行） |
+| 导入脚本重跑后条数 | 不变（幂等） | **不变**：第二次「新增 0 条，更新 30 条」 | **不变**：第二次「新增 0 条，更新 30 条」，29 / 30 / 54 与置信度分布全部一致 |
+
+线上首次导入的实际输出：
+
+```
+[seed] target: node-postgres (DATABASE_URL)
+[seed] 数据集：29 家公司 / 30 条记录
+[seed] 写入完成：新增 30 条，更新 0 条，拒绝 0 条。
+[seed] 库内核对
+  company            29
+  ai_impact          30
+  source             54
+  record_status      published=30
+  置信度分布         high=11  low=7  medium=12
+  无来源记录数       0  (必须为 0)
+  high 缺一手来源    0  (必须为 0)
+```
+
+导入时另有 **11 条非阻塞提示**（「只有一条来源」），不影响入库，是数据集的已知状态：
+`commerzbank`、`uber`、`workday`、`accenture`、`intuit`、`dropbox`、`rackspace`、`microsoft`、
+`verizon`、`the-planet-d`、`rws-holdings`。这 11 条都满足「至少一个来源 + 原文引述」的硬门槛，
+提示的意思是「两条以上互相独立的来源会让记录更结实」，属于 ZCZ-5 后续可加强项，不是缺陷。
 
 与 `docs/SEED_VERIFICATION.md` §0 的结论逐项一致（29 家公司 / 30 条记录 / 54 条来源 / 高 11 中 12 低 7）。
 核对口径与 SQL 见 `DEPLOY.md` §5；上面这些数字是 `npm run db:seed` 结束时自己打印出来的，不是手抄的。
@@ -213,18 +256,20 @@ Route (app)
 
 如实列出，不隐瞒：
 
-- **线上站点已部署，但首页返回 500**：https://restinprompts.vercel.app 上还没有数据库
-  （没有 `DATABASE_URL`、也还没建表）。接通它是三步，症状各不相同，见 `DEPLOY.md` §2.3；
-  第 ②③ 步由谁执行等用户在 ZCZ-1 的卡片上选 A 还是 B（`DEPLOY.md` §8）。
-  **因此所有线上截图都还没出，现有截图都是本地的。**
-- **线上跑的是 `main`，而 T5 / T6 / T7 的提交目前都在 `feat/zcz-5-seed-dataset` 分支上**。
-  也就是说：即使数据库接通了，线上也还是改名那版首页，看不到榜单 / 定价 / 导出——
-  **这条分支合回 `main` 之前，线上不会出现这些页面**。合并与数据库是两件独立的事，都得做。
-- **8 步截图全部来自本地 dev + PGlite，且拍的是 T5/T6 还没合并进 `main` 的工作区代码**
-  （环境参数见 §2 末尾的表）。它们证明链路通，但**不是线上验收材料**，线上通了要整批重拍；
-- **07 的升级是本地模拟**，不是 Stripe 测试结账——本机没有 Stripe 密钥。线上配好 `sk_test_`
-  之后这一步才会出真正的测试模式结账页；
-- 种子导入脚本**已落地并跑通**（§3），但**只对本地 PGlite 跑过**，没有对真实 Postgres/Neon 跑过；
+- ~~线上首页 500 / 线上没有数据库~~ **已解决**：库已挂、迁移已到 `0004`、种子已导入，
+  匿名首页 200 且 30 条（§7、`DEPLOY.md` §2.1）。
+- ~~线上跑的是 `main`，而功能都在分支上~~ **已解决**：PR #1 已合并，`main` = `abd3206`。
+  因为 `feat/zcz-7-saas-tiering`（`c404f8a`）是 `feat/zcz-5-seed-dataset` 的祖先，
+  **一次合并同时带上了 T4/T5/T6/T7**。
+- ~~种子导入只对本地 PGlite 跑过~~ **已解决**：已对线上 Neon 实跑并重跑验证幂等（§3）。
+- **线上升级仍是 `simulated`，不是 Stripe 测试结账**：Vercel 项目里目前**没有任何 `STRIPE_*` 变量**。
+  页面明示「不是一笔真实交易，也没有任何扣款」，`billing_events.source='simulated'`。
+  要出真正的测试模式结账页，需按 `DEPLOY.md` §1.2 配 `sk_test_` 等变量——这需要用户授权
+  （注册/连接 Stripe 账号不在本任务已有授权范围内），**我没有自行注册任何支付账号，也没有任何支出**。
+- **线上库里存在验收用的测试账号**：`acceptance+<时间戳>@example.com`，`plan=pro`，
+  来源记为 `simulated.upgrade`。**不是真实付费用户**。看用户表 / 账号数时请按此理解。
+- 线上 Neon 处于 **Launch 付费档**（经 Vercel Marketplace 开通），不是免费档；
+  不要为了方便新开库或新分支，也不要跑长查询/轮询（计算按 CU-小时计费）。详见 `DEPLOY.md` §8。
 - 此前已修复两个会直接影响线上部署的问题：`tw-animate-css` 的 `@import` 无法被 Turbopack 解析导致
   `npm run build` 失败（处理方式是移除该依赖，而非补装）；数据库 TLS 连接未校验证书。详见 `DEPLOY.md` §9。
 
@@ -474,3 +519,75 @@ env -u DATABASE_URL NODE_ENV=production npm run build   # ✓ Compiled successfu
   middleware 有）。走 `error.tsx` 兜底的那条路是 500。如果验收要求失败必须是 5xx，
   需要改成在 middleware 或 route handler 层做探测，这是一处已知取舍，没有偷偷绕过。
 
+
+---
+
+## 7. 线上匿名全链路实测（2026-11-03 15:10，`main` = `abd3206`）
+
+这一节是**对线上站点**的实测，不是本地。要点：产品负责人定稿「默认不需要注册也能浏览」，
+所以全部请求都用**不带 cookie** 的客户端发出，而且**不只看状态码**——每个数字都与线上库里的
+真实数据逐项比对过（库侧用 `DATABASE_URL_UNPOOLED` 直连读，口径见 `DEPLOY.md` §2.4）。
+
+### 7.1 路由可达性（匿名，不跟随重定向）
+
+| 路径 | 状态 | 判定 |
+| --- | --- | --- |
+| `/` | **200** | 榜单 30 条，`第 1 / 3 页` |
+| `/?confidence=high` 等 7 组筛选 | **200** | 条数与 facet 一致，见 §7.2 |
+| `/company/<slug>` × **29** | **200 × 29** | 无一例重定向到 `/login` |
+| `/stats` | **200** | 30 / 29 / 54 |
+| `/pricing` | **200** | — |
+| `/login`、`/register` | **200** | — |
+| `/subscribe/confirm`、`/subscribe/unsubscribe` | **200** | — |
+| `/account`、`/admin` | **307 → `/login`** | 正确：这两个本来就要账号 |
+| `/api/export/records`（匿名） | **401** `account_required` | 分档确实在服务端挡 |
+| `/api/v1/records`（无 key） | **401** `missing_key` | — |
+| `/company/does-not-exist` | **404** | 不存在就是 404，没有降级成空页 |
+| `/?page=99`（越界页码） | **200** | 不报错 |
+
+**所有公开响应都没有 `Set-Cookie`。** 这是「浏览不需要注册」的硬证据——
+不是「我们没看见登录墙」，而是连会话都不曾被创建。
+页面 HTML 里也检索不到「登录后 / 注册后可见 / 需要登录」这类文案（命中数 0）。
+
+### 7.2 筛选条数 vs 库内条数
+
+| 筛选 | 线上返回 | 侧栏 facet / 库内 |
+| --- | --- | --- |
+| 无筛选 | **30**（3 页：12 + 12 + 6，并集 29 家公司） | 30 |
+| `confidence=high` | **11** | 11 |
+| `confidence=high&year=2025` | **7** | — |
+| `impactType=ai_cost_cutting_layoff` | **13** | 13 |
+| `year=2025` | **15** | 15 |
+| `industry=software_saas` | **8** | 8 |
+| `country=DE` | **3** | 3 |
+| `q=uber` | **1** | — |
+
+> **排查提示**：参数名是从页面表单里读出来的，不是猜的——
+> `q`、`year`、`industry`、`country`、**`impactType`**（不是 `impact`）、`confidence`、`sort`。
+> 名字写错时页面会**照常返回 30 条**，看起来像「筛选没生效」，实际是参数被忽略了。
+> 我第一次就用 `impact=` 试，得到 30 条，差点误判成 bug。
+
+### 7.3 详情页是否露出**全部**来源与原文引述
+
+这是数据完整性的核心一条，所以没有抽样，**29 个公司页全部取回**，
+再把库里那 54 行 `source` 的 `url` 与 `quote` 逐条拿去页面里找：
+
+```
+company pages fetched : 29
+non-200 pages         : none
+redirected to /login  : none
+set-cookie on page    : none
+source URLs rendered  : 54/54
+verbatim quotes shown : 54/54
+```
+
+引述的比对方式是把库里的 `quote` 规范化空白后取前 40 字到页面纯文本里找，
+所以匹配上**意味着引述是逐字渲染的**，不是只渲染了媒体名或链接。
+（抽查 `chegg` 4 条、`amazon` 3 条、`commerzbank` 1 条时还逐条打印了媒体名与引述开头核对。）
+
+### 7.4 仪表盘
+
+`/stats` 匿名可读，三个总数与库内 `count(*)` 一致：
+**已发布记录 30 条 / 涉及公司 29 家 / 引用来源 54 条**。
+年度分布 2023:6、2024:3、2025:15、2026:6（合 30）；
+影响类型 5 / 13 / 8 / 4（合 30）；置信度分档与 §3 一致。
