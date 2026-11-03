@@ -33,7 +33,7 @@ export default async function HomePage() {
   return (
     <main className="mx-auto flex min-h-screen max-w-3xl flex-col gap-8 px-6 py-16">
       <div className="space-y-3">
-        <h1 className="text-4xl font-semibold tracking-tight">AI Shutdown Tracker</h1>
+        <h1 className="text-4xl font-semibold tracking-tight">Rest In Prompts</h1>
         <p className="text-muted-foreground text-balance">
           追踪 AI 对公司与岗位的影响记录。每一条记录都必须附带可核查的来源（链接 + 原文引述）
           与归因置信度评级。本平台不生产因果结论，只固定住公开报道里别人说过的话，并标注证据有多硬。

@@ -18,7 +18,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
       <header className="flex flex-wrap items-center justify-between gap-4 border-b px-6 py-4">
         <div className="flex items-center gap-6">
           <Link href="/admin" className="font-semibold">
-            AI Shutdown Tracker 后台
+            Rest In Prompts 后台
           </Link>
           <nav className="flex items-center gap-4 text-sm">
             <Link href="/admin/records" className="text-muted-foreground hover:text-foreground">
