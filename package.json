@@ -15,11 +15,13 @@
     "verify:records": "node scripts/verify-record-flow.mjs",
     "verify:public": "node scripts/verify-public-pages.mjs",
     "verify:db": "node scripts/verify-db-constraints.mjs",
+    "verify:roles": "node scripts/verify-role-gate.mjs",
     "verify:pg": "node scripts/verify-postgres-migration.mjs",
     "verify:saas": "node scripts/verify-saas-flow.mjs",
     "capture:acceptance": "node scripts/capture-acceptance.mjs",
     "verify:subscribe": "tsx scripts/verify-subscribe-flow.mts",
-    "verify:a11y": "node scripts/verify-a11y.mjs"
+    "verify:a11y": "node scripts/verify-a11y.mjs",
+    "grant:role": "node scripts/grant-role.mjs"
   },
   "dependencies": {
     "@radix-ui/react-label": "^2.1.17",

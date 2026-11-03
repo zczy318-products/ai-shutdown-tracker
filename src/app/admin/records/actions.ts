@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
-import { getCurrentUser } from "@/lib/auth";
+import { requireEditor } from "@/lib/auth";
 import type { RecordStatus } from "@/lib/enums";
 import { parseRecordForm } from "@/lib/records/form-data";
 import { checkPublishable, type SourceFacts } from "@/lib/records/publish";
@@ -26,8 +26,12 @@ import {
  *
  * Order of checks is deliberate and is the same for a save and for a publish:
  *
- *   1. authentication — a server action is a public endpoint, the page's auth
- *      gate does not cover it;
+ *   1. authorization — `requireEditor()`, because a server action is a public
+ *      HTTP endpoint that the page's gate does not cover, and because a
+ *      session alone is not a permission: registration is open to anyone
+ *      (ZCZ-15). All five entry points below go through it — `createRecord`
+ *      and `updateRecord` via `saveFromForm`, and `publishRecord`,
+ *      `changeRecordStatus` and `deleteRecord` each on their own first line;
  *   2. `recordInputSchema` — shape, required fields, at least one source;
  *   3. `checkPublishable` — the dictionary §3 business rules, applied when the
  *      target status is `published` (and re-applied whenever an already
@@ -47,12 +51,6 @@ export type RecordFormState = {
   warnings?: string[];
   ok?: boolean;
 } | null;
-
-async function requireUser() {
-  const user = await getCurrentUser();
-  if (!user) redirect("/login");
-  return user;
-}
 
 /** Source rows as `checkPublishable` wants them, straight from the input. */
 function sourceFactsOf(input: RecordInput): SourceFacts[] {
@@ -107,7 +105,7 @@ async function saveFromForm(
   formData: FormData,
   options: SaveOptions,
 ): Promise<RecordFormState> {
-  const user = await requireUser();
+  const user = await requireEditor();
 
   // Layer 2a — shape and required fields, including "at least one source".
   const parsed = recordInputSchema.safeParse(parseRecordForm(formData));
@@ -201,7 +199,7 @@ export async function publishRecord(
   _prev: RecordFormState,
   formData: FormData,
 ): Promise<RecordFormState> {
-  const user = await requireUser();
+  const user = await requireEditor();
   const impactId = String(formData.get("impactId") ?? "");
   if (!impactId) return { errors: ["缺少记录 ID。"] };
 
@@ -242,7 +240,7 @@ export async function changeRecordStatus(
   _prev: RecordFormState,
   formData: FormData,
 ): Promise<RecordFormState> {
-  const user = await requireUser();
+  const user = await requireEditor();
   const impactId = String(formData.get("impactId") ?? "");
   const status = String(formData.get("nextStatus") ?? "") as RecordStatus;
   const reviewNote = String(formData.get("reviewNote") ?? "").trim() || null;
@@ -272,7 +270,7 @@ export async function deleteRecord(
   _prev: RecordFormState,
   formData: FormData,
 ): Promise<RecordFormState> {
-  await requireUser();
+  await requireEditor();
   const impactId = String(formData.get("impactId") ?? "");
   if (!impactId) return { errors: ["缺少记录 ID。"] };
 

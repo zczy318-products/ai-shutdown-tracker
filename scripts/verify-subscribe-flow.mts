@@ -71,6 +71,14 @@ function email(tag: string): string {
 }
 
 /**
+ * The one `users` row this script creates: an editor, written straight into the
+ * database before the server starts, because /admin needs the role and nothing
+ * in the application can grant it (ZCZ-15).
+ */
+const operator = email("operator");
+const OPERATOR_PASSWORD = "verify-subscribe-pw";
+
+/**
  * React splits adjacent text nodes with `<!-- -->` so it can hydrate them,
  * which chops up any rendered string that interpolates a value. Strip the
  * markers so assertions can be written as the text a human sees.
@@ -265,6 +273,37 @@ try {
   const migrated = await run("npx", ["tsx", "src/db/migrate.ts"], app, env);
   check("migrations apply to a fresh database", migrated.code === 0, migrated.output.trim().split("\n").at(-1));
   if (migrated.code !== 0) throw new Error(migrated.output);
+
+  // The operator account, written straight into the database *before* the
+  // server takes the PGlite lock.
+  //
+  // It has to exist up front because of ZCZ-15: /admin needs the editor role,
+  // registration cannot grant it (nothing in the application can), and once the
+  // dev server holds the data directory this script cannot run the grant. So
+  // the account is created here the way a human would create it — one explicit
+  // write, with the role spelled out — and phase 1b signs in with it.
+  {
+    const { PGlite } = await import("@electric-sql/pglite");
+    const { hashPassword } = await import("../src/lib/password.ts");
+    const client = new PGlite(dataDir);
+    await client.waitReady;
+    try {
+      const inserted = await client.query<{ email: string; role: string }>(
+        `insert into users (email, password_hash, role) values ($1, $2, 'editor')
+         returning email, role`,
+        [operator, await hashPassword(OPERATOR_PASSWORD)],
+      );
+      check(
+        "an editor account exists before the server starts",
+        inserted.rows.at(0)?.role === "editor",
+        inserted.rows.at(0)?.email,
+      );
+    } finally {
+      await client.close();
+    }
+    // Let the lock file go before `next dev` opens the same directory.
+    await new Promise((r) => setTimeout(r, 500));
+  }
 
   server = spawn("npx", ["next", "dev", "-p", String(APP_PORT), "-H", "127.0.0.1"], {
     cwd: app,
@@ -503,29 +542,62 @@ try {
     leaked.length ? `leaked ${leaked.length}: ${leaked.slice(0, 2).join(", ")}` : `${anonymousAdmin.body.length}B, 0 of ${expectedStored.size} addresses`,
   );
 
-  // An operator account, created the ordinary way. This is the only session in
-  // the whole script — and it belongs to `users`, not to any subscriber.
-  const operator = email("operator");
+  // A freshly registered account is a viewer, and a viewer is refused here just
+  // as firmly as a stranger — including in the body of the refusal.
+  const newcomer = email("newcomer");
   const registerPage = await get("/register");
   const registerForm = new FormData();
   for (const [k, v] of Object.entries(actionFieldsFor(registerPage.body, 'name="password"'))) {
     registerForm.append(k, v);
   }
-  registerForm.set("email", operator);
-  registerForm.set("password", "verify-subscribe-pw");
+  registerForm.set("email", newcomer);
+  registerForm.set("password", OPERATOR_PASSWORD);
   const registered = await fetch(`${BASE}/register`, {
     method: "POST",
     body: registerForm,
     redirect: "manual",
     headers: { origin: BASE },
   });
-  const cookie = (registered.headers.getSetCookie?.() ?? [])
+  const viewerCookie = (registered.headers.getSetCookie?.() ?? [])
+    .map((value) => value.split(";")[0])
+    .join("; ");
+  const viewerAdmin = await getAs("/admin/subscribers", viewerCookie);
+  check(
+    "a self-registered account is refused by the subscriber view (ZCZ-15)",
+    [302, 303, 307].includes(viewerAdmin.res.status) &&
+      (viewerAdmin.res.headers.get("location") ?? "").startsWith("/account"),
+    `HTTP ${viewerAdmin.res.status} → ${viewerAdmin.res.headers.get("location")}`,
+  );
+  const leakedToViewer = [...expectedStored].filter((address) => viewerAdmin.body.includes(address));
+  check(
+    "and that refusal carries no subscriber address either",
+    leakedToViewer.length === 0,
+    leakedToViewer.length ? `leaked ${leakedToViewer.length}` : `${viewerAdmin.body.length}B, 0 addresses`,
+  );
+
+  // The operator signs in. The account was written before the server started
+  // (see the setup above); this is the only session in the whole script, and it
+  // belongs to `users`, not to any subscriber.
+  const loginPage = await get("/login");
+  const loginForm = new FormData();
+  for (const [k, v] of Object.entries(actionFieldsFor(loginPage.body, 'name="password"'))) {
+    loginForm.append(k, v);
+  }
+  loginForm.set("email", operator);
+  loginForm.set("password", OPERATOR_PASSWORD);
+  const signedIn = await fetch(`${BASE}/login`, {
+    method: "POST",
+    body: loginForm,
+    redirect: "manual",
+    headers: { origin: BASE },
+  });
+  const cookie = (signedIn.headers.getSetCookie?.() ?? [])
     .map((value) => value.split(";")[0])
     .join("; ");
   check(
-    "an operator can register and gets a session",
-    cookie.length > 0,
-    cookie ? "session cookie issued" : `HTTP ${registered.status}`,
+    "an editor can sign in and gets a session",
+    cookie.length > 0 && (signedIn.headers.get("location") ?? "").startsWith("/admin"),
+    cookie ? `→ ${signedIn.headers.get("location")}` : `HTTP ${signedIn.status}`,
   );
 
   const adminView = await getAs("/admin/subscribers", cookie);

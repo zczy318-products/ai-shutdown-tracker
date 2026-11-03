@@ -2,21 +2,25 @@ import Link from "next/link";
 
 import { logout } from "@/app/(auth)/actions";
 import { Button } from "@/components/ui/button";
-import { requireUser } from "@/lib/auth";
+import { requireEditor } from "@/lib/auth";
 
 /**
- * The chrome and the *outer* auth gate for everything under /admin.
+ * The chrome and the *outer* role gate for everything under /admin.
  * Server-side by design — middleware can only see that a cookie exists, not
- * that the session is valid.
+ * that the session is valid, let alone what the account is allowed to do.
+ *
+ * `requireEditor()` and not `requireUser()`: registration is open to anyone,
+ * so a valid session is a fact about a stranger. The role is the permission
+ * (ZCZ-15).
  *
  * It is not the only gate, and must not be treated as one: Next renders this
  * layout and the page under it concurrently, so redirecting here does not stop
- * the page from running its queries. Every page under /admin that reads
- * anything calls `requireUser()` in its own body as well. See the note on
- * `requireUser` for the leak that proved it.
+ * the page from running its queries. **Every** page under /admin calls
+ * `requireEditor()` in its own body as well — including the ones that read
+ * nothing. See the note on `requireEditor` for the leak that proved it.
  */
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
-  const user = await requireUser();
+  const user = await requireEditor();
 
   return (
     <div className="min-h-screen">

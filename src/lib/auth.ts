@@ -6,6 +6,7 @@ import { redirect } from "next/navigation";
 
 import { getDb } from "@/db";
 import { sessions, users, type User } from "@/db/schema";
+import { ROLE_DENIED_PATH, isEditor } from "@/lib/roles";
 
 /**
  * Session handling for the admin backoffice.
@@ -85,6 +86,38 @@ export async function getCurrentUser(): Promise<User | null> {
 export async function requireUser(): Promise<User> {
   const user = await getCurrentUser();
   if (!user) redirect("/login");
+  return user;
+}
+
+/**
+ * The gate for every page under `/admin` and for everything that writes
+ * (ZCZ-15). Semantics: «a valid session **and** a role allowed to write».
+ *
+ * `requireUser()` was never that gate: `/register` is open to anyone, so "has
+ * a valid session" is a fact about a stranger, not a permission. Every caller
+ * that used to settle for a session now has to pass this instead — the four
+ * `/admin` pages that read data, the one that only renders the editor form,
+ * the layout, and the five server actions in
+ * `src/app/admin/records/actions.ts`, which are public HTTP endpoints that no
+ * page gate covers.
+ *
+ * Call it in the page's own body, first, for the same reason `requireUser`
+ * gives: the role check races concurrent layout rendering exactly the way the
+ * session check did, so a layout-only gate would re-open the leak PR #3
+ * closed.
+ *
+ * Two different refusals, on purpose:
+ *
+ *  - no session → `/login`, where signing in is the thing to do;
+ *  - a session whose role may not write → `/account?denied=admin`, **not**
+ *    `/login`. They are already signed in, so a login page would bounce them
+ *    back to a page they still cannot see and explain nothing. `/account`
+ *    renders the reason.
+ */
+export async function requireEditor(): Promise<User> {
+  const user = await getCurrentUser();
+  if (!user) redirect("/login");
+  if (!isEditor(user.role)) redirect(ROLE_DENIED_PATH);
   return user;
 }
 

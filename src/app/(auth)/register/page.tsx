@@ -3,12 +3,14 @@ import { redirect } from "next/navigation";
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { getCurrentUser } from "@/lib/auth";
+import { landingPathFor } from "@/lib/roles";
 
 import { register } from "../actions";
 import { CredentialsForm } from "../credentials-form";
 
 export default async function RegisterPage() {
-  if (await getCurrentUser()) redirect("/admin");
+  const signedIn = await getCurrentUser();
+  if (signedIn) redirect(landingPathFor(signedIn.role));
 
   return (
     <main className="mx-auto flex min-h-screen max-w-md flex-col justify-center px-6 py-16">
@@ -16,7 +18,8 @@ export default async function RegisterPage() {
         <CardHeader>
           <CardTitle>注册</CardTitle>
           <CardDescription>
-            T2 阶段开放自助注册，后续会收紧为邀请制（见 T4 后台权限）。
+            注册得到的是一个<strong>只读账号</strong>：可以订阅、导出与使用 API key，
+            不能录入或修改任何记录。录入权限由管理员单独授予。
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">

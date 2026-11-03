@@ -19,9 +19,16 @@ import { getCurrentUser } from "@/lib/auth";
  * from the layout itself (a boundary only covers its children), so a database
  * hiccup here would skip the readable error state entirely and surface Next's
  * default error page. The session only decides whether the header shows «编辑
- * 登录» or «进入后台» — losing it costs a convenience link and states nothing
+ * 登录» or «账户» — losing it costs a convenience link and states nothing
  * false about the data. A failed *record* query still propagates, because there
  * «读不到» must never be rendered as «没有».
+ *
+ * What the header must *not* do is ask what the account may do. A role is the
+ * write gate (ZCZ-15), and it is not allowed to reach any public page, so the
+ * old «进入后台» link is gone: it would either be shown to accounts that
+ * /admin turns away, or it would need the role check this file is forbidden to
+ * make. The one link is to `/account` — the page that already knows the
+ * account, and that shows the backoffice link when the role allows it.
  */
 
 /**
@@ -66,9 +73,6 @@ export default async function PublicLayout({ children }: { children: React.React
                 <span className="font-mono">{user.email}</span>
                 <Link href="/account" className={`${navLink} underline`}>
                   账户
-                </Link>
-                <Link href="/admin" className={`${navLink} underline`}>
-                  进入后台
                 </Link>
               </>
             ) : (
