@@ -7,8 +7,9 @@
 next-env.d.ts
 *.tsbuildinfo
 
-# local embedded postgres (PGlite) data directory
-/.pglite/
+# local embedded postgres (PGlite) data directories, including the throwaway
+# ones the verification scripts create (.pglite-public-check, …)
+/.pglite*/
 
 # secrets — only .env.example is tracked
 .env

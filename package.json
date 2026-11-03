@@ -12,6 +12,7 @@
     "db:studio": "drizzle-kit studio",
     "verify:auth": "node scripts/verify-auth-flow.mjs",
     "verify:records": "node scripts/verify-record-flow.mjs",
+    "verify:public": "node scripts/verify-public-pages.mjs",
     "verify:db": "node scripts/verify-db-constraints.mjs",
     "verify:pg": "node scripts/verify-postgres-migration.mjs",
     "capture:acceptance": "node scripts/capture-acceptance.mjs"
