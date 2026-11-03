@@ -241,6 +241,28 @@ dev server 把渲染结果——**每一个邮箱地址**——塞进了那个�
 `/admin/records/[id]`、`/admin` 首页之前是同一个漏洞（泄露的是草稿记录），一并改掉了，
 `npm run verify:records` 现在也有对应的两条断言。
 
+### 线上实测：这个泄露确实已经不在线上了（2026-11-03）
+
+本地断言绿了只说明代码对了。泄露是**线上**的，所以在 `main` 合并部署后又用匿名
+`curl` 打了一次生产环境。同一个 URL 的部署前 / 部署后对比：
+
+```
+部署前   GET https://restinprompts.vercel.app/admin
+         status=307  location=/login  size=11513
+         响应体里能 grep 到后台概览的内容：已发布 ×2 / 待审核 ×2 / 草稿 ×1
+
+部署后   GET https://restinprompts.vercel.app/admin
+         status=307  location=/login  size=5926
+         同样的 grep：零命中（剩下的 5.9KB 是 layout 外壳与内联 CSS）
+
+部署后   GET /admin/records       → 307 /login，体内无 slug、无公司名
+部署后   GET /admin/subscribers   → 307 /login，体内无邮箱
+         （唯一两处 `@` 命中是一个 flight 占位符和一条 `@media` 规则）
+```
+
+状态码和 `Location` 两次都是对的——**这正是这个漏洞难被发现的原因**，
+它只在响应体里。所以这条验证必须看体积与内容，不能只看状态码。
+
 构建门槛（不得在构建期查库）：
 
 ```bash
