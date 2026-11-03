@@ -11,9 +11,11 @@ next-env.d.ts
 # ones the verification scripts create (.pglite-public-check, …)
 /.pglite*/
 
-# scratch project copy used by `npm run verify:subscribe` — it needs to live
-# inside the repo so Turbopack can resolve node_modules by walking up
+# scratch project copies used by `npm run verify:subscribe` and
+# `npm run verify:corrections` — they need to live inside the repo so Turbopack
+# can resolve node_modules by walking up
 /.verify-subscribe/
+/.verify-corrections/
 
 # secrets — only .env.example is tracked
 .env

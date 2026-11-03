@@ -19,6 +19,7 @@
     "verify:saas": "node scripts/verify-saas-flow.mjs",
     "capture:acceptance": "node scripts/capture-acceptance.mjs",
     "verify:subscribe": "tsx scripts/verify-subscribe-flow.mts",
+    "verify:corrections": "tsx scripts/verify-corrections-flow.mts",
     "verify:a11y": "node scripts/verify-a11y.mjs"
   },
   "dependencies": {

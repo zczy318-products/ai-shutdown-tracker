@@ -301,6 +301,61 @@ export type SubscriberStatus = keyof typeof SUBSCRIBER_STATUS;
 export const SUBSCRIBER_STATUS_VALUES = keysOf(SUBSCRIBER_STATUS);
 
 // ---------------------------------------------------------------------------
+// correction_kind / correction_status (S2-1 / ZCZ-16) — NOT from the dictionary
+// ---------------------------------------------------------------------------
+
+/**
+ * What a visitor says is wrong. Transcribed from the «可以提什么» list that
+ * Product PM wrote for `/corrections`, one value per bullet, so the form's
+ * options and the published policy cannot drift.
+ *
+ * `other` exists so a submission is never rejected for not fitting the list —
+ * a company trying to correct a record about itself must not be turned away by
+ * a `<select>`.
+ */
+export const CORRECTION_KIND = {
+  factual_error: { zh: "事实错误（公司名、日期、人数、事件本身）", en: "Factual error" },
+  source_problem: { zh: "来源问题（链接失效、引述不符、来源被撤稿或更正）", en: "Source problem" },
+  attribution_dispute: { zh: "归因异议（与 AI 无关，或原因另有其他）", en: "Attribution dispute" },
+  counter_evidence: { zh: "需要补充的反方证据", en: "Counter-evidence to add" },
+  situation_changed: { zh: "事情已经变化（计划被撤回、公司恢复运营）", en: "Situation changed" },
+  other: { zh: "其他", en: "Other" },
+} as const satisfies EnumLabels<string>;
+export type CorrectionKind = keyof typeof CORRECTION_KIND;
+export const CORRECTION_KIND_VALUES = keysOf(CORRECTION_KIND);
+
+/**
+ * Where a submission stands. `pending` is the only value any code path writes.
+ *
+ * The five others are the four outcomes Product PM published on `/corrections`
+ * plus `declined`, and they are in the enum now so the queue's vocabulary is
+ * the same vocabulary the page promises a submitter. **Nothing moves a row off
+ * `pending` automatically** — there is no scheduler, no heuristic and no
+ * "mark as handled" helper in `src/lib/corrections/store.ts`. A resolution is a
+ * claim that a human read the evidence and acted, and writing it without one
+ * would make the page's «处理结果会直接体现在对应的记录页上» a lie about work
+ * nobody did. Same reasoning as the absent `markConfirmed` in
+ * `src/lib/subscribe/store.ts`.
+ *
+ * `declined` is deliberately not called `rejected`: the policy text commits to
+ * keeping a documented record that the subject merely dislikes, and that
+ * outcome needs a name that is about the evidence rather than about the person.
+ */
+export const CORRECTION_STATUS = {
+  pending: { zh: "待处理", en: "Pending" },
+  corrected: { zh: "已更正", en: "Corrected" },
+  confidence_lowered: { zh: "已下调置信度", en: "Confidence lowered" },
+  counter_evidence_added: { zh: "已补入反方证据", en: "Counter-evidence added" },
+  record_removed: { zh: "已撤下记录", en: "Record removed" },
+  declined: { zh: "不予变更", en: "Declined" },
+} as const satisfies EnumLabels<string>;
+export type CorrectionStatus = keyof typeof CORRECTION_STATUS;
+export const CORRECTION_STATUS_VALUES = keysOf(CORRECTION_STATUS);
+
+/** The one status a submission may be created in. See the note above. */
+export const CORRECTION_INITIAL_STATUS: CorrectionStatus = "pending";
+
+// ---------------------------------------------------------------------------
 // Display helpers
 // ---------------------------------------------------------------------------
 

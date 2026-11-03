@@ -36,6 +36,13 @@
       "when": 1793715803648,
       "tag": "0004_subscriber_double_optin",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1793724088746,
+      "tag": "0005_correction_request",
+      "breakpoints": true
     }
   ]
 }

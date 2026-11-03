@@ -154,7 +154,7 @@ export default async function CompanyPage({ params }: { params: Promise<{ slug: 
           </span>
         </h2>
         {events.map((event) => (
-          <EventSection key={event.impact.id} event={event} />
+          <EventSection key={event.impact.id} event={event} companySlug={company.slug} />
         ))}
       </section>
     </article>
@@ -178,9 +178,15 @@ function Fact({
   );
 }
 
-function EventSection({ event }: { event: PublicEvent }) {
+function EventSection({ event, companySlug }: { event: PublicEvent; companySlug: string }) {
   const { impact, sources } = event;
   const affectedPct = formatAffectedPct(impact.employeesAffectedPct);
+  // `slug:impactId` pre-fills 「哪条记录」 on /corrections (ZCZ-16). The slug is
+  // there so the row is readable by a human triaging the queue without a
+  // database lookup; the id is there so it is unambiguous when a company has
+  // several events. Nothing on the receiving end resolves it — see the
+  // `record_ref` note in src/db/schema.ts.
+  const correctionHref = `/corrections?record=${encodeURIComponent(`${companySlug}:${impact.id}`)}`;
 
   return (
     <section className="bg-card space-y-5 rounded-xl border p-6" id={`event-${impact.id}`}>
@@ -312,6 +318,28 @@ function EventSection({ event }: { event: PublicEvent }) {
             </li>
           ))}
         </ol>
+
+        {/*
+          S2-1 / ZCZ-16: the dispute entry point, once per event, at the bottom
+          of the evidence it disputes.
+
+          Here rather than only in the footer, and per event rather than per
+          page, because this is the page a company finds when it searches its
+          own name — and the link has to be next to the specific claim, with
+          that claim's identifier already attached. The sentence says «不需要
+          账号» out loud: the most likely reader of it is someone who assumes a
+          site like this will make them register to argue with it.
+        */}
+        <p className="text-muted-foreground border-t pt-4 text-xs">
+          认为这条记录有误，或不同意这里的归因？
+          <Link
+            href={correctionHref}
+            className="text-foreground -my-1.5 mx-1 inline-flex items-center py-1.5 underline"
+          >
+            提出异议或更正
+          </Link>
+          —— 不需要账号，被收录的公司同样适用。
+        </p>
       </div>
     </section>
   );
