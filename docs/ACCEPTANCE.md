@@ -44,7 +44,7 @@ BASE_URL=https://<project>.vercel.app npm run capture:acceptance   # 对线上�
 | 项 | 值 |
 | --- | --- |
 | 本地地址 | http://localhost:3000 |
-| 代码仓库 | `zczy318-products/ai-shutdown-tracker`（私有，默认分支 `main`） |
+| 代码仓库 | `zczy318-products/rest-in-prompts`（私有，默认分支 `main`；GitHub 侧改名由用户操作） |
 | 线上地址 | 待填（首次部署后） |
 | Node 版本 | 本地验证用 v24.22.2；Vercel 用其 Next.js 默认 Node |
 | 数据库 | 本地 PGlite / 线上 Neon 免费档 |
@@ -59,17 +59,36 @@ env -u DATABASE_URL NODE_ENV=production npm run build
 ```
 
 ```
-✓ Compiled successfully in 257ms
+✓ Compiled successfully
 Route (app)
 ┌ ƒ /
 ├ ○ /_not-found
 ├ ƒ /admin
+├ ƒ /admin/records
+├ ƒ /admin/records/[id]
+├ ƒ /admin/records/new
 ├ ƒ /login
 └ ƒ /register
 ```
 
 读库的路由全部是动态 `ƒ`，构建期零查询——这是 Vercel 首次构建（用户还没填环境变量）能过的前提，
 加新页面时要守住，详见 `DEPLOY.md` §6.3。路由数会随 T5/T6 增加，验收前需重跑并更新这段输出。
+
+T3 新增的四条 `/admin/records*` 路由都显式写了 `export const dynamic = "force-dynamic"`，
+因为它们都查库；首页 `/` 也是，它要读已发布记录。
+
+### 自动化检查（T3 起可跑）
+
+截图之外，这四条命令的输出可以直接贴进验收材料：
+
+| 命令 | 覆盖 | 要先启服务 |
+| --- | --- | --- |
+| `npm run verify:auth` | 注册 / 登录 / 登出 / session 吊销 | 是 |
+| `npm run verify:records` | 录入含 2 条来源的记录并发布、5 条失败路径、筛选分页、下架、删除、鉴权（38 项） | 是 |
+| `npm run verify:db` | 迁移从空库跑通 + 幂等 + 数据库层约束（26 项） | 否 |
+| `npm run verify:pg` | `DATABASE_URL` 这条路径能建表（真实 `pg` 驱动 + 线协议） | 否 |
+
+后两条自带临时数据库，不会动 `./.pglite`。
 
 ---
 

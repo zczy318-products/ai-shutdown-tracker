@@ -1,4 +1,4 @@
-# 部署手册（AI Shutdown Tracker）
+# 部署手册（Rest In Prompts）
 
 目标形态：代码放在**用户自己的 GitHub 仓库** → 用户在 **Vercel** 控制台导入该仓库 → 之后每次 push 自动部署；
 线上数据库用 **Neon 免费档**。
@@ -151,30 +151,72 @@ npm run db:migrate
 
 `drizzle/` 目录下的 SQL 和 `drizzle/meta/` 必须一起提交——迁移记录是靠它判断哪些已经执行过的。
 
+### 手写迁移
+
+`drizzle/0002_record_integrity.sql` 是**手写**的（`drizzle-kit generate --custom` 建的空文件），
+里面是「每条记录至少一条来源」的 plpgsql 延迟约束触发器——`pgEnum`/`check()` 表达不了这条，
+所以 drizzle-kit 不会生成它，改 `schema.ts` 也不会把它删掉或重写。它写成可重复执行的
+（`CREATE OR REPLACE FUNCTION` + `DROP TRIGGER IF EXISTS`），所以对一个被手工改过的库再跑一次也会收敛。
+需要改这条约束时直接编辑该文件或再加一个 custom 迁移，**不要**指望 `db:generate` 处理它。
+
+### 迁移路径怎么验证
+
+`npm run db:migrate` 不设 `DATABASE_URL` 时走的是 PGlite 分支，和线上那条**不是同一段代码**。
+两条都有脚本覆盖，改完 schema 后都跑一遍：
+
+```bash
+npm run verify:db     # PGlite 分支：空库 → 最新，再跑一次确认幂等，并逐条验证约束
+npm run verify:pg     # DATABASE_URL 分支：真实 pg 驱动 + Postgres 线协议
+```
+
+`verify:pg` 的服务端是用 `@electric-sql/pglite-socket` 把 PGlite 挂到一个 TCP 端口上
+（这台机器上没有 Postgres 守护进程，也没有容器运行时）。客户端那一侧是真的：TCP、`pg` 的握手、
+预处理语句、以及 node-postgres 版 migrator。**没有覆盖**的是 Neon 特有的行为——TLS 终止与
+pooled endpoint，那些只能在首次对真实库跑 §4 时才算验过。
+
 ---
 
 ## 5. ③ 种子数据导入
 
-**现状：脚本尚未落地**，因为它依赖 T3 的领域表和 T4 的数据集，两者都还没合并。下面是已经定好的契约，T4/T5 一到就能直接实现。
+**现状：脚本尚未落地。** T3 的领域表已经合并，剩下的依赖是 T4 的数据集。下面是已经定好的契约。
 
 - 入口：`npm run db:seed`，脚本位置 `src/db/seed.ts`；
-- 输入：T4 产出的 `seed/companies.json`；
-- **幂等**：同一条记录重跑不新增。靠业务唯一键做 upsert（公司 + 停运事件维度），不靠自增 id，允许对 Neon 重复执行；
-- **复用后台的服务端校验**：缺来源 URL 或缺原文引述（verbatim quote）的记录直接拒绝，并打印是第几条、哪家公司、缺什么字段。
+- 输入：T4 产出的 `seed/companies.json`（格式见 ZCZ-2 数据字典 §7）；
+- **幂等**：同一条记录重跑不新增。按 `company.slug` 与 `(company_id, event_date, impact_type)` 做 upsert，
+  不靠自增 id，允许对 Neon 重复执行；
+- **直接复用后台的服务端校验**，不要另写一份：导入 `recordInputSchema`（`src/lib/records/validation.ts`）
+  与 `checkPublishable`（`src/lib/records/publish.ts`）。缺来源 URL 或缺原文引述（verbatim quote）
+  的记录直接拒绝，并打印是第几条、哪家公司、缺什么字段。
   **不会为了让导入跑通而放宽校验**——校验失败就退出非零，由数据侧改数据，而不是由脚本降低门槛；
+- 写入必须**整条记录一个事务**（公司 + 事件 + 全部来源），否则会撞上
+  「每条记录至少一条来源」的延迟约束触发器。照 `saveRecord` 的写法来；
+- 任一条不过则整体失败、不允许部分写入；
+- 种子数据视为已审核，导入后 `record_status` 置 `published`；
 - 导入结束打印：成功条数、拒绝条数、按置信度分档的分布，用于和 T4 的说明逐项核对。
 
 核对查询（导入后手动确认一遍）：
 
 ```sql
-select count(*) from shutdown_records;                                  -- 总条数
-select attribution_confidence, count(*) from shutdown_records
-  group by 1 order by 1;                                                -- 置信度分布
-select count(*) from shutdown_records r                                 -- 必须为 0
-  where not exists (select 1 from sources s where s.record_id = r.id);
+select count(*) from ai_impact;                                         -- 总条数
+select record_status, count(*) from ai_impact group by 1 order by 1;    -- 状态分布
+select attribution_confidence, count(*) from ai_impact
+  group by 1 order by 1;                                               -- 置信度分布
+
+select count(*) from ai_impact i                                       -- 必须为 0
+  where not exists (select 1 from source s where s.ai_impact_id = i.id);
+
+-- 必须为 0：置信度为 high 却没有一手 / 主流媒体来源
+select count(*) from ai_impact i
+  where i.attribution_confidence = 'high'
+    and not exists (
+      select 1 from source s
+       where s.ai_impact_id = i.id
+         and s.source_type in ('primary_company', 'tier1_media'));
 ```
 
-最后一条查询返回 0 是硬性要求：每条记录至少一个来源，这是产品负责人定的数据完整性底线。
+第三条查询返回 0 是硬性要求：每条记录至少一个来源，这是产品负责人定的数据完整性底线。
+正常情况下它**插不进**违反这条的数据（触发器会拒），这条查询是用来确认触发器真的在线上库里生效了
+——`verify:pg` 会检查它存在，但线上库是另一个实例。
 
 ---
 
@@ -186,9 +228,13 @@ GitHub 已通过 Paperclip 托管连接接通，仓库已建好并完成首次�
 
 | 项 | 值 |
 | --- | --- |
-| 仓库 | `zczy318-products/ai-shutdown-tracker`（私有） |
+| 仓库 | `zczy318-products/rest-in-prompts`（私有） |
 | 默认分支 | `main` |
 | 首次推送的提交 | `a0a7bad`（T2 脚手架 + 数据库生产路径加固） |
+
+> **表里的仓库名是改名后的目标值，GitHub 上的实际改名要由用户在 Settings → General → Repository name 里操作。**
+> 改名后 GitHub 会自动重定向旧路径，本地 `origin` 继续可用；想清理的话再跑
+> `git remote set-url origin https://github.com/zczy318-products/rest-in-prompts.git`。
 
 **推送约定：每个任务做完、提交之后立刻 push，不要攒到最后一次性推。**
 

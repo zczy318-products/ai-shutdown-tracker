@@ -2,7 +2,9 @@
 
 追踪 AI 产品与项目的关停记录。每条记录都必须附带可核查的来源（链接 + 原文引用）与归因置信度评级。
 
-当前进度：**T2 脚手架**。本仓库已包含可运行的应用骨架、Drizzle 迁移流程与邮箱密码认证。数据模型（关停记录、来源、归因评级）从 T3 开始按 ZCZ-2 数据字典落地。
+当前进度：**T3 数据模型 + 管理后台**。应用骨架、Drizzle 迁移流程、邮箱密码认证（T2）之上，
+已按 ZCZ-2 数据字典落地 `company` / `ai_impact` / `source` 三张表，以及 `/admin` 下的录入、
+审核与发布流程。公开前台（列表、筛选、公司详情、仪表盘）在 T5；种子数据在 T4。
 
 ## 技术栈
 
@@ -34,10 +36,13 @@ npm run dev          # http://localhost:3000
 
 | 路由 | 说明 |
 | --- | --- |
-| `/` | 首页，显示登录状态 |
+| `/` | 首页。只显示 `record_status = 'published'` 的记录；完整前台在 T5 实现 |
 | `/register` | 注册（T2 阶段开放自助注册，T4 会收紧为邀请制） |
 | `/login` | 登录 |
-| `/admin` | 后台占位页，**需登录**；未登录会跳转到 `/login` |
+| `/admin` | 后台首页：各状态记录数与入口。**以下全部需登录**，未登录跳 `/login` |
+| `/admin/records` | 记录列表：按状态 / 关键词筛选，分页（每页 20 条） |
+| `/admin/records/new` | 新建记录：公司字段 + 事件字段 + 可增删的多条来源 |
+| `/admin/records/[id]` | 编辑 + 审核：发布 / 下架 / 拒收 / 删除草稿，并展示已存来源与原文引述 |
 
 ## 命令
 
@@ -51,13 +56,19 @@ npm run dev          # http://localhost:3000
 | `npm run db:migrate` | 把 `drizzle/` 里的迁移应用到当前数据库 |
 | `npm run db:studio` | Drizzle Studio |
 | `npm run verify:auth` | 对**已启动**的服务跑注册/登录/登出全链路检查 |
+| `npm run verify:records` | 对**已启动**的服务跑录入 / 发布 / 筛选 / 下架全链路检查（38 项） |
+| `npm run verify:db` | 不启服务：在临时 PGlite 库上跑迁移并直接用 SQL 验证数据库约束（26 项） |
+| `npm run verify:pg` | 不启服务：验证 `DATABASE_URL` 这条路径能建表（走真实 `pg` 驱动） |
 
-`verify:auth` 走真实 HTTP 请求（cookie、重定向、session 吊销都会被验证），每次用一个新的临时邮箱，可重复执行：
+`verify:auth` 与 `verify:records` 走真实 HTTP 请求（cookie、重定向、server action 都会被验证），每次用新的临时邮箱与唯一 slug，可重复执行：
 
 ```bash
 npm run dev                                   # 另开一个终端
 BASE_URL=http://127.0.0.1:3000 npm run verify:auth
+BASE_URL=http://127.0.0.1:3000 npm run verify:records
 ```
+
+`verify:db` 与 `verify:pg` 自带临时数据库，不需要先启服务，也不会动 `./.pglite`。
 
 ## 环境变量
 
@@ -133,12 +144,66 @@ rm -rf .pglite && npm run db:migrate
 
 相关文件：`src/lib/auth.ts`、`src/lib/password.ts`、`src/app/(auth)/actions.ts`。
 
-## 数据库结构（T2）
+## 数据库结构
 
-只有认证需要的两张表，业务表在 T3 加：
+Schema 的唯一来源是 `src/db/schema.ts`；枚举取值从 `src/lib/enums.ts` 用 `Object.keys()` 派生，
+保证数据库取值与界面标签不会漂移。字段口径照抄 ZCZ-2 数据字典，**不要在这里自行增删枚举值**。
+
+### 认证（T2）
 
 - `users` — `id`、`email`（唯一索引，存小写规范化后的值）、`password_hash`、时间戳。
 - `sessions` — `id`（token 的 SHA-256）、`user_id`（级联删除）、`expires_at`。
+
+### 业务表（T3）
+
+```
+company 1 ──< ai_impact 1 ──< source
+                 └─ is_primary = true 的那条用于榜单（每公司至多一条，靠部分唯一索引保证）
+```
+
+- `company` — 公司本身**不带归因结论**。`region` 由 `country_code` 推导后落库，
+  国家用 `char(2)` + 应用层白名单，不做枚举。
+- `ai_impact` — 一次「AI 影响事件」。一家公司可以有多条（Chegg 2023 / 2025 各一条）。
+  `impact_type` 与 `attribution_confidence` **都没有数据库默认值**：没人工选过就建不出这行。
+- `source` — 一条来源引述，挂在 `ai_impact` 上。`url` / `media_name` / `published_at` / `quote`
+  全部 NOT NULL。
+
+### 「每条记录至少一条来源」是怎么保证的
+
+三层，任何一层单独都拦得住，顺序是从便利到权威：
+
+| 层 | 位置 | 拦的是什么 |
+| --- | --- | --- |
+| 1 表单 | `src/app/admin/records/record-form.tsx` | 浏览器原生 `required` / `minlength`；最后一条来源不给「移除」按钮 |
+| 2 服务端 | `src/lib/records/validation.ts`（zod）+ `src/lib/records/publish.ts` | 绕过表单直接 POST 也会被拒，并返回**具体原因** |
+| 3 数据库 | `drizzle/0002_record_integrity.sql` | 延迟约束触发器；直接连库跑 SQL 也插不进没有来源的记录 |
+
+第 3 层用的是 `CREATE CONSTRAINT TRIGGER ... DEFERRABLE INITIALLY DEFERRED`：
+外键只能保证「每条来源都指向一个真实事件」，方向正好相反，表达不了「至少一条子记录」。
+触发器在 **COMMIT 时**而不是每条语句后检查，所以「先插事件、再插它的来源」这个必经顺序是合法的，
+而「提交一条没有来源的事件」会整笔回滚。写入因此必须在一个事务里完成，见 `saveRecord`。
+删掉某条记录的最后一条来源同样会被拒；删整条记录则级联带走来源，是允许的。
+
+### 发布门禁（数据字典 §3 的四条业务校验）
+
+数据库约束表达不了的部分在 `src/lib/records/publish.ts`，发布时与**编辑已发布记录**时都会跑：
+
+1. 至少一条来源；
+2. 置信度为 `high` 时，至少一条 `primary_company` 或 `tier1_media` 来源；
+3. 每条来源的 `url` / `media_name` / `published_at` / `quote` 四项非空；
+4. 不得所有来源的 `link_health` 都是 `dead`；
+5. （§1.9）`link_health = 'bot_blocked'` 的来源必须 `manually_verified = true`。
+
+任一条不满足就拒绝发布，并在界面上逐条列出原因与补救办法。
+这些规则校验的是「**所声称的**置信度有没有证据支撑」，不替录入人判断归因：
+置信度只能由人工选择，降档也只能由人工决定。
+
+**本代码库不含任何自动推断「是否因 AI 倒闭」的逻辑**，归因只来自人工标注 + 来源留痕。
+
+### 删除与下架
+
+数据字典 §0 规定不做物理删除：下架用 `record_status = 'archived'`，行与来源留痕都保留在库里。
+唯一的例外是**从未发布过的草稿**可以真删（录入手误），后台只在 `draft` 状态下显示「删除草稿」。
 
 ## 部署
 

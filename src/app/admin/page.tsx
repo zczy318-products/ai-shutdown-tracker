@@ -1,15 +1,55 @@
+import Link from "next/link";
+
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { resolveDbTarget, describeDbTarget } from "@/db/config";
+import { RECORD_STATUS, RECORD_STATUS_VALUES, labelOf } from "@/lib/enums";
+import { countByStatus } from "@/lib/records/store";
 
-export default function AdminPage() {
+export const dynamic = "force-dynamic";
+
+export default async function AdminPage() {
+  const counts = await countByStatus();
+  const total = Object.values(counts).reduce((sum, value) => sum + value, 0);
+
   return (
     <div className="space-y-6">
       <div className="space-y-2">
-        <h1 className="text-2xl font-semibold tracking-tight">后台占位页</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">后台</h1>
         <p className="text-muted-foreground">
-          录入与审核界面在 T4 实现。本页只用于确认登录态生效。
+          录入、审核与发布 AI 影响记录。只有「已发布」的记录会出现在公开前台。
         </p>
       </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>记录</CardTitle>
+          <CardDescription>共 {total} 条</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <dl className="grid gap-2 text-sm sm:grid-cols-5">
+            {RECORD_STATUS_VALUES.map((status) => (
+              <div key={status} className="rounded-md border p-3">
+                <dt className="text-muted-foreground text-xs">
+                  {labelOf(RECORD_STATUS, status)}
+                </dt>
+                <dd className="font-mono text-lg">{counts[status] ?? 0}</dd>
+              </div>
+            ))}
+          </dl>
+          <div className="flex gap-3">
+            <Button asChild>
+              <Link href="/admin/records/new">+ 新建记录</Link>
+            </Button>
+            <Button asChild variant="outline">
+              <Link href="/admin/records">记录列表</Link>
+            </Button>
+            <Button asChild variant="ghost">
+              <Link href="/admin/records?status=in_review">待审核队列</Link>
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
 
       <Card>
         <CardHeader>

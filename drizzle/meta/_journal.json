@@ -8,6 +8,20 @@
       "when": 1793711642216,
       "tag": "0000_old_the_fury",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1793713905661,
+      "tag": "0001_domain_model",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1793713912083,
+      "tag": "0002_record_integrity",
+      "breakpoints": true
     }
   ]
 }
