@@ -130,6 +130,12 @@ Route (app)
 | `npm run verify:db` | 迁移从空库跑通 + 幂等 + 数据库层约束（26 项） | 否 |
 | `npm run verify:pg` | `DATABASE_URL` 这条路径能建表（真实 `pg` 驱动 + 线协议） | 否 |
 | `npm run verify:a11y` | 公开页触控目标 ≥24px、控件可访问名、表单 label、标题层级；390px 与 1280px 两个视口（见 §8.2） | 是（或 `BASE_URL` 指向线上） |
+| `npm run verify:palette` | 「不许有色相」那两条设计规范：中性 token 彩度、归因置信度靠明度分档、定价页周期切换控件不引入色相（16 项） | 否（纯读源码与 `globals.css`，不需要浏览器） |
+
+`verify:palette` 和 `verify:a11y` 分工：前者查**原因**（token 的彩度、类名里的色系），后者查**渲染结果**（尺寸、可访问名）。
+前者不需要浏览器，所以在装不上 Chromium 系统依赖的环境里也能跑；要实测落屏像素则需要后者，
+并且必须把颜色画到 1×1 canvas 上再读 `getImageData`——本项目的 token 是 `oklch()`，
+`getComputedStyle()` 回的是 `lab(...)`，拿正则抠 `lab()` 里的三个数当 RGB 用会把无彩灰算成有彩。
 
 后三条自带临时数据库，不会动 `./.pglite`；`verify:public` 另需先 `npm run build`，它serve 的是生产构建。
 

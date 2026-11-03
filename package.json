@@ -19,7 +19,8 @@
     "verify:saas": "node scripts/verify-saas-flow.mjs",
     "capture:acceptance": "node scripts/capture-acceptance.mjs",
     "verify:subscribe": "tsx scripts/verify-subscribe-flow.mts",
-    "verify:a11y": "node scripts/verify-a11y.mjs"
+    "verify:a11y": "node scripts/verify-a11y.mjs",
+    "verify:palette": "node scripts/verify-palette.mjs"
   },
   "dependencies": {
     "@radix-ui/react-label": "^2.1.17",
