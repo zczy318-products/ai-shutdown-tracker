@@ -106,8 +106,18 @@ const matches = (filters) =>
 // HTTP + HTML helpers
 // ---------------------------------------------------------------------------
 
-/** React splits interpolated text with `<!-- -->` so it can hydrate it. */
-const visible = (html) => html.replaceAll("<!-- -->", "");
+/**
+ * What a reader (or a `curl`) actually gets.
+ *
+ * Two transforms, both load-bearing for the assertions below:
+ *  - React splits interpolated text with `<!-- -->` so it can hydrate it;
+ *  - the RSC flight payload inside `<script>` tags repeats the whole tree as
+ *    escaped strings, so every `data-*` attribute and every quote appears
+ *    twice. Counting without stripping it reports double. Removing scripts also
+ *    makes the "quote is on the page" checks mean the *rendered* page.
+ */
+const visible = (html) =>
+  html.replace(/<script\b[^>]*>[\s\S]*?<\/script>/g, "").replaceAll("<!-- -->", "");
 
 const unescapeHtml = (s) =>
   s

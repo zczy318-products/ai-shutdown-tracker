@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { ChartCard, HorizontalBars, StatTable, YearColumns } from "@/components/charts/bars";
+import { DataUnavailable } from "@/components/public/data-unavailable";
 import { CONFIDENCE_BAR, IMPACT_TYPE_BAR } from "@/components/public/record-badges";
 import {
   ATTRIBUTION_CONFIDENCE,
@@ -10,7 +11,12 @@ import {
   labelOf,
 } from "@/lib/enums";
 import { formatPercent } from "@/lib/format";
-import { INDUSTRY_CHART_SLOTS, getPublicStats, type PublicStats } from "@/lib/records/public";
+import {
+  INDUSTRY_CHART_SLOTS,
+  getPublicStats,
+  loadPublic,
+  type PublicStats,
+} from "@/lib/records/public";
 import { cn } from "@/lib/utils";
 
 /**
@@ -45,7 +51,11 @@ export default async function StatsPage({
   const view: View = (Array.isArray(params.view) ? params.view[0] : params.view) === "table"
     ? "table"
     : "chart";
-  const stats = await getPublicStats();
+  const result = await loadPublic(getPublicStats);
+  if (!result.ok) {
+    return <DataUnavailable retryHref={view === "table" ? "/stats?view=table" : "/stats"} />;
+  }
+  const stats = result.data;
 
   return (
     <div className="space-y-8">

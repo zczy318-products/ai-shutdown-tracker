@@ -12,10 +12,19 @@ import { getCurrentUser } from "@/lib/auth";
  *
  * Reading the session here makes the layout dynamic, which is what we want
  * anyway — see the `force-dynamic` note in each page.
+ *
+ * The session read is deliberately failure-tolerant, and that is **not** the
+ * same concession the pages refuse to make. `error.tsx` cannot catch a throw
+ * from the layout itself (a boundary only covers its children), so a database
+ * hiccup here would skip the readable error state entirely and surface Next's
+ * default error page. The session only decides whether the header shows «编辑
+ * 登录» or «进入后台» — losing it costs a convenience link and states nothing
+ * false about the data. A failed *record* query still propagates, because there
+ * «读不到» must never be rendered as «没有».
  */
 
 export default async function PublicLayout({ children }: { children: React.ReactNode }) {
-  const user = await getCurrentUser();
+  const user = await readSessionQuietly();
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -31,11 +40,22 @@ export default async function PublicLayout({ children }: { children: React.React
             <Link href="/stats" className="text-muted-foreground hover:text-foreground">
               统计仪表盘
             </Link>
+            {/*
+              T6. In the nav, not tucked into a footer — but note that nothing
+              in the two links above is behind it. Pricing sells bulk export
+              and an API key; reading this site needs no account at all.
+            */}
+            <Link href="/pricing" className="text-muted-foreground hover:text-foreground">
+              定价
+            </Link>
           </nav>
           <div className="text-muted-foreground ml-auto flex items-center gap-3 text-xs">
             {user ? (
               <>
                 <span className="font-mono">{user.email}</span>
+                <Link href="/account" className="hover:text-foreground underline">
+                  账户
+                </Link>
                 <Link href="/admin" className="hover:text-foreground underline">
                   进入后台
                 </Link>
@@ -68,4 +88,14 @@ export default async function PublicLayout({ children }: { children: React.React
       </footer>
     </div>
   );
+}
+
+/** See the note above: chrome, not content. */
+async function readSessionQuietly() {
+  try {
+    return await getCurrentUser();
+  } catch (error) {
+    console.error("[public] session read failed, rendering as anonymous:", error);
+    return null;
+  }
 }

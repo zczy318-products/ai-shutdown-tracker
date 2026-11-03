@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { DataUnavailable } from "@/components/public/data-unavailable";
 import { AttributionBadge, ImpactTypeBadge, OutcomeBadge } from "@/components/public/record-badges";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -20,6 +21,7 @@ import {
   getPublicFilterOptions,
   hasActiveFilters,
   listPublicRecords,
+  loadPublic,
   parsePublicFilters,
   publicListingHref,
   type PublicFilters,
@@ -51,10 +53,13 @@ export default async function ListingPage({
   searchParams: Promise<RawSearchParams>;
 }) {
   const filters = parsePublicFilters(await searchParams);
-  const [{ items, total, page, pageCount }, options] = await Promise.all([
-    listPublicRecords(filters),
-    getPublicFilterOptions(),
-  ]);
+  const result = await loadPublic(() =>
+    Promise.all([listPublicRecords(filters), getPublicFilterOptions()]),
+  );
+  // A read failure is its own state, never an empty listing — see `loadPublic`.
+  if (!result.ok) return <DataUnavailable retryHref={publicListingHref(filters)} />;
+
+  const [{ items, total, page, pageCount }, options] = result.data;
   const filtered = hasActiveFilters(filters);
 
   return (

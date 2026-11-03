@@ -475,3 +475,36 @@ function fillYearGaps(rows: Tally<number>[]): Tally<number>[] {
   }
   return filled;
 }
+
+// ---------------------------------------------------------------------------
+// Failure handling
+// ---------------------------------------------------------------------------
+
+export type LoadResult<T> = { ok: true; data: T } | { ok: false; error: unknown };
+
+/**
+ * Runs a public query and reports failure **as failure**.
+ *
+ * The rule this exists to keep (ZCZ-6, 2026-11-03): «读不到» and «确实没有»
+ * must not render the same. So this never substitutes empty data for an error —
+ * it returns a discriminated result, and its only callers render an explicit
+ * «数据暂时读取失败» panel. A `catch` that returned `[]` would mean that the
+ * day the database is unreachable the site announces «0 条记录», i.e. claims we
+ * never recorded a single company.
+ *
+ * Why catch at all when `error.tsx` exists: Next flushes the page shell before
+ * the data resolves, so a throw lands in the boundary *on the client* — the
+ * initial HTML carries only the shell, and a visitor without JavaScript (or
+ * with a failed chunk load) gets a blank page under the header. Catching here
+ * renders the same readable state on the server. `error.tsx` stays as the
+ * backstop for everything this does not wrap.
+ */
+export async function loadPublic<T>(load: () => Promise<T>): Promise<LoadResult<T>> {
+  try {
+    return { ok: true, data: await load() };
+  } catch (error) {
+    // The one place this is observable: the server log. Nothing is swallowed.
+    console.error("[public] query failed:", error);
+    return { ok: false, error };
+  }
+}

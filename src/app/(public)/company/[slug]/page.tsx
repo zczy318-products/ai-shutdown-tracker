@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { cache } from "react";
 
+import { DataUnavailable } from "@/components/public/data-unavailable";
 import { AttributionBadge, ImpactTypeBadge, OutcomeBadge } from "@/components/public/record-badges";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -20,7 +21,7 @@ import {
   formatSourceDate,
   hostnameOf,
 } from "@/lib/format";
-import { getPublicCompany, type PublicEvent } from "@/lib/records/public";
+import { getPublicCompany, loadPublic, type PublicEvent } from "@/lib/records/public";
 
 /**
  * One company: its profile, its published events in a timeline, and every
@@ -44,8 +45,11 @@ import { getPublicCompany, type PublicEvent } from "@/lib/records/public";
 
 export const dynamic = "force-dynamic";
 
-/** `cache` dedupes the lookup between `generateMetadata` and the page body. */
-const loadCompany = cache(getPublicCompany);
+/**
+ * `cache` dedupes the lookup between `generateMetadata` and the page body —
+ * including the failure case, since a rejected promise is cached too.
+ */
+const loadCompany = cache((slug: string) => loadPublic(() => getPublicCompany(slug)));
 
 export async function generateMetadata({
   params,
@@ -53,10 +57,13 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const data = await loadCompany(slug);
-  if (!data) return { title: "未找到记录 — Rest In Prompts" };
+  const result = await loadCompany(slug);
+  // `generateMetadata` runs *outside* the error boundary, so a throw here would
+  // 500 the route before the page could render its own failure state.
+  if (!result.ok) return { title: "Rest In Prompts" };
+  if (!result.data) return { title: "未找到记录 — Rest In Prompts" };
 
-  const { company, events } = data;
+  const { company, events } = result.data;
   return {
     title: `${company.name} — Rest In Prompts`,
     description: events[0]?.impact.summary.slice(0, 120),
@@ -65,12 +72,15 @@ export async function generateMetadata({
 
 export default async function CompanyPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const data = await loadCompany(slug);
+  const result = await loadCompany(slug);
+  if (!result.ok) return <DataUnavailable retryHref={`/company/${slug}`} />;
   // No published event means there is nothing we are allowed to show. A shell
-  // page would imply a record being withheld; 404 is the honest answer.
-  if (!data) notFound();
+  // page would imply a record being withheld; 404 is the honest answer. Note
+  // this is reached only on a *successful* read — a failed one never 404s,
+  // because "we could not look" is not "it does not exist".
+  if (!result.data) notFound();
 
-  const { company, events } = data;
+  const { company, events } = result.data;
   const totalSources = events.reduce((sum, event) => sum + event.sources.length, 0);
 
   return (
