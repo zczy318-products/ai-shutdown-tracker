@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { SubscribeForm } from "@/components/subscribe/subscribe-form";
 import { getCurrentUser } from "@/lib/auth";
 
 /**
@@ -71,6 +72,15 @@ export default async function PublicLayout({ children }: { children: React.React
 
       <main className="mx-auto w-full max-w-6xl flex-1 px-6 py-10">{children}</main>
 
+      {/*
+        T10: the subscribe form sits here rather than inside each page, so it is
+        in the same place on the listing, every company page and the dashboard.
+        It is the only thing the site asks of a visitor — and it asks for an
+        email, not an account.
+      */}
+      <div className="mx-auto w-full max-w-6xl px-6 pb-10">
+        <SubscribeForm />
+      </div>
 
       <footer className="mt-8 border-t">
         <div className="text-muted-foreground mx-auto max-w-6xl space-y-2 px-6 py-8 text-xs">

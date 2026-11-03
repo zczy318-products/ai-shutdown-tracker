@@ -67,6 +67,7 @@ npm run dev          # http://localhost:3000
 | `npm run verify:saas` | 对**已启动**的服务跑分档 / 导出 / 升级 / API key 全链路检查（51 项） |
 | `npm run verify:db` | 不启服务：在临时 PGlite 库上跑迁移并直接用 SQL 验证数据库约束（26 项） |
 | `npm run verify:pg` | 不启服务：验证 `DATABASE_URL` 这条路径能建表（走真实 `pg` 驱动） |
+| `npm run verify:subscribe` | 不启服务：匿名订阅 / 双重确认 / 一键退订 / 枚举防护 / 速率限制全链路检查（39 项，自己起 dev server） |
 
 `verify:auth` 与 `verify:records` 走真实 HTTP 请求（cookie、重定向、server action 都会被验证），每次用新的临时邮箱与唯一 slug，可重复执行：
 
@@ -76,7 +77,10 @@ BASE_URL=http://127.0.0.1:3000 npm run verify:auth
 BASE_URL=http://127.0.0.1:3000 npm run verify:records
 ```
 
-`verify:db` 与 `verify:pg` 自带临时数据库，不需要先启服务，也不会动 `./.pglite`。
+`verify:db`、`verify:pg` 与 `verify:subscribe` 自带临时数据库，不需要先启服务，也不会动
+`./.pglite`。`verify:subscribe` 还会起自己的 dev server（:3222），因为没有接通邮件服务时
+确认链接只存在于服务端日志里，脚本必须拥有那个进程——详见
+[`docs/SUBSCRIPTION.md`](docs/SUBSCRIPTION.md)。
 
 ## 环境变量
 
@@ -90,8 +94,13 @@ BASE_URL=http://127.0.0.1:3000 npm run verify:records
 | `DATABASE_POOL_MAX` | 否 | 否 | 连接池上限，默认 `1`。serverless 下每个实例各有一个池，调大会按实例数翻倍。 |
 | `DATABASE_IDLE_TIMEOUT_MS` | 否 | 否 | 空闲连接回收时间，默认 `10000`。 |
 | `PGLITE_ALLOW_PRODUCTION` | 否 | 否 | 仅用于本地 `npm run build && npm start` 冒烟测试，**不要在部署环境设置**。 |
+| `MAIL_PROVIDER` | 否 | 否 | 邮件驱动。**留空即 `log` 驱动**：邮件写服务端日志并报「未送达」，订阅页文案照此说话。指向一个还没注册适配器的名字会打 error 日志并退回 `log`，不会假装发送。见 [`docs/SUBSCRIPTION.md`](docs/SUBSCRIPTION.md)。 |
+| `MAIL_FROM` | 否 | 否 | 发信人头，接通 provider 后才有意义。 |
+| `NEXT_PUBLIC_APP_URL` | 否 | 建议 | 站点绝对地址，用于邮件里的确认 / 退订链接以及 Stripe 回跳。邮件链接留空时依次回退到 `VERCEL_URL` 和请求的 `Host` 头。 |
 
 T6 的 Stripe 变量（全部测试模式）见 [`.env.example`](./.env.example) 与 [`DEPLOY.md`](./DEPLOY.md)，代码里还没读取。
+
+目前**没有任何邮件服务凭证**，订阅功能默认跑在 `log` 驱动上；选 provider 需要用户的授权卡，由 Master PM 申请。
 
 ## PGlite 与托管 Postgres 的切换
 
