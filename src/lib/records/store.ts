@@ -12,6 +12,11 @@ import type { RecordInput } from "./validation";
  * A "record" in the admin UI is one `ai_impact` row plus its company and its
  * sources — that is the unit an editor enters, reviews and publishes.
  *
+ * Reads here are **unfiltered by status** because the backoffice has to see
+ * drafts. The public site never imports this module's list queries; it reads
+ * through `./public.ts`, where every query starts from `record_status =
+ * 'published'`.
+ *
  * Writes always go through `saveRecord`, in one transaction, because the
  * database's "at least one source" trigger is deferred to commit: an impact and
  * its sources inserted in separate transactions would be rejected (correctly),
@@ -44,7 +49,7 @@ export type ListFilters = {
   page?: number;
 };
 
-function keywordCondition(q: string): SQL | undefined {
+export function companyKeywordCondition(q: string): SQL | undefined {
   const needle = q.trim().toLowerCase();
   if (!needle) return undefined;
   const like = `%${needle}%`;
@@ -71,7 +76,7 @@ export async function listRecords(filters: ListFilters): Promise<{
   if (filters.status && filters.status !== "all") {
     conditions.push(eq(aiImpact.recordStatus, filters.status));
   }
-  const keyword = filters.q ? keywordCondition(filters.q) : undefined;
+  const keyword = filters.q ? companyKeywordCondition(filters.q) : undefined;
   if (keyword) conditions.push(keyword);
   const where = conditions.length > 0 ? and(...conditions) : undefined;
 
@@ -95,7 +100,7 @@ export async function listRecords(filters: ListFilters): Promise<{
     .limit(PAGE_SIZE)
     .offset((safePage - 1) * PAGE_SIZE);
 
-  const counts = await sourceCounts(rows.map((row) => row.impact.id));
+  const counts = await sourceCountsFor(rows.map((row) => row.impact.id));
 
   return {
     items: rows.map((row) => ({ ...row, sourceCount: counts.get(row.impact.id) ?? 0 })),
@@ -105,8 +110,8 @@ export async function listRecords(filters: ListFilters): Promise<{
   };
 }
 
-/** One grouped query rather than a count per row. */
-async function sourceCounts(impactIds: string[]): Promise<Map<string, number>> {
+/** One grouped query rather than a count per row. Shared with `./public.ts`. */
+export async function sourceCountsFor(impactIds: string[]): Promise<Map<string, number>> {
   if (impactIds.length === 0) return new Map();
   const db = await getDb();
   const rows = await db
@@ -140,9 +145,13 @@ export async function getRecord(impactId: string): Promise<FullRecord | null> {
 }
 
 /**
- * What the public site is allowed to read. The status filter lives here rather
- * than in each page so an unpublished record cannot leak through a page that
- * forgot to add it — dictionary §1.8 makes `published` the only visible status.
+ * Every published record with its sources, unpaginated.
+ *
+ * This is the **bulk** read — CSV export and the JSON API (T6) need the whole
+ * set in one pass. The public *pages* do not use it: they read through
+ * `./public.ts`, which paginates and filters. Both apply the same visibility
+ * rule (`record_status = 'published'`) inside the query rather than leaving it
+ * to the caller, so neither path can leak a draft.
  */
 export async function listPublishedRecords(): Promise<FullRecord[]> {
   const db = await getDb();
@@ -158,8 +167,13 @@ export async function listPublishedRecords(): Promise<FullRecord[]> {
   const sources = await db
     .select()
     .from(source)
-    .where(inArray(source.aiImpactId, rows.map((row) => row.impact.id)))
-    .orderBy(asc(source.createdAt));
+    .where(
+      inArray(
+        source.aiImpactId,
+        rows.map((row) => row.impact.id),
+      ),
+    )
+    .orderBy(asc(source.publishedAt), asc(source.id));
 
   const grouped = new Map<string, Source[]>();
   for (const item of sources) {

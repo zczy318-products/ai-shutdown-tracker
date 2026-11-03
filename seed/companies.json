@@ -1,0 +1,1664 @@
+[
+  {
+    "company": {
+      "slug": "chegg",
+      "name": "Chegg, Inc.",
+      "name_zh": "Chegg",
+      "aliases": [
+        "Chegg Inc",
+        "CHGG"
+      ],
+      "country_code": "US",
+      "region": "north_america",
+      "industry": "education",
+      "company_size": "large",
+      "founded_year": 2005,
+      "website_url": null,
+      "description": "美国在线教育公司，提供教材租赁、习题解答与按月订阅的作业辅导服务，2021 年起转向语言学习与技能课程业务。"
+    },
+    "impacts": [
+      {
+        "impact_type": "replaced_by_ai_product",
+        "attribution_confidence": "high",
+        "outcome": "mass_layoff",
+        "event_date": "2025-10-27",
+        "event_date_precision": "day",
+        "is_primary": true,
+        "summary": "据 CNBC 与 Higher Ed Dive 报道，Chegg 于 2025 年 10 月 27 日宣布裁撤约 45% 员工（388 人），公司在公告中将重组归因于「AI 的新现实」以及搜索引擎导流量下滑造成的营收下跌。据 Higher Ed Dive 报道，CEO Nathan Schultz 此前已把营收下滑指向 Google 的 AI Overviews，并称公司评估战略替代方案与起诉 Google 这两件事是相连的。",
+        "employees_affected": 388,
+        "employees_affected_pct": 45,
+        "revenue_impact_note": null,
+        "counter_evidence": "据 Higher Ed Dive 报道，Chegg 同期也在把业务重心转向 B2B 技能课程，并将部分营收下滑归因于战略转型本身；另有分析指出 Chegg 在 ChatGPT 出现前已面临疫情后在线教育需求回落与订阅增长见顶。",
+        "sources": [
+          {
+            "url": "https://www.cnbc.com/2025/10/27/chegg-slashes-45percent-of-workforce-blames-new-realities-of-ai.html",
+            "media_name": "CNBC",
+            "source_type": "tier1_media",
+            "published_at": "2025-10-27",
+            "title": "Chegg slashes 45% of workforce, blames 'new realities' of AI",
+            "quote": "\"As a result, and reflecting the company's continued investment in AI, Chegg is restructuring the way it operates its academic learning products,\" the company said.",
+            "quote_lang": "en",
+            "archive_url": null,
+            "link_health": "ok",
+            "manually_verified": true
+          },
+          {
+            "url": "https://www.highereddive.com/news/chegg-layoffs-strategic-alternatives-google-ai/804192/",
+            "media_name": "Higher Ed Dive",
+            "source_type": "trade_media",
+            "published_at": "2025-10-29",
+            "title": "Chegg slashes nearly half of its workforce as AI eats into its business",
+            "quote": "These two actions are connected, as we would not need to review strategic alternatives if Google hadn’t launched AI Overviews",
+            "quote_lang": "en",
+            "archive_url": null,
+            "link_health": "ok",
+            "manually_verified": true
+          }
+        ]
+      },
+      {
+        "impact_type": "replaced_by_ai_product",
+        "attribution_confidence": "high",
+        "outcome": "mass_layoff",
+        "event_date": "2025-05-12",
+        "event_date_precision": "day",
+        "is_primary": false,
+        "summary": "据 CNBC 报道，Chegg 于 2025 年 5 月 12 日宣布裁撤约 22% 员工（248 人），公司表示 Google 扩张 AI Overviews 把搜索流量锁在其生态内，并将搜索逐步导向 Gemini；据 TechRadar 报道，CEO Nathan Schultz 在财报说明中把问题归因于 Google 的 AI Overviews 与 Gemini。",
+        "employees_affected": 248,
+        "employees_affected_pct": 22,
+        "revenue_impact_note": "据 CNBC 报道，同期订阅用户同比下降 31% 至 320 万，营收下降 30% 至 1.21 亿美元。",
+        "counter_evidence": "据 CNBC 报道，Chegg 的流量下滑已持续数月，公司同时在削减市场、产品与管理费用，成本结构问题与 AI 因素并存。",
+        "sources": [
+          {
+            "url": "https://www.cnbc.com/2025/05/12/chegg-to-lay-off-22percent-of-workforce-as-ai-shakes-up-education-tech-industry.html",
+            "media_name": "CNBC",
+            "source_type": "tier1_media",
+            "published_at": "2025-05-12",
+            "title": "Chegg to lay off 22% of workforce as AI tools shake up education tech industry",
+            "quote": "Google's expansion of AI Overviews is keeping web traffic confined within its search ecosystem while gradually shifting searches to its Gemini AI platform, Chegg said, adding that other AI companies including OpenAI and Anthropic were courting academics with free access to subscriptions.",
+            "quote_lang": "en",
+            "archive_url": null,
+            "link_health": "ok",
+            "manually_verified": true
+          },
+          {
+            "url": "https://www.techradar.com/pro/chegg-announces-move-to-reduce-workforce-by-22-percent-as-students-turn-to-ai",
+            "media_name": "TechRadar Pro",
+            "source_type": "trade_media",
+            "published_at": "2025-05-12",
+            "title": "Chegg announces move to reduce workforce by 22% as students turn to AI",
+            "quote": "In its earnings post, Chegg CEO Nathan Schultz blamed Google's implementation and expansion of AI Overviews for its continued dominance in the search market (something that the US Department of Justice has already complained about) and the interest in its Gemini AI chatbot.",
+            "quote_lang": "en",
+            "archive_url": null,
+            "link_health": "ok",
+            "manually_verified": true
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "company": {
+      "slug": "salesforce",
+      "name": "Salesforce, Inc.",
+      "name_zh": "赛富时",
+      "aliases": [
+        "CRM",
+        "Salesforce.com"
+      ],
+      "country_code": "US",
+      "region": "north_america",
+      "industry": "software_saas",
+      "company_size": "enterprise",
+      "founded_year": null,
+      "website_url": null,
+      "description": "美国企业软件公司，主营客户关系管理（CRM）云服务，并推出名为 Agentforce 的 AI 客服代理产品。"
+    },
+    "impacts": [
+      {
+        "impact_type": "ai_cost_cutting_layoff",
+        "attribution_confidence": "high",
+        "outcome": "mass_layoff",
+        "event_date": "2025-09-02",
+        "event_date_precision": "day",
+        "is_primary": true,
+        "summary": "据《财富》报道，Salesforce 客服支持岗位从约 9,000 人降至约 5,000 人，CEO Marc Benioff 公开把这一变化归因于 Agentforce AI 代理承接工作量，并称自己「需要更少的人头」；据 CNBC 报道，Benioff 于 2025 年 9 月确认了 4,000 个客服支持岗位的裁撤与 AI 有关。",
+        "employees_affected": 4000,
+        "employees_affected_pct": null,
+        "revenue_impact_note": "据《财富》报道，Benioff 称自 2025 年初以来客服支持成本下降约 17%。",
+        "counter_evidence": "据《财富》报道，Salesforce 发言人称已将数百名员工重新部署到专业服务、销售与客户成功等岗位；Benioff 在数月前曾公开表示 AI 增强而非替代人力，与此次表态口径不同。",
+        "sources": [
+          {
+            "url": "https://fortune.com/2025/09/02/salesforce-ceo-billionaire-marc-benioff-ai-agents-jobs-layoffs-customer-service-sales/",
+            "media_name": "Fortune",
+            "source_type": "tier1_media",
+            "published_at": "2025-09-02",
+            "title": "Salesforce CEO Marc Benioff says his company has cut 4,000 customer service jobs as AI steps in: ‘I need less heads’",
+            "quote": "“At the start of this year we deployed help.agentforce.com. Because of the benefits and efficiencies of Agentforce, we’ve seen the number of support cases we handle decline, and we no longer need to actively backfill support engineer roles,” a Salesforce spokesperson tells Fortune.",
+            "quote_lang": "en",
+            "archive_url": null,
+            "link_health": "ok",
+            "manually_verified": true
+          },
+          {
+            "url": "https://www.cnbc.com/2025/12/21/ai-job-cuts-amazon-microsoft-and-more-cite-ai-for-2025-layoffs.html",
+            "media_name": "CNBC",
+            "source_type": "tier1_media",
+            "published_at": "2025-12-21",
+            "title": "AI was behind over 50,000 layoffs in 2025 — here are the top firms to cite it for job cuts",
+            "quote": "CEO Marc Benioff confirmed in September that 4,000 customer support workers had been cut at the firm with the help of AI.",
+            "quote_lang": "en",
+            "archive_url": null,
+            "link_health": "ok",
+            "manually_verified": true
+          },
+          {
+            "url": "https://www.peoplemanagement.co.uk/article/1930891/salesforce-slashes-4000-customer-support-jobs-ai-steps",
+            "media_name": "People Management",
+            "source_type": "trade_media",
+            "published_at": "2025-09-05",
+            "title": "Salesforce slashes 4,000 customer support jobs as AI steps in",
+            "quote": "Salesforce has axed 4,000 roles in its customer support division as it shifts to artificial intelligence agents to take on the workload, CEO Marc Benioff has said, with the cuts first reported by",
+            "quote_lang": "en",
+            "archive_url": null,
+            "link_health": "ok",
+            "manually_verified": true
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "company": {
+      "slug": "commonwealth-bank-of-australia",
+      "name": "Commonwealth Bank of Australia",
+      "name_zh": "澳大利亚联邦银行",
+      "aliases": [
+        "CBA",
+        "CommBank"
+      ],
+      "country_code": "AU",
+      "region": "asia_pacific",
+      "industry": "finance_insurance",
+      "company_size": "enterprise",
+      "founded_year": null,
+      "website_url": null,
+      "description": "澳大利亚最大的零售银行，2025 年在客服中心上线 AI 语音机器人处理客户来电。"
+    },
+    "impacts": [
+      {
+        "impact_type": "ai_cost_cutting_layoff",
+        "attribution_confidence": "high",
+        "outcome": "reversed",
+        "event_date": "2025-08-21",
+        "event_date_precision": "day",
+        "is_primary": true,
+        "summary": "据 ABC News（澳广）与 The Nightly 报道，澳大利亚联邦银行 2025 年 7 月以上线 AI 语音机器人为由裁撤 45 个客服岗位，8 月承认该决定是「错误」并撤回，受影响员工可留任、内部调岗或自愿离职。据报道，银行原称语音机器人每周减少 2,000 通来电，但实际来电量上升，管理者被迫加班并亲自接听电话。",
+        "employees_affected": 45,
+        "employees_affected_pct": null,
+        "revenue_impact_note": null,
+        "counter_evidence": "据 The Nightly 报道，金融业工会（FSU）全国书记 Julia Angrisano 称撤回是「重大胜利」，但 45 名员工已承受数周压力；工会指 CBA 是在「用 AI 为削减稳定岗位做包装」。该案例说明 AI 替代的效果宣称可能与实际运行结果不符。",
+        "sources": [
+          {
+            "url": "https://www.abc.net.au/news/2025-08-21/cba-backtracks-on-ai-job-cuts-as-chatbot-lifts-call-volumes/105679492",
+            "media_name": "ABC News (Australia)",
+            "source_type": "tier1_media",
+            "published_at": "2025-08-21",
+            "title": "Commonwealth Bank backtracks on AI job cuts, apologises for 'error' as call volumes rise",
+            "quote": "\"Our investment in technology, including AI, is making it easier and faster for customers to get help, especially in our call centres,\" CBA had said when confirming the job cuts in July.",
+            "quote_lang": "en",
+            "archive_url": null,
+            "link_health": "ok",
+            "manually_verified": true
+          },
+          {
+            "url": "https://thenightly.com.au/business/commonwealth-bank-backflips-on-decision-to-replace-45-call-centre-jobs-with-ai-chatbot-c-19752517",
+            "media_name": "The Nightly",
+            "source_type": "tier1_media",
+            "published_at": "2025-08-21",
+            "title": "Commonwealth Bank backflips on decision to replace 45 call centre jobs with AI chatbot",
+            "quote": "“CBA’s initial assessment that the 45 roles in our Customer Service Direct business were not required did not adequately consider all relevant business considerations and this error meant the roles were not redundant,” the spokesperson said.",
+            "quote_lang": "en",
+            "archive_url": null,
+            "link_health": "ok",
+            "manually_verified": true
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "company": {
+      "slug": "block",
+      "name": "Block, Inc.",
+      "name_zh": "Block",
+      "aliases": [
+        "Square",
+        "XYZ",
+        "Block Inc"
+      ],
+      "country_code": "US",
+      "region": "north_america",
+      "industry": "finance_insurance",
+      "company_size": "enterprise",
+      "founded_year": null,
+      "website_url": null,
+      "description": "美国支付与金融科技公司，旗下含 Square 商户支付与 Cash App 消费者业务。"
+    },
+    "impacts": [
+      {
+        "impact_type": "ai_cost_cutting_layoff",
+        "attribution_confidence": "high",
+        "outcome": "mass_layoff",
+        "event_date": "2026-02-26",
+        "event_date_precision": "day",
+        "is_primary": true,
+        "summary": "据 CNN 与《财富》报道，Block 于 2026 年 2 月宣布裁撤逾 4,000 人（约占员工总数 40%），创始人 Jack Dorsey 在 X 帖文与致股东信中把裁员直接归因于公司自建与使用的「智能工具」配合更小更扁平的团队；据 CNN 报道，CFO Amrita Ahuja 在财务指引中称公司看到用 AI 自动化更多工作、以更小团队更快推进的机会。",
+        "employees_affected": 4000,
+        "employees_affected_pct": 40,
+        "revenue_impact_note": null,
+        "counter_evidence": "据《财富》报道，Dorsey 本人也承认裁员部分是对疫情期间过度招聘的反应；该报道同时引述 2025 年麦肯锡调查与 NBER 对 6,000 名高管的调查，指多数企业的 AI 应用仍在试验阶段、尚未显现重大运营影响。",
+        "sources": [
+          {
+            "url": "https://fortune.com/2026/02/27/block-jack-dorsey-ceo-xyz-stock-square-4000-ai-layoffs/",
+            "media_name": "Fortune",
+            "source_type": "tier1_media",
+            "published_at": "2026-02-27",
+            "title": "Block CEO Jack Dorsey lays off nearly half of his staff because of AI and predicts most companies will make similar cuts in the next year",
+            "quote": "“We’re already seeing that the intelligence tools we’re creating and using, paired with smaller and flatter teams, are enabling a new way of working which fundamentally changes what it means to build and run a company,” he wrote.",
+            "quote_lang": "en",
+            "archive_url": null,
+            "link_health": "ok",
+            "manually_verified": true
+          },
+          {
+            "url": "https://www.cnn.com/2026/02/26/business/block-layoffs-ai-jack-dorsey",
+            "media_name": "CNN",
+            "source_type": "tier1_media",
+            "published_at": "2026-02-26",
+            "title": "Block lays off nearly half its staff because of AI. Its CEO said most companies will do the same",
+            "quote": "Block CFO Amrita Ahuja said it more plainly in the tech company’s financial guidance: “We see an opportunity to move faster with smaller, highly talented teams using AI to automate more work.”",
+            "quote_lang": "en",
+            "archive_url": null,
+            "link_health": "ok",
+            "manually_verified": true
+          },
+          {
+            "url": "https://sfstandard.com/2026/02/26/block-lays-off-staff/",
+            "media_name": "The San Francisco Standard",
+            "source_type": "trade_media",
+            "published_at": "2026-02-26",
+            "title": "AI made him do it: Jack Dorsey lays off 40% of Block staff",
+            "quote": "Block, the Oakland-based financial technology company, is cutting its workforce by 40%, from more than 10,000 workers to fewer than 6,000. The stated reason: AI.",
+            "quote_lang": "en",
+            "archive_url": null,
+            "link_health": "ok",
+            "manually_verified": true
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "company": {
+      "slug": "hp-inc",
+      "name": "HP Inc.",
+      "name_zh": "惠普",
+      "aliases": [
+        "HPQ",
+        "Hewlett-Packard"
+      ],
+      "country_code": "US",
+      "region": "north_america",
+      "industry": "manufacturing",
+      "company_size": "enterprise",
+      "founded_year": null,
+      "website_url": null,
+      "description": "美国个人电脑与打印设备制造商，2015 年由惠普公司拆分而来。"
+    },
+    "impacts": [
+      {
+        "impact_type": "ai_cost_cutting_layoff",
+        "attribution_confidence": "high",
+        "outcome": "downsizing_announced",
+        "event_date": "2025-11-25",
+        "event_date_precision": "day",
+        "is_primary": true,
+        "summary": "据 Yahoo Finance 报道，HP 于 2025 年 11 月宣布到 2028 财年裁撤 4,000 至 6,000 个岗位、目标实现 10 亿美元年化成本节约，CEO Enrique Lores 在采访中明确表示今天许多必须由人做的事，未来 AI 会做得更好更快；据 TechStartups 报道，裁撤涉及产品开发、内部运营与客户支持。",
+        "employees_affected": 6000,
+        "employees_affected_pct": null,
+        "revenue_impact_note": "据 Yahoo Finance 报道，HP 预计到 2028 财年实现 10 亿美元年化节约。",
+        "counter_evidence": "据 TechStartups 与 Yahoo Finance 报道，同期全球内存芯片价格大涨正在挤压 HP 等设备厂商的毛利，摩根士丹利警告 DRAM/NAND 涨价会压低全行业利润——成本压力与 AI 归因并存，且大部分节约要到本十年末才体现。",
+        "sources": [
+          {
+            "url": "https://finance.yahoo.com/news/hp-is-betting-1-billion-on-ai--even-if-it-means-cutting-thousands-of-jobs-says-ceo-223617822.html",
+            "media_name": "Yahoo Finance",
+            "source_type": "tier1_media",
+            "published_at": "2025-11-26",
+            "title": "HP is betting $1 billion on AI — even if it means cutting thousands of jobs, says CEO",
+            "quote": "\"There are many things that today we have to do using people ... that in the future AI will do better and will do faster,\" CEO Enrique Lores told Yahoo Finance (video above).",
+            "quote_lang": "en",
+            "archive_url": null,
+            "link_health": "ok",
+            "manually_verified": true
+          },
+          {
+            "url": "https://techstartups.com/2025/11/26/hp-to-cut-up-to-6000-jobs-by-2028-in-ai-driven-restructuring-as-tech-layoffs-continue/",
+            "media_name": "TechStartups",
+            "source_type": "trade_media",
+            "published_at": "2025-11-26",
+            "title": "HP to cut up to 6,000 jobs by 2028 in AI-driven restructuring as tech layoffs continue",
+            "quote": "The company said it expects to eliminate between 4,000 and 6,000 jobs globally by fiscal 2028 as it restructures its operations and leverages artificial intelligence to speed up product development, improve customer satisfaction, and push productivity higher.",
+            "quote_lang": "en",
+            "archive_url": null,
+            "link_health": "ok",
+            "manually_verified": true
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "company": {
+      "slug": "deutsche-lufthansa",
+      "name": "Deutsche Lufthansa AG",
+      "name_zh": "汉莎航空集团",
+      "aliases": [
+        "Lufthansa",
+        "Lufthansa Group"
+      ],
+      "country_code": "DE",
+      "region": "europe",
+      "industry": "travel_hospitality",
+      "company_size": "enterprise",
+      "founded_year": null,
+      "website_url": null,
+      "description": "德国航空集团，旗下包含汉莎航空、瑞士国际航空、奥地利航空等成员航司。"
+    },
+    "impacts": [
+      {
+        "impact_type": "ai_cost_cutting_layoff",
+        "attribution_confidence": "high",
+        "outcome": "downsizing_announced",
+        "event_date": "2025-09-29",
+        "event_date_precision": "day",
+        "is_primary": true,
+        "summary": "据 CNBC 与 ClickOnDetroit（美联社稿）报道，汉莎集团于 2025 年 9 月 29 日的资本市场日宣布到 2030 年裁撤 4,000 个行政岗位，公司在新闻稿中称数字化与人工智能使用的增加将在许多领域与流程带来更高效率。",
+        "employees_affected": 4000,
+        "employees_affected_pct": null,
+        "revenue_impact_note": null,
+        "counter_evidence": "据美联社报道，裁撤同时被归因于成员航司之间的工作合并与重复劳动的消除，并非单一 AI 因素；且公司同期报告航空需求强劲、预测未来利润更高，说明这不是经营困境下的被动裁员。",
+        "sources": [
+          {
+            "url": "https://www.cnbc.com/2025/09/29/lufthansa-to-cut-4000-jobs-turns-to-ai-to-boost-efficiency-.html",
+            "media_name": "CNBC",
+            "source_type": "tier1_media",
+            "published_at": "2025-09-29",
+            "title": "Lufthansa to cut 4,000 jobs as airline turns to AI to boost efficiency",
+            "quote": "\"The Lufthansa Group is reviewing which activities will no longer be necessary in the future, for example due to duplication of work. In particular, the profound changes brought about by digitalization and the increased use of artificial intelligence will lead to greater efficiency in many areas and processes,\" the company said in a release issued during its Capital Markets Day in Munich.",
+            "quote_lang": "en",
+            "archive_url": null,
+            "link_health": "ok",
+            "manually_verified": true
+          },
+          {
+            "url": "https://www.clickondetroit.com/business/2025/09/29/lufthansa-airline-group-to-shed-4000-jobs-by-2030-with-help-of-ai-sees-stronger-profits-ahead/",
+            "media_name": "ClickOnDetroit / Associated Press",
+            "source_type": "tier1_media",
+            "published_at": "2025-09-29",
+            "title": "Lufthansa Group to cut 4,000 jobs by 2030 with help of AI, sees stronger profits ahead",
+            "quote": "FRANKFURT – Lufthansa Group said Monday that it would shed 4,000 jobs by 2030 with the help of artificial intelligence, digitalization and consolidating work among member airlines — even as the company reported strong demand for air travel and predicted stronger profits in years ahead.",
+            "quote_lang": "en",
+            "archive_url": null,
+            "link_health": "ok",
+            "manually_verified": true
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "company": {
+      "slug": "sap",
+      "name": "SAP SE",
+      "name_zh": "思爱普",
+      "aliases": [
+        "SAP"
+      ],
+      "country_code": "DE",
+      "region": "europe",
+      "industry": "software_saas",
+      "company_size": "enterprise",
+      "founded_year": null,
+      "website_url": null,
+      "description": "德国企业应用软件公司，主营 ERP 与企业云服务。"
+    },
+    "impacts": [
+      {
+        "impact_type": "voluntary_pivot",
+        "attribution_confidence": "high",
+        "outcome": "pivot",
+        "event_date": "2024-01-24",
+        "event_date_precision": "day",
+        "is_primary": true,
+        "summary": "据 CNBC 与 CIO 报道，SAP 于 2024 年 1 月 24 日公布 20 亿欧元重组计划、涉及 8,000 个岗位，公司在新闻稿中称将把重心进一步转向 Business AI，并改造运营结构以获取组织协同与 AI 驱动的效率。",
+        "employees_affected": 8000,
+        "employees_affected_pct": 7.4,
+        "revenue_impact_note": null,
+        "counter_evidence": "据 CIO 报道，分析师认为 SAP 的意图是在总人数大致不变的前提下更换员工结构（以资历与技能组合为主），多数受影响员工通过自愿退休与再培训安排消化，不等同于净裁员 8,000 人。",
+        "sources": [
+          {
+            "url": "https://www.cnbc.com/2024/01/24/sap-shares-surge-7percent-after-results-plans-to-restructure-8000-jobs-in-push-to-ai.html",
+            "media_name": "CNBC",
+            "source_type": "tier1_media",
+            "published_at": "2024-01-24",
+            "title": "SAP shares surge to all-time high after results, plans to restructure 8,000 jobs in push to AI",
+            "quote": "\"SAP will further increase its focus on key strategic growth areas, in particular Business AI. It also intends to transform its operational setup to capture organizational synergies, AI-driven efficiencies and to prepare the company for highly scalable future revenue growth,\" the company said.",
+            "quote_lang": "en",
+            "archive_url": null,
+            "link_health": "ok",
+            "manually_verified": true
+          },
+          {
+            "url": "https://www.cio.com/article/1297964/sap-announces-2-2b-restructuring-program-thatll-impact-8000-jobs.html",
+            "media_name": "CIO",
+            "source_type": "trade_media",
+            "published_at": "2024-01-24",
+            "title": "SAP announces $2.2B restructuring program that’ll impact 8,000 jobs",
+            "quote": "German tech major SAP has announced a 2 billion euro ($2.17 billion) restructuring program for 2024, impacting 8,000 employees as it focuses on AI.",
+            "quote_lang": "en",
+            "archive_url": null,
+            "link_health": "ok",
+            "manually_verified": true
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "company": {
+      "slug": "ibm",
+      "name": "International Business Machines Corporation",
+      "name_zh": "IBM",
+      "aliases": [
+        "IBM",
+        "Big Blue"
+      ],
+      "country_code": "US",
+      "region": "north_america",
+      "industry": "it_services",
+      "company_size": "enterprise",
+      "founded_year": null,
+      "website_url": null,
+      "description": "美国信息技术与咨询服务公司，业务涵盖企业软件、咨询与基础设施。"
+    },
+    "impacts": [
+      {
+        "impact_type": "ai_cost_cutting_layoff",
+        "attribution_confidence": "high",
+        "outcome": "downsizing_announced",
+        "event_date": "2023-05-01",
+        "event_date_precision": "day",
+        "is_primary": true,
+        "summary": "据《财富》与半岛电视台报道，IBM CEO Arvind Krishna 于 2023 年 5 月表示公司将暂停或放缓招聘那些预计可被 AI 取代的后台职能岗位（约涉及 26,000 名非客户面向员工），并称其中约 30% 可在五年内被 AI 与自动化取代。据 CNBC 2025 年汇总报道，Krishna 后续称 AI 聊天机器人已接手数百个人力资源岗位的工作。",
+        "employees_affected": null,
+        "employees_affected_pct": null,
+        "revenue_impact_note": null,
+        "counter_evidence": "据 CNBC 报道，与其他援引 AI 裁员的公司不同，Krishna 承认 IBM 同期在软件工程、销售与市场等更需要批判性思考的领域增加了招聘。据半岛电视台报道，IBM 发言人对法新社表示并不存在全面的招聘冻结，只是在填补「不直接接触客户或技术的岗位」时「非常有选择性」，与「冻结招聘」的报道口径有出入。另需说明：2023 年的「30% / 7,800 个岗位」是 CEO 对未来五年的预期，不是已执行的裁员，本记录的 outcome 因此为「宣布缩编计划」。",
+        "sources": [
+          {
+            "url": "https://fortune.com/2023/05/01/ibm-ceo-ai-artificial-intelligence-back-office-jobs-pause-hiring",
+            "media_name": "Fortune",
+            "source_type": "tier1_media",
+            "published_at": "2023-05-01",
+            "title": "IBM CEO says company expects to pause hiring for roles AI could replace",
+            "quote": "Hiring in back-office functions — such as human resources — will be suspended or slowed, Krishna said in an interview. These non-customer-facing roles amount to roughly 26,000 workers, Krishna said. “I could easily see 30% of that getting replaced by AI and automation over a five-year period.”",
+            "quote_lang": "en",
+            "archive_url": null,
+            "link_health": "ok",
+            "manually_verified": true
+          },
+          {
+            "url": "https://www.aljazeera.com/economy/2023/5/3/ibm-to-freeze-hiring-as-ceo-expects-ai-to-replace-7800-jobs",
+            "media_name": "Al Jazeera",
+            "source_type": "tier1_media",
+            "published_at": "2023-05-03",
+            "title": "IBM to freeze hiring as CEO expects AI to replace 7,800 jobs",
+            "quote": "IBM will freeze hiring as it expects about 7,800 jobs to be replaced by Artificial Intelligence (AI) in the coming years, the tech giant’s CEO has said.",
+            "quote_lang": "en",
+            "archive_url": null,
+            "link_health": "ok",
+            "manually_verified": true
+          },
+          {
+            "url": "https://www.cnbc.com/2025/12/21/ai-job-cuts-amazon-microsoft-and-more-cite-ai-for-2025-layoffs.html",
+            "media_name": "CNBC",
+            "source_type": "tier1_media",
+            "published_at": "2025-12-21",
+            "title": "AI was behind over 50,000 layoffs in 2025 — here are the top firms to cite it for job cuts",
+            "quote": "CEO Arvind Krishna told the Wall Street Journal in May that AI chatbots had taken over the jobs of a few hundred human resources workers.",
+            "quote_lang": "en",
+            "archive_url": null,
+            "link_health": "ok",
+            "manually_verified": true
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "company": {
+      "slug": "dukaan",
+      "name": "Dukaan",
+      "name_zh": "Dukaan",
+      "aliases": [
+        "Dukaan.app"
+      ],
+      "country_code": "IN",
+      "region": "asia_pacific",
+      "industry": "ecommerce_retail",
+      "company_size": "unknown",
+      "founded_year": null,
+      "website_url": null,
+      "description": "印度自助建站平台，让无编程经验的商户自行开设电商店铺。"
+    },
+    "impacts": [
+      {
+        "impact_type": "ai_cost_cutting_layoff",
+        "attribution_confidence": "high",
+        "outcome": "mass_layoff",
+        "event_date": "2023-07-10",
+        "event_date_precision": "day",
+        "is_primary": true,
+        "summary": "据《财富》与 Business Today 报道，印度电商建站平台 Dukaan 创始人兼 CEO Suumit Shah 于 2023 年 7 月在 Twitter 公开表示，公司因自建的 AI 客服机器人而裁掉了 90% 的客服团队，并称首次响应时间从 1 分 44 秒降至即时、解决时间从 2 小时 13 分降至 3 分 12 秒、客服成本下降约 85%。",
+        "employees_affected": null,
+        "employees_affected_pct": 90,
+        "revenue_impact_note": "据《财富》报道，Shah 称客服成本下降约 85%。",
+        "counter_evidence": "据《财富》报道，Shah 同时把决定归因于经济环境下初创公司优先追求盈利而非独角兽估值；该表态在社交平台引发大量批评，认为其夸大 AI 成效并美化裁员。公司未公开受影响的具体人数。",
+        "sources": [
+          {
+            "url": "https://fortune.com/2023/07/12/dukaan-ceo-slammed-replacing-90-percent-company-support-staff-with-ai-chatbot-bragging-twitter-backlash",
+            "media_name": "Fortune",
+            "source_type": "tier1_media",
+            "published_at": "2023-07-12",
+            "title": "CEO slammed for replacing 90% of his company’s support staff with an A.I. chatbot—then bragging about it on Twitter",
+            "quote": "We had to layoff 90% of our support team because of this AI chatbot.",
+            "quote_lang": "en",
+            "archive_url": null,
+            "link_health": "ok",
+            "manually_verified": true
+          },
+          {
+            "url": "https://www.businesstoday.in/latest/corporate/story/tech-layoff-dukaan-lays-off-90-of-support-staff-after-introducing-ai-chatbot-for-customer-support-389235-2023-07-11",
+            "media_name": "Business Today",
+            "source_type": "tier1_media",
+            "published_at": "2023-07-11",
+            "title": "Tech layoff: Dukaan lays off 90% of support staff after introducing AI chatbot for customer support",
+            "quote": "Suumit Shah, Dukaan’s founder and CEO, shared this update through a Twitter post where he explained that the query resolution time went down from 2 hours and 13 minutes to 3 minutes and 12 seconds after the introduction of Dukaan’s own AI assistant.",
+            "quote_lang": "en",
+            "archive_url": null,
+            "link_health": "ok",
+            "manually_verified": true
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "company": {
+      "slug": "business-insider",
+      "name": "Business Insider",
+      "name_zh": "Business Insider",
+      "aliases": [
+        "Insider",
+        "BI"
+      ],
+      "country_code": "US",
+      "region": "north_america",
+      "industry": "media_publishing",
+      "company_size": "large",
+      "founded_year": null,
+      "website_url": null,
+      "description": "美国商业与科技数字媒体，隶属德国出版集团 Axel Springer。"
+    },
+    "impacts": [
+      {
+        "impact_type": "voluntary_pivot",
+        "attribution_confidence": "medium",
+        "outcome": "mass_layoff",
+        "event_date": "2025-05-29",
+        "event_date_precision": "day",
+        "is_primary": true,
+        "summary": "据 Variety 与 TheWrap 报道，Business Insider 于 2025 年 5 月宣布裁撤 21% 员工，CEO Barbara Peng 在内部信中称公司必须「全力投入 AI」，同时表示公司有 70% 的业务对流量敏感、必须能承受「不受我们控制的极端流量下跌」。据 AdExchanger 报道，该公司自然搜索流量在 2022 年 4 月至 2025 年 4 月间下降 55%。",
+        "employees_affected": null,
+        "employees_affected_pct": 21,
+        "revenue_impact_note": null,
+        "counter_evidence": "定为「中」而非「高」：Peng 的内部信把流量下跌描述为「不受我们控制」，并未明确指名 AI 搜索是流量下跌的原因，AI 在信中出现的位置是公司自身的战略投入方向。把流量崩塌与 AI 搜索相联的是 AdExchanger 等媒体的分析。据 Variety 报道，工会批评该内部信在宣布裁员的同一封邮件里宣传 AI 使用是「毫无同理心」的。",
+        "sources": [
+          {
+            "url": "https://variety.com/2025/digital/news/business-insider-layoffs-shift-toward-ai-live-events-1236412950/",
+            "media_name": "Variety",
+            "source_type": "tier1_media",
+            "published_at": "2025-05-29",
+            "title": "Business Insider to Slash 21% of Staff in Shift Toward AI and Live Events; Union Slams Layoffs as ‘Pivot Away From Journalism Toward Greed’",
+            "quote": "Still, 70% of our business has some degree of traffic sensitivity. We must be structured to endure extreme traffic drops outside of our control, so we’re reducing our overall company to a size where we can absorb that volatility.",
+            "quote_lang": "en",
+            "archive_url": null,
+            "link_health": "ok",
+            "manually_verified": true
+          },
+          {
+            "url": "https://www.thewrap.com/business-insider-layoffs-21-percent-of-staff-ai/",
+            "media_name": "TheWrap",
+            "source_type": "trade_media",
+            "published_at": "2025-05-29",
+            "title": "Business Insider Lays Off 21% of Staff as CEO Says Outlet Is ‘Going All-In on AI’",
+            "quote": "Going forward, Business Insider will be launching events coverage, “fully embracing AI” and reducing their reliance on “traffic-sensitive businesses.”",
+            "quote_lang": "en",
+            "archive_url": null,
+            "link_health": "ok",
+            "manually_verified": true
+          },
+          {
+            "url": "https://www.adexchanger.com/publishers/the-ai-search-reckoning-is-dismantling-open-web-traffic-and-publishers-may-never-recover/",
+            "media_name": "AdExchanger",
+            "source_type": "trade_media",
+            "published_at": "2026-01-06",
+            "title": "The AI Search Reckoning Is Dismantling Open Web Traffic – And Publishers May Never Recover",
+            "quote": "Business Insider saw its organic search traffic fall by 55% between April 2022 and April 2025, leading the company to cut 21% of its staff in May.",
+            "quote_lang": "en",
+            "archive_url": null,
+            "link_health": "ok",
+            "manually_verified": true
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "company": {
+      "slug": "klarna",
+      "name": "Klarna Bank AB",
+      "name_zh": "Klarna",
+      "aliases": [
+        "Klarna"
+      ],
+      "country_code": "SE",
+      "region": "europe",
+      "industry": "finance_insurance",
+      "company_size": "large",
+      "founded_year": null,
+      "website_url": null,
+      "description": "瑞典「先买后付」（BNPL）支付服务商，2024 年起在客服环节大规模部署基于 OpenAI 的 AI 助手。"
+    },
+    "impacts": [
+      {
+        "impact_type": "ai_cost_cutting_layoff",
+        "attribution_confidence": "medium",
+        "outcome": "downsizing_announced",
+        "event_date": "2024-02-27",
+        "event_date_precision": "day",
+        "is_primary": true,
+        "summary": "据 Entrepreneur 与 WWD/Sourcing Journal 报道，Klarna 于 2024 年 2 月称其 AI 助手在上线一个月内承接了约三分之二的客服咨询，工作量「相当于 700 名全职客服」；据 WWD 报道，公司发言人称专职服务 Klarna 的第三方客服坐席已从约 3,000 人降至 2,300 人，并称这对 Klarna 意味着客服需求与成本的直接下降。CEO 此前已宣布除工程岗外停止招聘。",
+        "employees_affected": null,
+        "employees_affected_pct": null,
+        "revenue_impact_note": "据 Entrepreneur 报道，Klarna 称该聊天机器人当年可改善利润约 4,000 万美元。",
+        "counter_evidence": "三点必须同时呈现：（1）「700 人」是工作量等效值，不是裁员人数；（2）Klarna 发言人明确否认 AI 助手与 2022 年的裁员有关，原话为「The workforce reductions of 2022 are in no way connected to the AI assistant.」；（3）据 CMSWire 2026 年报道，Klarna 的客服削减后来被部分回退。另据 The San Francisco Standard 报道，Klarna 自 2022 年起的人员减半主要通过自然流失与停止招聘实现，而非裁员。",
+        "sources": [
+          {
+            "url": "https://www.entrepreneur.com/business-news/klarna-says-its-ai-assistant-does-the-work-of-700-people/470405",
+            "media_name": "Entrepreneur",
+            "source_type": "trade_media",
+            "published_at": "2024-02-29",
+            "title": "Klarna Says Its AI Assistant Does the Work of 700 People. The Company Laid Off the Same Number of Employees 2 Years Ago.",
+            "quote": "Klarna, the $7 billion “buy now, pay later” startup used by companies like Versace, Nike, and Wayfair, stated on Tuesday that its AI chatbot “is doing the equivalent work of 700 full-time [customer service] agents.”",
+            "quote_lang": "en",
+            "archive_url": null,
+            "link_health": "ok",
+            "manually_verified": true
+          },
+          {
+            "url": "https://wwd.com/sourcing-journal/industry-news/klarna-artificial-intelligence-buy-now-pay-later-customer-service-assistant-1238830614/",
+            "media_name": "Sourcing Journal (WWD)",
+            "source_type": "trade_media",
+            "published_at": "2024-03-01",
+            "title": "Klarna’s AI Assistant Is Doing the Work of 700 Customer Service Agents",
+            "quote": "“On average, 3,000 full-time agents have been dedicated to Klarna,” the spokesperson told Sourcing Journal. “Since the launch of the AI assistant, we have seen that number reduce to 2,300 agents fully dedicated to Klarna. Because our third-party customer service agents have such a large volume of work from other clients, they are able to redeploy those agents [to those] clients. But for Klarna, that implies a direct reduction in our customer service requirements, and therefore, cost savings.”",
+            "quote_lang": "en",
+            "archive_url": null,
+            "link_health": "ok",
+            "manually_verified": true
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "company": {
+      "slug": "duolingo",
+      "name": "Duolingo, Inc.",
+      "name_zh": "多邻国",
+      "aliases": [
+        "DUOL"
+      ],
+      "country_code": "US",
+      "region": "north_america",
+      "industry": "education",
+      "company_size": "large",
+      "founded_year": null,
+      "website_url": null,
+      "description": "美国语言学习应用开发商，提供游戏化的外语课程与订阅服务。"
+    },
+    "impacts": [
+      {
+        "impact_type": "ai_cost_cutting_layoff",
+        "attribution_confidence": "medium",
+        "outcome": "mass_layoff",
+        "event_date": "2023-12-01",
+        "event_date_precision": "month",
+        "is_primary": true,
+        "summary": "据 TechCrunch 与 Business Today 报道，Duolingo 在 2023 年底裁撤约 10% 的外部合约工作者（主要是合约译者），公司发言人称「我们只是不再需要那么多人来做其中一些合约工所做的工作，其中一部分可以归因于 AI」。公司同时否认这属于「直接替换」，称 AI 只是多项原因之一。",
+        "employees_affected": null,
+        "employees_affected_pct": 10,
+        "revenue_impact_note": null,
+        "counter_evidence": "定为「中」而非「高」：公司方的表述是「其中一部分可以归因于 AI」，属于含糊确认而非把 AI 指为主因，符合归因标准 M2。据 TechCrunch 报道，Duolingo 否认这些离职属于「裁员」，称只有「少数」合约工因项目结束而终止，并列出合约到期、内容生产流程改进等其他原因；全球传播负责人 Sam Dalsimer 称「AI 虽然促成了合约人数下降，但不是唯一原因」。",
+        "sources": [
+          {
+            "url": "https://techcrunch.com/2024/01/09/duolingo-cut-10-of-its-contractor-workforce-as-the-company-embraces-ai",
+            "media_name": "TechCrunch",
+            "source_type": "tier1_media",
+            "published_at": "2024-01-09",
+            "title": "Duolingo cuts 10% of its contractor workforce as the company embraces AI",
+            "quote": "Duolingo is the latest company to cite AI as a reason for job cuts. The company confirmed it cut around 10% of its contractor workforce at the end of 2023, as it turns to AI models like OpenAI’s GPT-4 to streamline content production and translations.",
+            "quote_lang": "en",
+            "archive_url": null,
+            "link_health": "ok",
+            "manually_verified": true
+          },
+          {
+            "url": "https://www.businesstoday.in/technology/news/story/popular-language-learning-app-duolingo-lays-off-10-of-contract-translators-as-firm-embraces-ai-412548-2024-01-10",
+            "media_name": "Business Today",
+            "source_type": "tier1_media",
+            "published_at": "2024-01-10",
+            "title": "Language-learning app Duolingo fires 10% of its translator workforce for AI",
+            "quote": "“We just no longer need as many people to do the type of work some of these contractors were doing. Part of that could be attributed to AI,” a company spokesperson said.",
+            "quote_lang": "en",
+            "archive_url": null,
+            "link_health": "ok",
+            "manually_verified": true
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "company": {
+      "slug": "stack-overflow",
+      "name": "Stack Overflow",
+      "name_zh": "Stack Overflow",
+      "aliases": [
+        "Stack Exchange",
+        "Prosus"
+      ],
+      "country_code": "US",
+      "region": "north_america",
+      "industry": "software_saas",
+      "company_size": "large",
+      "founded_year": null,
+      "website_url": null,
+      "description": "面向开发者的技术问答社区，以悬赏与投票机制积累编程问题解答。"
+    },
+    "impacts": [
+      {
+        "impact_type": "replaced_by_ai_product",
+        "attribution_confidence": "medium",
+        "outcome": "mass_layoff",
+        "event_date": "2023-10-16",
+        "event_date_precision": "day",
+        "is_primary": true,
+        "summary": "据 Cointelegraph 报道，Stack Overflow 于 2023 年 10 月 16 日宣布裁撤约 28% 员工（约 150 人）；公司此前公开表示 2023 年 4 月出现约 14% 的高于平均的流量下滑，并称这「很可能可以归因于开发者在 GPT-4 发布后尝试它」，同时预计生成式 AI 会在未来数月带来传统流量与互动的起落。据 Allstacks 统计，平台月提问量从 2022 年 11 月的 10.8 万降至 2024 年 12 月的 2.5 万。",
+        "employees_affected": null,
+        "employees_affected_pct": 28,
+        "revenue_impact_note": null,
+        "counter_evidence": "关键反方证据：据 Cointelegraph 报道，CEO Prashanth Chandrasekar 在宣布裁员时给出的公开口径是「影响整个科技行业的宏观经济压力」，并强调公司走在「通往盈利的路径」上，并未把裁员归因于 AI。公司 2022 年曾将人数翻倍至 540 人，过度扩张是另一解释。本条按 M4（硬数据强相关 + 媒体明确关联，但无人作因果断言）评为「中」。",
+        "sources": [
+          {
+            "url": "https://cointelegraph.com/news/developer-platform-stack-overflow-reduces-headcount-ai-competition",
+            "media_name": "Cointelegraph",
+            "source_type": "trade_media",
+            "published_at": "2023-10-17",
+            "title": "Dev platform Stack Overflow axes 28% of staff as AI competition grows",
+            "quote": "“Conversely, in April of this year, we saw an above-average traffic decrease (~14%), which we can likely attribute to developers trying GPT-4 after it was released in March,” it added.",
+            "quote_lang": "en",
+            "archive_url": null,
+            "link_health": "ok",
+            "manually_verified": true
+          },
+          {
+            "url": "https://www.allstacks.com/blog/ai-killed-the-stack-overflow-star-the-76-collapse-in-developer-qa",
+            "media_name": "Allstacks",
+            "source_type": "aggregator",
+            "published_at": "2025-10-01",
+            "title": "AI Killed the Stack Overflow Star: The 76% Collapse in Developer Q&A",
+            "quote": "In November 2022, Stack Overflow processed 108,000 questions from developers worldwide. By December 2024, that number had collapsed to 25,000. This was not a gradual decline or a seasonal dip. It was a 76% drop in the behavior that had defined developer culture for fifteen years.",
+            "quote_lang": "en",
+            "archive_url": null,
+            "link_health": "ok",
+            "manually_verified": true
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "company": {
+      "slug": "commerzbank",
+      "name": "Commerzbank AG",
+      "name_zh": "德国商业银行",
+      "aliases": [
+        "Commerzbank"
+      ],
+      "country_code": "DE",
+      "region": "europe",
+      "industry": "finance_insurance",
+      "company_size": "enterprise",
+      "founded_year": null,
+      "website_url": null,
+      "description": "德国第二大商业银行，业务涵盖企业客户与零售银行。"
+    },
+    "impacts": [
+      {
+        "impact_type": "ai_cost_cutting_layoff",
+        "attribution_confidence": "medium",
+        "outcome": "downsizing_announced",
+        "event_date": "2026-05-15",
+        "event_date_precision": "day",
+        "is_primary": true,
+        "summary": "据 bluewin（引述德新社 dpa 访谈）报道，德国商业银行 CEO Bettina Orlopp 于 2026 年 5 月说明在与意大利联合信贷的收购攻防中再裁约 3,000 个岗位的构成，称人工智能将占其中「非常大的一部分」，并表示会优先削减外部呼叫中心与 IT 环境中的外部人员，尽量不动自有员工。",
+        "employees_affected": 3000,
+        "employees_affected_pct": null,
+        "revenue_impact_note": null,
+        "counter_evidence": "定为「中」而非「高」：仅核到一条可访问的原创来源（不满足归因标准 H4 的两条独立来源），按 M3 评为「中」。混杂因素明确存在：据同一报道，这 3,000 个岗位的削减是德国商业银行在抵御联合信贷收购、向股东承诺更高利润与回报目标的背景下提出的，AI 之外还有收购攻防与成本目标的动因。",
+        "sources": [
+          {
+            "url": "https://www.bluewin.ch/en/news/commerzbank-boss-ai-accounts-for-the-majority-of-job-cuts-li.3234088",
+            "media_name": "bluewin / Deutsche Presse-Agentur",
+            "source_type": "tier1_media",
+            "published_at": "2026-05-15",
+            "title": "Commerzbank boss: AI accounts for the majority of job cuts",
+            "quote": "Commerzbank CEO Bettina Orlopp has specified where she wants to cut around 3,000 jobs in the takeover battle with Unicredit. Artificial intelligence (AI) will account for a \"very large part\" of this, the manager told Deutsche Presse-Agentur in Frankfurt.",
+            "quote_lang": "en",
+            "archive_url": null,
+            "link_health": "ok",
+            "manually_verified": true
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "company": {
+      "slug": "uber",
+      "name": "Uber Technologies, Inc.",
+      "name_zh": "优步",
+      "aliases": [
+        "UBER"
+      ],
+      "country_code": "US",
+      "region": "north_america",
+      "industry": "logistics_transport",
+      "company_size": "enterprise",
+      "founded_year": null,
+      "website_url": null,
+      "description": "美国出行与配送平台公司，设有覆盖多地区与多语言的客户支持组织 Community Operations。"
+    },
+    "impacts": [
+      {
+        "impact_type": "ai_cost_cutting_layoff",
+        "attribution_confidence": "medium",
+        "outcome": "mass_layoff",
+        "event_date": "2026-07-23",
+        "event_date_precision": "day",
+        "is_primary": true,
+        "summary": "据 CMSWire 报道（引述 Business Insider 与 Engadget/Bloomberg），Uber 于 2026 年 7 月裁撤其Community Operations 客户支持组织约 10% 的岗位。公司发言人称调整是为了「简化运营、强化面对面协作并继续拥抱 AI」；全球社区运营副总裁 Megha Yethadka 在内部备忘录中把 AI 同时描述为机会与「组织必须先改变形态」的原因，称「我们无法在碎片化的流程之上扩展前沿技术」。",
+        "employees_affected": null,
+        "employees_affected_pct": 10,
+        "revenue_impact_note": null,
+        "counter_evidence": "定为「中」：仅核到一条可访问的原创来源，且该来源本身是对 Business Insider 与 Bloomberg 报道的转述（不满足 H4）。反方证据：据同一报道，Gartner 预测到 2027 年将有半数把客服减员归因于 AI 的公司重新招聘同类岗位；Gartner 分析师 Kathy Ross 称「近期的人员削减更多受宏观经济条件影响，而非仅由自动化驱动」。该报道还指出被裁岗位偏向三线升级与理赔处理等判断密集型工作，而非最易被机器人替代的脚本化客服。",
+        "sources": [
+          {
+            "url": "https://www.cmswire.com/customer-experience/uber-joins-growing-list-of-companies-blaming-ai-for-customer-service-cuts/",
+            "media_name": "CMSWire",
+            "source_type": "trade_media",
+            "published_at": "2026-07-23",
+            "title": "Uber Joins Growing List of Companies Blaming AI for Customer Service Cuts",
+            "quote": "The ride-hailing company is laying off roughly 10% of its Community Operations team — Uber's customer support organization spanning regions, languages and business lines — and requiring remote employees on that team to work from an Uber office three days a week, according to a Business Insider report. Engadget, citing Bloomberg, reported an Uber spokesperson said the changes were made \"to simplify operations, strengthen in-person collaboration and continue to embrace AI.\"",
+            "quote_lang": "en",
+            "archive_url": null,
+            "link_health": "ok",
+            "manually_verified": true
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "company": {
+      "slug": "workday",
+      "name": "Workday, Inc.",
+      "name_zh": "Workday",
+      "aliases": [
+        "WDAY"
+      ],
+      "country_code": "US",
+      "region": "north_america",
+      "industry": "software_saas",
+      "company_size": "enterprise",
+      "founded_year": null,
+      "website_url": null,
+      "description": "美国企业级人力资源与财务管理 SaaS 公司。"
+    },
+    "impacts": [
+      {
+        "impact_type": "voluntary_pivot",
+        "attribution_confidence": "medium",
+        "outcome": "mass_layoff",
+        "event_date": "2025-02-05",
+        "event_date_precision": "day",
+        "is_primary": true,
+        "summary": "据 CNBC 报道，Workday 于 2025 年 2 月宣布裁撤 8.5% 员工（约 1,750 人），CEO Carl Eschenbach 表示裁员是为了优先投入 AI 并腾出资源。",
+        "employees_affected": 1750,
+        "employees_affected_pct": 8.5,
+        "revenue_impact_note": null,
+        "counter_evidence": "定为「中」而非「高」：仅核到一条可访问来源（不满足 H4），且公司口径是「为投入 AI 而腾出资源」，属于主动转型投入，而非 AI 直接替代了这些岗位。据同一报道，牛津互联网研究院 Fabian Stephany 认为部分公司把 AI 当作过度招聘失误的「替罪羊」。",
+        "sources": [
+          {
+            "url": "https://www.cnbc.com/2025/12/21/ai-job-cuts-amazon-microsoft-and-more-cite-ai-for-2025-layoffs.html",
+            "media_name": "CNBC",
+            "source_type": "tier1_media",
+            "published_at": "2025-12-21",
+            "title": "AI was behind over 50,000 layoffs in 2025 — here are the top firms to cite it for job cuts",
+            "quote": "In February, HR platform Workday was one of the first companies this year to say its cutting 8.5% of its workforce, amounting to around 1,750 jobs, as the company invests more in AI.",
+            "quote_lang": "en",
+            "archive_url": null,
+            "link_health": "ok",
+            "manually_verified": true
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "company": {
+      "slug": "crowdstrike",
+      "name": "CrowdStrike Holdings, Inc.",
+      "name_zh": "CrowdStrike",
+      "aliases": [
+        "CRWD"
+      ],
+      "country_code": "US",
+      "region": "north_america",
+      "industry": "software_saas",
+      "company_size": "enterprise",
+      "founded_year": null,
+      "website_url": null,
+      "description": "美国网络安全软件公司，主营端点检测与响应的云原生安全平台。"
+    },
+    "impacts": [
+      {
+        "impact_type": "ai_cost_cutting_layoff",
+        "attribution_confidence": "high",
+        "outcome": "mass_layoff",
+        "event_date": "2025-05-07",
+        "event_date_precision": "day",
+        "is_primary": true,
+        "summary": "据 CrowdStrike 向美国证交会提交的 8-K 附件（EX-99.1，联合创始人兼 CEO George Kurtz 致员工备忘录原文）与 CNBC 报道，公司于 2025 年 5 月宣布裁撤 5% 员工（约 500 人）。Kurtz 在备忘录中把这次「运营模式演进」归因于 AI：称「AI 一直是我们运作方式的基础」、「AI 拉平了我们的招聘曲线」、「AI 是贯穿整个业务的力量倍增器」。",
+        "employees_affected": 500,
+        "employees_affected_pct": 5,
+        "revenue_impact_note": null,
+        "counter_evidence": "备忘录本身把 AI 列为三条理由中的第一条，另外两条是「市场需求驱动持续增长」与「扩大市场进入与客户成功团队的产能」——即公司同期仍在扩招部分岗位，不应把 500 人读作净减员。Kurtz 也把此次调整表述为在「近 10,000 名员工、清晰的 100 亿美元 ARR 路径」下的规模化运营演进，即组织扩张期的结构调整，而非经营困境。",
+        "sources": [
+          {
+            "url": "https://www.sec.gov/Archives/edgar/data/1535527/000110465925045244/tm2514190d1_ex99-1.htm",
+            "media_name": "U.S. SEC EDGAR — CrowdStrike Holdings 8-K Exhibit 99.1",
+            "source_type": "primary_company",
+            "published_at": "2025-05-07",
+            "title": "CrowdStrike Holdings, Inc. — Form 8-K, Exhibit 99.1 (CEO memo to employees)",
+            "quote": "AI has always been foundational to how we operate. AI flattens our hiring curve, and helps us innovate from idea to product faster. It streamlines go-to-market, improves customer outcomes, and drives efficiencies across both the front and back office. AI is a force multiplier throughout the business.",
+            "quote_lang": "en",
+            "archive_url": null,
+            "link_health": "ok",
+            "manually_verified": true
+          },
+          {
+            "url": "https://www.cnbc.com/2025/12/21/ai-job-cuts-amazon-microsoft-and-more-cite-ai-for-2025-layoffs.html",
+            "media_name": "CNBC",
+            "source_type": "tier1_media",
+            "published_at": "2025-12-21",
+            "title": "AI was behind over 50,000 layoffs in 2025 — here are the top firms to cite it for job cuts",
+            "quote": "\"AI has always been foundational to how we operate,\" co-founder and CEO George Kurtz wrote in a memo included in a securities filing. \"AI flattens our hiring curve, and helps us innovate from idea to product faster. It streamlines go-to-market, improves customer outcomes, and drives efficiencies across both the front and back office. AI is a force multiplier throughout the business.\"",
+            "quote_lang": "en",
+            "archive_url": null,
+            "link_health": "ok",
+            "manually_verified": true
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "company": {
+      "slug": "bt-group",
+      "name": "BT Group plc",
+      "name_zh": "英国电信",
+      "aliases": [
+        "BT",
+        "British Telecom"
+      ],
+      "country_code": "GB",
+      "region": "europe",
+      "industry": "telecom",
+      "company_size": "enterprise",
+      "founded_year": null,
+      "website_url": null,
+      "description": "英国电信运营商，旗下含 Openreach 网络业务与消费者、企业通信服务。"
+    },
+    "impacts": [
+      {
+        "impact_type": "ai_cost_cutting_layoff",
+        "attribution_confidence": "medium",
+        "outcome": "downsizing_announced",
+        "event_date": "2023-05-18",
+        "event_date_precision": "day",
+        "is_primary": true,
+        "summary": "据 Silicon Republic 报道（引述 Sky News），BT Group 于 2023 年 5 月 18 日宣布到 2030 年裁撤 4 万至 5.5 万个岗位，CEO Philip Jansen 对投资者表示其中约 1 万个岗位预计可由 AI 技术取代。据 CNBC 报道，这一削减幅度相当于其员工总数的 31% 至 42%。",
+        "employees_affected": 10000,
+        "employees_affected_pct": null,
+        "revenue_impact_note": null,
+        "counter_evidence": "必须讲清比例：5.5 万的削减总量里只有约 1 万个岗位被归因于 AI，其余主要来自全光纤投资见顶后工程人力需求下降、以及 3G/4G 双网并行结束。CNBC 的原始报道通篇未提及 AI，Jansen 当天的公开声明口径是「数字化工作方式与简化结构」。AI 归因出自同日投资者沟通，且本条的 AI 归因是经 Silicon Republic 转述 Sky News 得到的二手表述，故评为「中」。",
+        "sources": [
+          {
+            "url": "https://www.siliconrepublic.com/business/bt-job-cuts-ireland-ai-automation",
+            "media_name": "Silicon Republic",
+            "source_type": "trade_media",
+            "published_at": "2023-05-18",
+            "title": "BT to cut up to 55,000 staff by 2030 amid shift to AI",
+            "quote": "Jansen also told investors that he expects AI technology to replace around 10,000 jobs in the future, Sky News reports.",
+            "quote_lang": "en",
+            "archive_url": null,
+            "link_health": "ok",
+            "manually_verified": true
+          },
+          {
+            "url": "https://www.cnbc.com/2023/05/18/british-telecom-giant-bt-to-cut-up-to-55000-jobs-by-2030.html",
+            "media_name": "CNBC",
+            "source_type": "tier1_media",
+            "published_at": "2023-05-18",
+            "title": "British telecom giant BT to cut up to 55,000 jobs by 2030",
+            "quote": "The layoffs, which will include both direct BT employees and third-party workers, will mark a 31-42% reduction in company staffing.",
+            "quote_lang": "en",
+            "archive_url": null,
+            "link_health": "ok",
+            "manually_verified": true
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "company": {
+      "slug": "accenture",
+      "name": "Accenture plc",
+      "name_zh": "埃森哲",
+      "aliases": [
+        "ACN"
+      ],
+      "country_code": "IE",
+      "region": "europe",
+      "industry": "it_services",
+      "company_size": "enterprise",
+      "founded_year": null,
+      "website_url": null,
+      "description": "全球性 IT 咨询与外包服务公司，注册地在爱尔兰。"
+    },
+    "impacts": [
+      {
+        "impact_type": "voluntary_pivot",
+        "attribution_confidence": "medium",
+        "outcome": "mass_layoff",
+        "event_date": "2025-09-30",
+        "event_date_precision": "day",
+        "is_primary": true,
+        "summary": "据 CX Today 报道，埃森哲在 2025 财年业绩沟通中披露已裁撤逾 1.1 万人，CEO Julie Sweet 对分析师表示公司正在「以压缩的时间表退出那些根据我们经验无法通过再培训获得我们所需技能的人」，并称无法再培训者将被退出。公司同时表示整体人数仍将随数字与 AI 咨询需求增长。",
+        "employees_affected": 11000,
+        "employees_affected_pct": null,
+        "revenue_impact_note": null,
+        "counter_evidence": "定为「中」而非「高」：Sweet 的原话只说「我们所需的技能」，并未在该句中直接点名 AI，把它与 AI 相联的是报道的标题与上下文；且仅核到一条可访问来源（不满足 H4）。反方证据：据同一报道，埃森哲同期营收同比增长 7%，并预计新财年整体员工总数会增长，尤其在 AI 与数字服务领域——这更接近技能结构置换，而非 AI 导致的净减员。",
+        "sources": [
+          {
+            "url": "https://www.cxtoday.com/contact-center/accenture-lays-off-11000-staff-as-part-of-ai-reskilling-strategy/",
+            "media_name": "CX Today",
+            "source_type": "trade_media",
+            "published_at": "2025-09-30",
+            "title": "Accenture Lays Off 11,000 Staff as Part of AI Reskilling Strategy",
+            "quote": "“We are exiting on a compressed timeline people where reskilling, based on our experience, is not a viable path for the skills we need.",
+            "quote_lang": "en",
+            "archive_url": null,
+            "link_health": "ok",
+            "manually_verified": true
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "company": {
+      "slug": "intuit",
+      "name": "Intuit Inc.",
+      "name_zh": "Intuit",
+      "aliases": [
+        "INTU"
+      ],
+      "country_code": "US",
+      "region": "north_america",
+      "industry": "software_saas",
+      "company_size": "enterprise",
+      "founded_year": null,
+      "website_url": null,
+      "description": "美国财税与中小企业财务软件公司，产品包括 TurboTax、QuickBooks、Credit Karma 与 Mailchimp。"
+    },
+    "impacts": [
+      {
+        "impact_type": "voluntary_pivot",
+        "attribution_confidence": "medium",
+        "outcome": "mass_layoff",
+        "event_date": "2024-07-10",
+        "event_date_precision": "day",
+        "is_primary": true,
+        "summary": "据《财富》独家报道，Intuit 于 2024 年 7 月裁撤 1,800 人，CEO Sasan Goodarzi 在员工信中把这次调整说明为公司转型的一部分，目的是加大对 AI 与生成式 AI（如 Intuit Assist 财务助手）等优先方向的投入，并把产品从传统工作流重做成 AI 原生体验。",
+        "employees_affected": 1800,
+        "employees_affected_pct": null,
+        "revenue_impact_note": null,
+        "counter_evidence": "定为「中」而非「高」：公司口径是「为投入 AI 而重新分配资源」，并明确表示裁员不是为了省钱，属于主动转型而非 AI 直接替代岗位；且仅核到一条可访问来源（不满足 H4）。该报道同时提到公司列出的其他重点方向包括资金流动、中型企业拓展与国际增长。",
+        "sources": [
+          {
+            "url": "https://fortune.com/2024/07/10/intuit-layoffs-email-hiring-ai-transformation",
+            "media_name": "Fortune",
+            "source_type": "tier1_media",
+            "published_at": "2024-07-10",
+            "title": "Exclusive: Intuit is laying off 1,800 employees as AI leads to a strategic shift",
+            "quote": "Goodarzi explains that Intuit’s transformation journey, including departing from the 1,800 employees, is part of its strategy to increase investments in priority focus areas of AI and generative AI, such as its GenAI-powered financial assistant called Intuit Assist, and reimagining its products from traditional workflows to AI-native experiences.",
+            "quote_lang": "en",
+            "archive_url": null,
+            "link_health": "ok",
+            "manually_verified": true
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "company": {
+      "slug": "dropbox",
+      "name": "Dropbox, Inc.",
+      "name_zh": "Dropbox",
+      "aliases": [
+        "DBX"
+      ],
+      "country_code": "US",
+      "region": "north_america",
+      "industry": "software_saas",
+      "company_size": "large",
+      "founded_year": null,
+      "website_url": null,
+      "description": "美国云存储与文件协作服务商。"
+    },
+    "impacts": [
+      {
+        "impact_type": "voluntary_pivot",
+        "attribution_confidence": "medium",
+        "outcome": "mass_layoff",
+        "event_date": "2023-04-27",
+        "event_date_precision": "day",
+        "is_primary": true,
+        "summary": "据 CNBC 报道，Dropbox 于 2023 年 4 月 27 日宣布裁撤 500 人（约 16%），CEO Drew Houston 在备忘录中称公司下一阶段的增长需要不同的技能组合，「尤其是在 AI 与早期产品开发方面」，并称决心让 Dropbox 站在 AI 时代的前沿。",
+        "employees_affected": 500,
+        "employees_affected_pct": null,
+        "revenue_impact_note": null,
+        "counter_evidence": "定为「中」而非「高」（见《归因标准》例 3）：公司方确认 AI 与这次调整有关，但明确是「为投入 AI 而更换技能结构」，同时自行列出业务成熟与宏观经济压力等其他原因，符合 M2 而不符合 H1。且仅核到一条可访问来源。",
+        "sources": [
+          {
+            "url": "https://www.cnbc.com/2023/04/27/dropbox-layoffs-company-to-cut-500-employees.html",
+            "media_name": "CNBC",
+            "source_type": "tier1_media",
+            "published_at": "2023-04-27",
+            "title": "Dropbox is laying off 500 employees, or 16% of staff",
+            "quote": "\"In an ideal world, we'd simply shift people from one team to another,\" Houston wrote. \"And we've done that wherever possible. However, our next stage of growth requires a different mix of skill sets, particularly in AI and early-stage product development. We've been bringing in great talent in these areas over the last couple years and we'll need even more.\"",
+            "quote_lang": "en",
+            "archive_url": null,
+            "link_health": "ok",
+            "manually_verified": true
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "company": {
+      "slug": "rackspace",
+      "name": "Rackspace Technology, Inc.",
+      "name_zh": "Rackspace",
+      "aliases": [
+        "RXT"
+      ],
+      "country_code": "US",
+      "region": "north_america",
+      "industry": "it_services",
+      "company_size": "enterprise",
+      "founded_year": null,
+      "website_url": null,
+      "description": "美国多云托管与云服务管理公司，总部位于得州圣安东尼奥。"
+    },
+    "impacts": [
+      {
+        "impact_type": "voluntary_pivot",
+        "attribution_confidence": "medium",
+        "outcome": "mass_layoff",
+        "event_date": "2026-06-23",
+        "event_date_precision": "day",
+        "is_primary": true,
+        "summary": "据 San Antonio Express-News（经 Yahoo Finance 转载）报道，Rackspace 于 2026 年 6 月裁撤约 750 人。据该报道引述的公司申报文件，裁撤源于公司退出「某些传统服务交付职能」（主要在公有云业务单元）并调整地域布局，「以便把资源重新投向其企业级 AI 建设」。",
+        "employees_affected": 750,
+        "employees_affected_pct": null,
+        "revenue_impact_note": null,
+        "counter_evidence": "定为「中」：公司口径是主动把资源转投企业级 AI 建设，而非 AI 替代了这些岗位；仅核到一条可访问来源（不满足 H4）。据同一报道，Rackspace 前一个季度刚实现两年来首次盈利，退出低毛利的传统交付业务本身也是独立的经营决策。",
+        "sources": [
+          {
+            "url": "https://finance.yahoo.com/technology/ai/articles/san-antonios-rackspace-cutting-750-211425201.html",
+            "media_name": "San Antonio Express-News (via Yahoo Finance)",
+            "source_type": "tier1_media",
+            "published_at": "2026-06-23",
+            "title": "San Antonio's Rackspace cutting 750 jobs in AI-driven shift. Local impact unclear.",
+            "quote": "The cuts were driven by Rackspace moving away from \"certain legacy service delivery functions,\" mostly within its public cloud business unit, as well as geographic moves \"in favor of redeploying resources toward its enterprise AI buildout,\" the filing said.",
+            "quote_lang": "en",
+            "archive_url": null,
+            "link_health": "ok",
+            "manually_verified": true
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "company": {
+      "slug": "amazon",
+      "name": "Amazon.com, Inc.",
+      "name_zh": "亚马逊",
+      "aliases": [
+        "AMZN"
+      ],
+      "country_code": "US",
+      "region": "north_america",
+      "industry": "ecommerce_retail",
+      "company_size": "enterprise",
+      "founded_year": null,
+      "website_url": null,
+      "description": "美国电商与云计算公司，旗下含 Amazon.com 零售平台与 AWS 云服务。"
+    },
+    "impacts": [
+      {
+        "impact_type": "mentioned_in_coverage",
+        "attribution_confidence": "low",
+        "outcome": "mass_layoff",
+        "event_date": "2025-10-28",
+        "event_date_precision": "day",
+        "is_primary": true,
+        "summary": "据 CNBC 报道，亚马逊于 2025 年 10 月宣布史上最大规模裁员，裁撤 14,000 个公司岗位，负责人员体验与技术的高级副总裁 Beth Galetti 在官方博文中称这一代 AI 是互联网以来最具变革性的技术，公司因此确信需要以更精简、更少层级的方式组织。据 Variety 与 SiliconANGLE 报道，当时有消息称裁员规模约 3 万人。**需特别说明**：据 Yahoo Finance 报道，CEO Andy Jassy 明确表示此次裁员「并非真的由财务驱动，现阶段也并非真的由 AI 驱动」，公司给出的原因是文化与官僚层级。",
+        "employees_affected": 14000,
+        "employees_affected_pct": null,
+        "revenue_impact_note": null,
+        "counter_evidence": "公司方明确否认 AI 归因。CEO Andy Jassy 原话：「was not really financially driven, and it's not even really AI driven — not right now, at least.」Jassy 2025 年 6 月的备忘录谈的是 AI 对未来数年公司总人数的影响（预期性表述），不是对这次裁员的归因。Galetti 的博文把 AI 作为「需要更精简组织」的时代背景，也未称 AI 替代了这 14,000 个岗位。按《归因标准》例 4，本条只能评「低」+「报道提及」。",
+        "sources": [
+          {
+            "url": "https://www.cnbc.com/2025/12/21/ai-job-cuts-amazon-microsoft-and-more-cite-ai-for-2025-layoffs.html",
+            "media_name": "CNBC",
+            "source_type": "tier1_media",
+            "published_at": "2025-12-21",
+            "title": "AI was behind over 50,000 layoffs in 2025 — here are the top firms to cite it for job cuts",
+            "quote": "\"This generation of AI is the most transformative technology we've seen since the Internet, and it's enabling companies to innovate much faster than ever before... we're convinced that we need to be organized more leanly, with fewer layers and more ownership, to move as quickly as possible for our customers and business,\" Beth Galetti, senior vice president of people experience and technology at Amazon, wrote in a blog post.",
+            "quote_lang": "en",
+            "archive_url": null,
+            "link_health": "ok",
+            "manually_verified": true
+          },
+          {
+            "url": "https://variety.com/2025/digital/news/amazon-layoffs-30000-corporate-employees-1236562511/",
+            "media_name": "Variety",
+            "source_type": "tier1_media",
+            "published_at": "2025-10-27",
+            "title": "Amazon to Lay Off 30,000 Corporate Employees, Report Says",
+            "quote": "“As we roll out more Generative AI and agents, it should change the way our work is done,” the CEO said. “We will need fewer people doing some of the jobs that are being done today, and more people doing other types of jobs. It’s hard to know exactly where this nets out over time, but in the next few years, we expect that this will reduce our total corporate workforce as we get efficiency gains from using AI extensively across the company.”",
+            "quote_lang": "en",
+            "archive_url": null,
+            "link_health": "ok",
+            "manually_verified": true
+          },
+          {
+            "url": "https://finance.yahoo.com/news/verizon-layoffs-add-to-mounting-toll-across-large-companies-165130821.html",
+            "media_name": "Yahoo Finance",
+            "source_type": "tier1_media",
+            "published_at": "2026-01-30",
+            "title": "Verizon layoffs add to mounting toll across large companies",
+            "quote": "Andy Jassy, Amazon's CEO, said the workforce reduction \"was not really financially driven, and it's not even really AI driven — not right now, at least.\"",
+            "quote_lang": "en",
+            "archive_url": null,
+            "link_health": "ok",
+            "manually_verified": true
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "company": {
+      "slug": "microsoft",
+      "name": "Microsoft Corporation",
+      "name_zh": "微软",
+      "aliases": [
+        "MSFT"
+      ],
+      "country_code": "US",
+      "region": "north_america",
+      "industry": "software_saas",
+      "company_size": "enterprise",
+      "founded_year": null,
+      "website_url": null,
+      "description": "美国软件与云服务公司，业务涵盖 Windows、Office、Azure 云平台与游戏。"
+    },
+    "impacts": [
+      {
+        "impact_type": "voluntary_pivot",
+        "attribution_confidence": "low",
+        "outcome": "mass_layoff",
+        "event_date": "2025-07-02",
+        "event_date_precision": "day",
+        "is_primary": true,
+        "summary": "据 CNBC 报道，微软在 2025 年 7 月裁撤约 9,000 人，CEO Satya Nadella 在员工备忘录中称公司需要为新时代「重新想象」自身使命，并把公司定位描述为从「软件工厂」转向「智能引擎」。CNBC 把微软列入 2025 年在裁员与重组表述中援引 AI 的公司之列。",
+        "employees_affected": null,
+        "employees_affected_pct": null,
+        "revenue_impact_note": null,
+        "counter_evidence": "评「低」的理由：微软从未把裁员直接归因于 AI 替代岗位。Nadella 的备忘录讲的是公司向 AI 转型的战略定位，没有把这 9,000 个岗位的裁撤与 AI 建立因果关系，属于 L2（AI 作为背景趋势）。核对过程中另有一条《财富》报道（fortune.com/2025/07/02/microsoft-layoffs-9000-ai）明确写道「微软并未直接把裁员归因于 AI 替代人类员工」，且该文在文末披露初稿由生成式 AI 协助撰写，按拒收规则 R9 的精神未被采用为本条来源。",
+        "sources": [
+          {
+            "url": "https://www.cnbc.com/2025/12/21/ai-job-cuts-amazon-microsoft-and-more-cite-ai-for-2025-layoffs.html",
+            "media_name": "CNBC",
+            "source_type": "tier1_media",
+            "published_at": "2025-12-21",
+            "title": "AI was behind over 50,000 layoffs in 2025 — here are the top firms to cite it for job cuts",
+            "quote": "\"What does empowerment look like in the era of AI? It's not just about building tools for specific roles or tasks. It's about building tools that empower everyone to create their own tools. That's the shift we are driving — from a software factory to an intelligence engine empowering every person and organization to build whatever they need to achieve,\" Nadella said.",
+            "quote_lang": "en",
+            "archive_url": null,
+            "link_health": "ok",
+            "manually_verified": true
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "company": {
+      "slug": "nestle",
+      "name": "Nestlé S.A.",
+      "name_zh": "雀巢",
+      "aliases": [
+        "Nestle",
+        "NSRGY"
+      ],
+      "country_code": "CH",
+      "region": "europe",
+      "industry": "food_beverage",
+      "company_size": "enterprise",
+      "founded_year": null,
+      "website_url": null,
+      "description": "瑞士食品饮料集团，旗下品牌包括雀巢咖啡、奇巧（KitKat）、Nesquik 等。"
+    },
+    "impacts": [
+      {
+        "impact_type": "mentioned_in_coverage",
+        "attribution_confidence": "low",
+        "outcome": "downsizing_announced",
+        "event_date": "2025-10-16",
+        "event_date_precision": "day",
+        "is_primary": true,
+        "summary": "据美联社（经 ABC7 转载）报道，雀巢于 2025 年 10 月 16 日宣布未来两年在全球裁撤约 16,000 个岗位以削减成本，其中约 12,000 个影响白领岗位，公司声明称这是为了「运营效率」，手段包括流程自动化与共享服务。据 SupplyChainBrain 报道，公司将用人工智能自动化更多流程，但未具体说明被替代的岗位。",
+        "employees_affected": 16000,
+        "employees_affected_pct": null,
+        "revenue_impact_note": null,
+        "counter_evidence": "评「低」的理由：雀巢自身的公开口径是「成本削减」「运营效率」与「自动化」，全程未点名生成式 AI，也未说明 AI 替代了哪些具体岗位。把这次裁员与 AI 相联主要是报道提供的行业背景，按 L2 处理。SupplyChainBrain 亦明确指出公司未说明被技术替代的具体角色。",
+        "sources": [
+          {
+            "url": "https://abc7ny.com/post/nestl-worlds-largest-food-company-cut-16000-jobs-worldwide-due-partly-automation/18018385/",
+            "media_name": "ABC7 / Associated Press",
+            "source_type": "tier1_media",
+            "published_at": "2025-10-16",
+            "title": "World's largest food company is cutting 16K jobs due partly to automation",
+            "quote": "Most of the layoffs - about 12,000 - will affect white-collar professionals as Nestlé targets \"operational efficiency,\" including by automating processes and using shared services, the company behind such brands as KitKat and Nesquik said in a statement.",
+            "quote_lang": "en",
+            "archive_url": null,
+            "link_health": "ok",
+            "manually_verified": true
+          },
+          {
+            "url": "https://www.supplychainbrain.com/articles/42669-nestle-to-cut-16k-jobs-in-bid-to-ramp-up-automation",
+            "media_name": "SupplyChainBrain",
+            "source_type": "trade_media",
+            "published_at": "2025-10-16",
+            "title": "Nestlé to Cut 16K Jobs in Bid to Ramp Up Automation",
+            "quote": "to automate more of its processes using artificial intelligence, although the company did not specify the exact roles the technology would be replacing",
+            "quote_lang": "en",
+            "archive_url": null,
+            "link_health": "ok",
+            "manually_verified": true
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "company": {
+      "slug": "tata-consultancy-services",
+      "name": "Tata Consultancy Services Limited",
+      "name_zh": "塔塔咨询服务",
+      "aliases": [
+        "TCS",
+        "Tata Consultancy"
+      ],
+      "country_code": "IN",
+      "region": "asia_pacific",
+      "industry": "it_services",
+      "company_size": "enterprise",
+      "founded_year": null,
+      "website_url": null,
+      "description": "印度最大的 IT 服务与外包公司，隶属塔塔集团。"
+    },
+    "impacts": [
+      {
+        "impact_type": "mentioned_in_coverage",
+        "attribution_confidence": "low",
+        "outcome": "mass_layoff",
+        "event_date": "2025-07-27",
+        "event_date_precision": "day",
+        "is_primary": true,
+        "summary": "据海湾新闻（Gulf News）报道，印度 TCS 于 2025 年 7 月宣布本财年裁撤约 12,000 个岗位（约占 2%），主要影响中高层管理岗，报道把这次调整描述为由人工智能、新的市场重点与全球技术预算收紧共同驱动。**但公司方明确否认 AI 归因**：据 People Matters 报道，CEO K Krithivasan 称「这不是因为 AI，而是为了应对面向未来的技能问题」。",
+        "employees_affected": 12000,
+        "employees_affected_pct": 2,
+        "revenue_impact_note": null,
+        "counter_evidence": "公司方明确否认 AI 是原因。CEO K Krithivasan 原话：「This is not because of AI but to address skills for the future. This is about feasibility in deployment, not because we need less people.」他另称「我们发现有些岗位的重新部署并不奏效」，并把这描述为任内最艰难的决定之一。AI 归因主要来自分析师与媒体对印度 IT 外包「人力密集模式」受冲击的解读，按 L3 评为「低」。",
+        "sources": [
+          {
+            "url": "https://gulfnews.com/business/markets/ai-overhaul-indias-tcs-to-cut-12000-jobs-this-year-after-growth-slows-in-q1-1.500212931",
+            "media_name": "Gulf News",
+            "source_type": "tier1_media",
+            "published_at": "2025-07-27",
+            "title": "AI overhaul: India's TCS to cut 12,000 jobs this year after growth slows in Q1",
+            "quote": "The reduction will primarily affect middle and senior management, as TCS adapts to a changing business environment driven by artificial intelligence (AI), new market priorities, and tighter global tech budgets.",
+            "quote_lang": "en",
+            "archive_url": null,
+            "link_health": "ok",
+            "manually_verified": true
+          },
+          {
+            "url": "https://www.peoplematters.in/news/performance-management/tcs-announces-12000-layoffs-by-fy26-in-strategic-workforce-realignment-42242",
+            "media_name": "People Matters",
+            "source_type": "trade_media",
+            "published_at": "2025-07-28",
+            "title": "TCS announces 12,000 layoffs by FY26 in strategic workforce realignment",
+            "quote": "“This is not because of AI but to address skills for the future. This is about feasibility in deployment, not because we need less people,” he clarified.",
+            "quote_lang": "en",
+            "archive_url": null,
+            "link_health": "ok",
+            "manually_verified": true
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "company": {
+      "slug": "verizon",
+      "name": "Verizon Communications Inc.",
+      "name_zh": "威瑞森",
+      "aliases": [
+        "VZ"
+      ],
+      "country_code": "US",
+      "region": "north_america",
+      "industry": "telecom",
+      "company_size": "enterprise",
+      "founded_year": null,
+      "website_url": null,
+      "description": "美国电信运营商，提供移动通信、宽带与企业网络服务。"
+    },
+    "impacts": [
+      {
+        "impact_type": "mentioned_in_coverage",
+        "attribution_confidence": "low",
+        "outcome": "mass_layoff",
+        "event_date": "2026-07-16",
+        "event_date_precision": "day",
+        "is_primary": true,
+        "summary": "据 Tech Times 报道，Verizon 于 2026 年 7 月 16 日进行九个月内第三轮调整：将 274 家直营门店转给约六家独立加盟主体、裁撤 500 个公司岗位，共影响约 3,000 名员工，使 CEO Dan Schulman 2025 年 10 月上任以来被裁撤或移出薪酬册的岗位累计超过 16,600 个。**公司明确否认与 AI 有关**：发言人 Rich Young 称这些调整「与 AI 毫无关系」，而同期 Schulman 对投资者表示公司的 AI 技术栈计划在 7 月基本完成、11 月全部完成。",
+        "employees_affected": 3000,
+        "employees_affected_pct": null,
+        "revenue_impact_note": null,
+        "counter_evidence": "公司方明确否认。发言人 Rich Young 的原话是这些调整「have nothing to do with AI」；报道本身也指出这是一个「精确的、仅限于本轮」的否认，并明确把「AI 计划与裁员是两件事还是一件事」作为一个公司拒绝直接回答的未决问题提出，而非作出因果断言。本条按 L2/L3 评为「低」，收录目的是呈现争议性案例而非指认 AI 是原因。",
+        "sources": [
+          {
+            "url": "https://www.techtimes.com/articles/320972/20260719/verizon-cuts-16600-jobs-nine-months-its-ai-stack-nears-completion.htm",
+            "media_name": "Tech Times",
+            "source_type": "trade_media",
+            "published_at": "2026-07-19",
+            "title": "Verizon Cuts 16,600 Jobs in Nine Months as Its AI Stack Nears Completion",
+            "quote": "Verizon spokesman Rich Young told trade publication Fierce Network on July 16 that the store divestiture and corporate cuts \"have nothing to do with AI.\" That is a precise denial — limited to this specific round — and it is worth reading carefully against what Schulman and CFO Tony Skiadas have said publicly this year.",
+            "quote_lang": "en",
+            "archive_url": null,
+            "link_health": "ok",
+            "manually_verified": true
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "company": {
+      "slug": "the-planet-d",
+      "name": "The Planet D",
+      "name_zh": "The Planet D",
+      "aliases": [
+        "ThePlanetD"
+      ],
+      "country_code": "CA",
+      "region": "north_america",
+      "industry": "media_publishing",
+      "company_size": "micro",
+      "founded_year": 2008,
+      "website_url": null,
+      "description": "加拿大独立旅行博客，2008 年创立，主要依靠搜索引擎自然流量获取读者与广告收入。"
+    },
+    "impacts": [
+      {
+        "impact_type": "replaced_by_ai_product",
+        "attribution_confidence": "low",
+        "outcome": "shutdown",
+        "event_date": "2025-01-01",
+        "event_date_precision": "year",
+        "is_primary": true,
+        "summary": "据 AdExchanger 报道（转述 Bloomberg 的采访），加拿大旅行博客 The Planet D 向 Bloomberg 表示，在 Google 于 2024 年 5 月推出 AI Overviews 之后的几个月里流失了一半流量；该站为求生存裁减了员工，但流量在裁员后又再跌 90%，最终于 2025 年停止发布。",
+        "employees_affected": null,
+        "employees_affected_pct": null,
+        "revenue_impact_note": null,
+        "counter_evidence": "评「低」的理由：一手归因（站方对 Bloomberg 的说法）我们只能通过 AdExchanger 的转述取得，Bloomberg 原文在本次核对中无法以脚本访问、未能取到原文引述，按 L1 只能评「低」。另需说明：同期 Google 的搜索排序还有 Helpful Content Update、site reputation abuse 等与 AI 无关的政策变化，独立小型出版商的流量崩塌通常是多项变化叠加的结果。事件日期精度仅到年（报道只说「今年早些时候」停止发布）。",
+        "sources": [
+          {
+            "url": "https://www.adexchanger.com/publishers/the-ai-search-reckoning-is-dismantling-open-web-traffic-and-publishers-may-never-recover/",
+            "media_name": "AdExchanger",
+            "source_type": "trade_media",
+            "published_at": "2026-01-06",
+            "title": "The AI Search Reckoning Is Dismantling Open Web Traffic – And Publishers May Never Recover",
+            "quote": "Travel blog The Planet D told Bloomberg it lost half its traffic in the months after Google launched AI Overviews in May 2024. It laid off staff in an attempt to survive. But traffic plummeted another 90% following those layoffs, forcing the blog, which was founded in 2008, to cease publication earlier this year.",
+            "quote_lang": "en",
+            "archive_url": null,
+            "link_health": "ok",
+            "manually_verified": true
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "company": {
+      "slug": "rws-holdings",
+      "name": "RWS Holdings plc",
+      "name_zh": "RWS",
+      "aliases": [
+        "RWS"
+      ],
+      "country_code": "GB",
+      "region": "europe",
+      "industry": "translation_localization",
+      "company_size": "enterprise",
+      "founded_year": null,
+      "website_url": null,
+      "description": "英国语言服务与知识产权服务公司，业务含翻译本地化（Transform）、AI 训练数据（TrainAI/Generate）与专利知识产权（Protect）。"
+    },
+    "impacts": [
+      {
+        "impact_type": "replaced_by_ai_product",
+        "attribution_confidence": "low",
+        "outcome": "pivot",
+        "event_date": "2026-10-27",
+        "event_date_precision": "day",
+        "is_primary": true,
+        "summary": "据 UK Investor Magazine 报道，RWS Holdings 在截至 2026 年 9 月 30 日的财年恢复增长，有机营收增长约 3%、调整后税前利润增长约 9%，增长由提供 AI 训练数据的 TrainAI 业务带动；与此同时其传统翻译与本地化业务（Transform）下滑中个位数百分比。本条收录的意义在于呈现同一家公司内部「传统业务被压、AI 相关业务增长」的双向结构，而非倒闭案例。",
+        "employees_affected": null,
+        "employees_affected_pct": null,
+        "revenue_impact_note": "据报道，该财年营收约 7 亿英镑，调整后税前利润增长约 9%。",
+        "counter_evidence": "评「低」的理由：报道并未把翻译业务下滑明确归因于 AI 取代人工翻译，只是陈述该业务下滑、而 AI 数据业务增长这一事实对比；因果归因是推断而非来源断言，故按 L2 评「低」、并把 outcome 记为「转型」而非任何形式的收缩。公司整体是增长的，不应被读作负面案例。",
+        "sources": [
+          {
+            "url": "https://ukinvestormagazine.co.uk/rws-returns-to-growth-as-ai-data-business-drives-recovery/",
+            "media_name": "UK Investor Magazine",
+            "source_type": "trade_media",
+            "published_at": "2026-10-27",
+            "title": "RWS returns to growth as AI data business drives recovery",
+            "quote": "Its “Transform” translation and localisation business fell mid-single-digit, though RWS pointed to encouraging early sales of a new AI-powered product and recognition as a leader in its field.",
+            "quote_lang": "en",
+            "archive_url": null,
+            "link_health": "ok",
+            "manually_verified": true
+          }
+        ]
+      }
+    ]
+  }
+]

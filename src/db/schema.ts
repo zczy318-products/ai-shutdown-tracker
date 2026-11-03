@@ -9,6 +9,7 @@ import {
   numeric,
   pgEnum,
   pgTable,
+  primaryKey,
   smallint,
   text,
   timestamp,
@@ -30,7 +31,9 @@ import {
   RECORD_STATUS_VALUES,
   REGION_VALUES,
   SOURCE_TYPE_VALUES,
+  SUBSCRIBER_STATUS_VALUES,
 } from "../lib/enums";
+import { PLAN_SOURCE_VALUES, PLAN_VALUES } from "../lib/plans";
 
 /**
  * The single source of truth for the database schema.
@@ -79,6 +82,10 @@ export const sourceTypeEnum = pgEnum("source_type", SOURCE_TYPE_VALUES);
 export const recordStatusEnum = pgEnum("record_status", RECORD_STATUS_VALUES);
 export const linkHealthEnum = pgEnum("link_health", LINK_HEALTH_VALUES);
 
+/** Commercial packaging, not part of the dictionary — see `src/lib/plans.ts`. */
+export const planEnum = pgEnum("plan", PLAN_VALUES);
+export const planSourceEnum = pgEnum("plan_source", PLAN_SOURCE_VALUES);
+
 // ---------------------------------------------------------------------------
 // Auth (T2 / ZCZ-3)
 // ---------------------------------------------------------------------------
@@ -91,9 +98,99 @@ export const users = pgTable(
     email: text("email").notNull(),
     /** scrypt digest, never a reversible encoding. Format in `src/lib/password.ts`. */
     passwordHash: text("password_hash").notNull(),
+    /**
+     * Gates bulk export and API keys only (ZCZ-7 §0). Never gates reading:
+     * the public pages do not look at this column, and must not start to.
+     */
+    plan: planEnum("plan").notNull().default("free"),
+    /** Why the account is on this plan. `null` while it has never changed. */
+    planSource: planSourceEnum("plan_source"),
+    planUpdatedAt: timestamp("plan_updated_at", { withTimezone: true }),
+    /** Stripe *test mode* ids. Nothing here is ever a live-mode object. */
+    stripeCustomerId: text("stripe_customer_id"),
+    stripeSubscriptionId: text("stripe_subscription_id"),
     ...timestamps,
   },
-  (table) => [uniqueIndex("users_email_unique").on(table.email)],
+  (table) => [
+    uniqueIndex("users_email_unique").on(table.email),
+    // Partial: the webhook looks an account up by customer id, and most rows
+    // have none. Unique so two accounts cannot claim one Stripe customer.
+    uniqueIndex("users_stripe_customer_id_unique")
+      .on(table.stripeCustomerId)
+      .where(sql`${table.stripeCustomerId} is not null`),
+  ],
+);
+
+// ---------------------------------------------------------------------------
+// API keys (ZCZ-7)
+// ---------------------------------------------------------------------------
+
+/**
+ * One row per issued key. Same shape as `sessions`: only the SHA-256 of the
+ * token is stored, so the plaintext key exists exactly once — in the response
+ * that created it. Losing it means issuing a new one, which is the correct
+ * trade and is said plainly in the UI.
+ *
+ * Revocation is a timestamp rather than a delete: "this key was revoked on the
+ * 3rd" is a thing the owner of a key wants to be able to see.
+ */
+export const apiKeys = pgTable(
+  "api_keys",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    /** Editor-supplied label, e.g. `研究脚本`. */
+    name: varchar("name", { length: 80 }).notNull(),
+    /** SHA-256 of the plaintext key. */
+    tokenHash: text("token_hash").notNull(),
+    /** First few characters, kept so the list can identify a key on sight. */
+    tokenPrefix: varchar("token_prefix", { length: 24 }).notNull(),
+    lastUsedAt: timestamp("last_used_at", { withTimezone: true }),
+    revokedAt: timestamp("revoked_at", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    uniqueIndex("api_keys_token_hash_unique").on(t.tokenHash),
+    index("api_keys_user_id_idx").on(t.userId),
+    check("api_keys_name_not_blank", sql`btrim(${t.name}) <> ''`),
+  ],
+);
+
+// ---------------------------------------------------------------------------
+// Billing events (ZCZ-7)
+// ---------------------------------------------------------------------------
+
+/**
+ * An append-only log of every plan change, and the idempotency ledger for the
+ * Stripe webhook.
+ *
+ * Stripe retries a webhook until it gets a 2xx, so the same
+ * `checkout.session.completed` arrives more than once as a matter of course.
+ * The unique index on `external_id` is what makes the second delivery a no-op
+ * instead of a second upgrade. Simulated upgrades are logged here too, tagged
+ * as such, so the demo trail and the Stripe trail read the same way.
+ */
+export const billingEvents = pgTable(
+  "billing_events",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: uuid("user_id").references(() => users.id, { onDelete: "set null" }),
+    /** Stripe's `evt_…` id, or `sim:<uuid>` for a simulated upgrade. */
+    externalId: text("external_id").notNull(),
+    /** Stripe event type, or `simulated.upgrade` / `simulated.downgrade`. */
+    type: text("type").notNull(),
+    planAfter: planEnum("plan_after"),
+    source: planSourceEnum("source").notNull(),
+    /** Small human-readable note; never the full Stripe payload. */
+    note: text("note"),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    uniqueIndex("billing_events_external_id_unique").on(t.externalId),
+    index("billing_events_user_id_idx").on(t.userId),
+  ],
 );
 
 export const sessions = pgTable(
@@ -299,9 +396,125 @@ export const source = pgTable(
   ],
 );
 
+// ---------------------------------------------------------------------------
+// Email subscription (T10 / ZCZ-11) — deliberately not an account
+// ---------------------------------------------------------------------------
+
+export const subscriberStatusEnum = pgEnum("subscriber_status", SUBSCRIBER_STATUS_VALUES);
+
+/**
+ * One row per subscribed email address, with **no link to `users`**.
+ *
+ * A subscriber has no password, no session and no account: the only thing they
+ * handed over is an address. Joining this table to `users` would quietly
+ * reintroduce the registration wall the product owner removed, so the foreign
+ * key that is not here is a feature. `users` keeps serving `/admin` and the pro
+ * export; the two systems share nothing but the shape of an email column.
+ *
+ * Tokens follow the `sessions` rule: only the SHA-256 digest is stored. Someone
+ * holding a database dump cannot confirm or unsubscribe anybody, because the
+ * links we mailed are not recoverable from these columns.
+ *
+ * The lifecycle invariants are CHECK constraints rather than store-layer
+ * conventions, because "a confirmed row still carries a usable confirm token"
+ * is precisely the bug that makes a one-time token replayable.
+ */
+export const subscriber = pgTable(
+  "subscriber",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    /** Lower-cased and trimmed before insert; the CHECK below makes that binding. */
+    email: text("email").notNull(),
+    status: subscriberStatusEnum("status").notNull().default("pending"),
+    /** SHA-256 of the confirm token. Nulled out the moment it is spent. */
+    confirmTokenHash: text("confirm_token_hash"),
+    confirmTokenExpiresAt: timestamp("confirm_token_expires_at", { withTimezone: true }),
+    /**
+     * SHA-256 of the unsubscribe token. Long-lived on purpose: it ships in every
+     * email we ever send to this address, so expiring it would strand someone
+     * with an old message and no one-click way out. Rotated on re-subscribe.
+     */
+    unsubTokenHash: text("unsub_token_hash").notNull(),
+    /** Which page the signup came from, e.g. `home`, `company:chegg`. */
+    source: varchar("source", { length: 120 }).notNull().default("unknown"),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    confirmedAt: timestamp("confirmed_at", { withTimezone: true }),
+    unsubscribedAt: timestamp("unsubscribed_at", { withTimezone: true }),
+  },
+  (t) => [
+    uniqueIndex("subscriber_email_unique").on(t.email),
+    // Nullable unique: Postgres allows many NULLs, which is what we want once a
+    // token has been spent. Unique so a token lookup cannot be ambiguous.
+    uniqueIndex("subscriber_confirm_token_hash_unique").on(t.confirmTokenHash),
+    uniqueIndex("subscriber_unsub_token_hash_unique").on(t.unsubTokenHash),
+    index("subscriber_status_idx").on(t.status),
+    // Normalization, enforced. `normalizeEmail` in the app does the same thing;
+    // this stops a future code path from inserting `Foo@Example.COM` and
+    // creating a second subscription for the same human.
+    check("subscriber_email_normalized", sql`${t.email} = lower(btrim(${t.email}))`),
+    // `\\.` so the SQL receives `\.` — in a template literal `\.` is just `.`,
+    // which would let `a@b!c` through.
+    check(
+      "subscriber_email_format",
+      sql`${t.email} ~ '^[^@[:space:]]+@[^@[:space:]]+\\.[^@[:space:]]+$'`,
+    ),
+    // A live confirm token exists if and only if the row is pending.
+    check(
+      "subscriber_confirm_token_pending_only",
+      sql`case
+            when ${t.status} = 'pending'
+              then ${t.confirmTokenHash} is not null and ${t.confirmTokenExpiresAt} is not null
+            else ${t.confirmTokenHash} is null and ${t.confirmTokenExpiresAt} is null
+          end`,
+    ),
+    check(
+      "subscriber_status_timestamps",
+      sql`(${t.status} <> 'confirmed' or ${t.confirmedAt} is not null)
+          and (${t.status} <> 'unsubscribed' or ${t.unsubscribedAt} is not null)`,
+    ),
+  ],
+);
+
+/**
+ * Fixed-window counters for the public subscribe form.
+ *
+ * In the database rather than in memory because the deployment target is
+ * serverless: every function instance gets its own heap, so an in-process
+ * counter throttles one instance and the next request just lands somewhere
+ * else. A row here is shared by every instance.
+ *
+ * `keyHash` is a digest, not the IP or the address. The throttle has to count
+ * attempts for addresses that may never subscribe, and a plaintext log of
+ * "someone tried to subscribe this person" is a worse privacy leak than the
+ * subscription itself. Equality is all the counter needs.
+ *
+ * Fixed windows allow up to 2× the limit across a window boundary. Accepted:
+ * this is abuse control for a one-field form, not a billing meter.
+ */
+export const subscribeThrottle = pgTable(
+  "subscribe_throttle",
+  {
+    /** `ip` or `email` — see SUBSCRIBE_THROTTLE_SCOPES. */
+    scope: varchar("scope", { length: 16 }).notNull(),
+    keyHash: text("key_hash").notNull(),
+    /** Start of the fixed window this counter belongs to. */
+    windowStart: timestamp("window_start", { withTimezone: true }).notNull(),
+    count: integer("count").notNull().default(0),
+  },
+  (t) => [
+    primaryKey({ columns: [t.scope, t.keyHash, t.windowStart] }),
+    // Supports the opportunistic prune of windows that can no longer be hit.
+    index("subscribe_throttle_window_start_idx").on(t.windowStart),
+    check("subscribe_throttle_scope_check", sql`${t.scope} in ('ip','email')`),
+    check("subscribe_throttle_count_check", sql`${t.count} >= 0`),
+  ],
+);
+
 export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;
 export type Session = typeof sessions.$inferSelect;
+export type ApiKey = typeof apiKeys.$inferSelect;
+export type BillingEvent = typeof billingEvents.$inferSelect;
 
 export type Company = typeof company.$inferSelect;
 export type NewCompany = typeof company.$inferInsert;
@@ -309,3 +522,6 @@ export type AiImpact = typeof aiImpact.$inferSelect;
 export type NewAiImpact = typeof aiImpact.$inferInsert;
 export type Source = typeof source.$inferSelect;
 export type NewSource = typeof source.$inferInsert;
+
+export type Subscriber = typeof subscriber.$inferSelect;
+export type NewSubscriber = typeof subscriber.$inferInsert;

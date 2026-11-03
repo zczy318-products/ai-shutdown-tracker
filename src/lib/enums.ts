@@ -280,6 +280,27 @@ export function countryLabel(code: string, locale: "zh" | "en" = "zh"): string {
 }
 
 // ---------------------------------------------------------------------------
+// subscriber_status (T10 / ZCZ-11) — NOT from the data dictionary
+// ---------------------------------------------------------------------------
+
+/**
+ * The email-subscription lifecycle. Lives here only because `src/db/schema.ts`
+ * builds every `pgEnum` from this file; it is not part of the ZCZ-2 dictionary
+ * and changing it needs no sign-off from Product PM.
+ *
+ * `pending` is the state a double opt-in signup lands in: a row exists, but the
+ * address has not proved it wants mail yet. Only `confirmed` is mailable, and
+ * `unsubscribed` is terminal until the person subscribes again.
+ */
+export const SUBSCRIBER_STATUS = {
+  pending: { zh: "待确认", en: "Pending confirmation" },
+  confirmed: { zh: "已确认", en: "Confirmed" },
+  unsubscribed: { zh: "已退订", en: "Unsubscribed" },
+} as const satisfies EnumLabels<string>;
+export type SubscriberStatus = keyof typeof SUBSCRIBER_STATUS;
+export const SUBSCRIBER_STATUS_VALUES = keysOf(SUBSCRIBER_STATUS);
+
+// ---------------------------------------------------------------------------
 // Display helpers
 // ---------------------------------------------------------------------------
 
