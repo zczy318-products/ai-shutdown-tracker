@@ -10,8 +10,8 @@
 
 > **编号在本次更新里变了。** 产品负责人定稿「默认不需要注册也能浏览」（计划修订 5 的访问模型），
 > 所以验收演示不再从注册开始：**01–04 是匿名路径**（无账号、无 cookie 走通榜单 / 筛选 / 详情 / 仪表盘），
-> **05–08 才是注册之后多出来的能力**。原来的 `01-register.png` / `02-login.png` 已按新编号改名为
-> `05-register.png` / `06-login.png`，图本身没变（拍的是同一步）。
+> **05–08 才是注册之后多出来的能力**。原来的 `01-register.png` / `02-login.png` 相应改名为
+> `05-register.png` / `06-login.png`，并在本轮随整批一起重拍了一次。
 
 ---
 
@@ -26,7 +26,7 @@ npm run build                # 产物验证
 npm run capture:acceptance   # 截图（另开一个终端，dev 跑着的时候执行）
 ```
 
-线上的迁移与导数据见 `DEPLOY.md` §2.2（**接通数据库是三步，症状各不相同**）与 §4 / §5。
+线上的迁移与导数据见 `DEPLOY.md` §2.3（**接通数据库是三步，症状各不相同**）与 §4 / §5。
 
 ### 截图是脚本产出的，不是手工截的
 
@@ -171,14 +171,14 @@ Route (app)
 | 计费 | `simulated` 模式（无 Stripe 密钥） |
 
 所以这 11 张图证明的是「全链路在这套代码上确实能走通」，**不能**代替线上验收。
-`DEPLOY.md` §2.2 的三步做完之后，要 `BASE_URL=https://restinprompts.vercel.app` 重跑一次覆盖，
+`DEPLOY.md` §2.3 的三步做完之后，要 `BASE_URL=https://restinprompts.vercel.app` 重跑一次覆盖，
 届时这一节改成线上环境的参数。
 
 ---
 
 ## 3. 数据库核对
 
-**本地（PGlite，2026-11-03，`npm run db:seed` 的实际输出）。线上那一份要等 `DEPLOY.md` §2.2 三步做完再出。**
+**本地（PGlite，2026-11-03，`npm run db:seed` 的实际输出）。线上那一份要等 `DEPLOY.md` §2.3 三步做完再出。**
 
 | 项 | 期望 | 本地实测 | 线上 |
 | --- | --- | --- | --- |
@@ -214,9 +214,12 @@ Route (app)
 如实列出，不隐瞒：
 
 - **线上站点已部署，但首页返回 500**：https://restinprompts.vercel.app 上还没有数据库
-  （没有 `DATABASE_URL`、也还没建表）。接通它是三步，症状各不相同，见 `DEPLOY.md` §2.2；
+  （没有 `DATABASE_URL`、也还没建表）。接通它是三步，症状各不相同，见 `DEPLOY.md` §2.3；
   第 ②③ 步由谁执行等用户在 ZCZ-1 的卡片上选 A 还是 B（`DEPLOY.md` §8）。
   **因此所有线上截图都还没出，现有截图都是本地的。**
+- **线上跑的是 `main`，而 T5 / T6 / T7 的提交目前都在 `feat/zcz-5-seed-dataset` 分支上**。
+  也就是说：即使数据库接通了，线上也还是改名那版首页，看不到榜单 / 定价 / 导出——
+  **这条分支合回 `main` 之前，线上不会出现这些页面**。合并与数据库是两件独立的事，都得做。
 - **8 步截图全部来自本地 dev + PGlite，且拍的是 T5/T6 还没合并进 `main` 的工作区代码**
   （环境参数见 §2 末尾的表）。它们证明链路通，但**不是线上验收材料**，线上通了要整批重拍；
 - **07 的升级是本地模拟**，不是 Stripe 测试结账——本机没有 Stripe 密钥。线上配好 `sk_test_`
@@ -413,4 +416,61 @@ env -u DATABASE_URL NODE_ENV=production npm run build   # ✓ Compiled successfu
 
 三条路由都是动态 `ƒ`，且都显式写了 `export const dynamic = "force-dynamic"`，不依赖 Next 的推断。
 §1「构建结果」里的完整路由表要等 T6 / T10 的路由落地后由 T7 重跑一次再更新。
+
+### 6.6 匿名可读（实测命令与输出）
+
+完成标准要求「用无 cookie 的请求实测过榜单 / 详情 / 仪表盘三类页面」。下面是对本地生产构建
+（`next start`，库里 30 条全部已发布）直接跑 `curl` 的结果——`curl` 默认不带任何 cookie，
+所以这就是匿名访客的视角：
+
+```
+### 匿名请求（不带任何 cookie）
+/                            -> 200
+/?confidence=high&year=2025  -> 200
+/company/rws-holdings        -> 200
+/stats                       -> 200
+/stats?view=table            -> 200
+/company/does-not-exist      -> 404
+/admin（对照：后台仍然要登录）-> 307
+
+### 匿名响应的内容是否完整
+/ : 无 Set-Cookie（匿名请求不会被种 cookie）
+/ 榜单总条数            : data-result-total="30"
+/ 卡片数                : 12
+/ 置信度标签出现次数    : 27
+/company/<slug> 来源条数 : 1（= 该记录的全部来源）
+/company/<slug> 原文外链 : 1
+/company/<slug> 逐字引述块: 1
+/stats 图表条数          : 23（4 年 + 4 影响类型 + 8 行业 + 其他 + 3 地区 + 3 置信度）
+/stats 免责声明          : 「不构成对任何公司的结论」
+```
+
+> 数一数时要先把 RSC flight payload（`<script>` 里那一份转义过的同构树）去掉，否则每个
+> `data-*` 属性都会被数两遍。上面的数字是去掉之后的。
+
+公开路由里 `grep -rn "requireSession|redirect(\"/login\")" "src/app/(public)"` 零命中；
+唯一读 session 的地方是页眉（决定显示「编辑登录」还是「进入后台」），不决定任何内容是否可见。
+
+### 6.7 数据库读不到时的状态（实测）
+
+把 `DATABASE_URL` 指向一个不存在的库再跑一遍：
+
+```
+/               -> 200  ✓ 渲染「数据暂时读取失败」
+/company/<slug> -> 200  ✓ 渲染「数据暂时读取失败」
+/stats          -> 200  ✓ 渲染「数据暂时读取失败」
+误把失败显示成「没有记录」? 否 —— 空状态文案一次都没出现
+页眉仍然渲染（session 读失败不拖垮页面）? 是
+```
+
+两点说明：
+
+- **为什么不只靠 `error.tsx`**：Next 会先把页面外壳 flush 出去，所以查询抛错是交给**客户端**
+  的边界处理的。拿一个坏 `DATABASE_URL` 实测过：HTML 里只有页眉加一个 `__next_error__` 标记，
+  没有 JS 的访客看到的是页眉下面一片空白。所以三个页面各自还会在服务端渲染一份同文案的
+  `DataUnavailable`，`error.tsx` 留作兜底。两条路都不会退化成空列表，读失败也不会把公司页变成
+  404——「没查到」不等于「不存在」。
+- **HTTP 状态码是 200 而不是 503**：服务端组件没有设置状态码的接口（只有 route handler /
+  middleware 有）。走 `error.tsx` 兜底的那条路是 500。如果验收要求失败必须是 5xx，
+  需要改成在 middleware 或 route handler 层做探测，这是一处已知取舍，没有偷偷绕过。
 

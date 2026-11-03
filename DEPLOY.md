@@ -18,7 +18,7 @@
 
 | 变量 | 本地 | 线上（Vercel） | 该填什么 / 从哪里拿 | 漏了会怎样 |
 | --- | --- | --- | --- | --- |
-| `DATABASE_URL` | 不设 | **必填** | Neon 控制台的 **pooled** 连接串（主机名带 `-pooler`）。不设时本地自动走 PGlite，零外部依赖即可开发。 | **线上第一次访问数据库就 500**，函数日志里是一句明确的 `DATABASE_URL is required in production...`（不是 EROFS 堆栈）。注意首页匿名访问不碰数据库，所以可能看起来「能打开」，一到登录/榜单就炸。 |
+| `DATABASE_URL` | 不设 | **必填** | Neon 控制台的 **pooled** 连接串（主机名带 `-pooler`）。不设时本地自动走 PGlite，零外部依赖即可开发。 | **线上第一次访问数据库就 500**，函数日志里是一句明确的 `DATABASE_URL is required in production...`（不是 EROFS 堆栈）。首页本身就是榜单、要读库，所以**首页打不开就是库没通**（这条自 T5 起变了，早前首页确实不查库）。 |
 | `PGLITE_DATA_DIR` | 可选 | 不设 | PGlite 数据目录，默认 `.pglite`。仅本地有意义。 | 无影响，用默认值。 |
 | `DATABASE_SSL` | 不设 | **不要设** | 默认开启并**校验**服务端证书。只有数据库证书不是公共 CA 签发时才设 `false`——Neon 不属于这种情况。 | 不设才是对的。设成 `false` 会关掉 TLS 校验，等于把到数据库的那一跳暴露给 MITM。 |
 | `DATABASE_POOL_MAX` | 不设 | 不设 | 连接池上限，默认 `1`（理由见 §1.4）。 | 不设才是对的。设大了会按函数实例数翻倍，吃满 Neon 免费档连接数，表现为间歇性 `too many connections`。 |
@@ -57,7 +57,7 @@ grep -rho 'node_modules/@electric-sql[^"]*' .next --include='*.nft.json' | sort 
 
 Neon 免费档的 compute 空闲后会 autosuspend，冷启动有几百毫秒到数秒延迟。因此**首屏不要在 server component 里串行打多次数据库**。当前状态：
 
-- 首页匿名访问 **0 次**查询（`getCurrentUser()` 先看 cookie，没有就直接返回）；
+- 首页匿名访问：鉴权 0 次查询（`getCurrentUser()` 先看 cookie，没有就直接返回），但榜单本身要读已发布记录；
 - 已登录时 **1 次**查询：session 和 user 是一条 `innerJoin`，不是两跳；
 - `/admin` 的鉴权在 layout 里做 **1 次**查询，页面本身 0 次。
 
@@ -102,7 +102,20 @@ cp .env.example .env.local   # .env.local 已在 .gitignore 中，不会被提�
 构建侧没有问题：构建期不查库（§6.3），所以 `DATABASE_URL` 缺失**不会**让部署失败，
 只会在运行时炸。这正是为什么「部署成功」和「站点可用」在本项目里是两件事。
 
-### 2.2 接通数据库是三步，不是一步
+### 2.2 另一件独立的事：线上跑的是 `main`，而现在的功能都不在 `main` 上
+
+截至本次更新，`origin/main` 还停在 `5d9ae61`（改名 + 设计 token），而 **T4 数据集、T5 前台、
+T6 SaaS 层、T7 种子导入与验收材料这 6 个提交全部在 `feat/zcz-5-seed-dataset` 分支上**：
+
+```bash
+git log --oneline origin/main..origin/feat/zcz-5-seed-dataset   # 当前 6 条
+```
+
+所以就算数据库马上接通，线上也只会是那版旧首页——**没有榜单筛选、没有公司详情、没有定价与导出**。
+「合并分支」和「接通数据库」是两件互不依赖的事，两件都做完线上才算是现在这套产品。
+合并前照 §6.1 的要求，至少跑一遍 `npm run typecheck && npm run build`。
+
+### 2.3 接通数据库是三步，不是一步
 
 三步的症状各不相同，混在一起就会把「表还没建」误判成「环境变量没填」：
 
@@ -116,7 +129,7 @@ cp .env.example .env.local   # .env.local 已在 .gitignore 中，不会被提�
 （或者把 Neon 控制台给的连接串手填进 Environment Variables），挂上之后还要再部署一次才会注入变量。
 这是上面第 ① 步「并重新部署一次」的由来。
 
-### 2.3 第 ②③ 步由谁执行，取决于用户选哪条路
+### 2.4 第 ②③ 步由谁执行，取决于用户选哪条路
 
 迁移与导数据需要一个能连到那个库的地方。两条路，等用户在 ZCZ-1 的卡片上选：
 
@@ -320,9 +333,9 @@ env -u DATABASE_URL NODE_ENV=production npm run build
 
 ### 6.4 部署后自查
 
-按这个顺序逐条过，每条都对应 §2.2 里的一步，**不要跳着看**：
+按这个顺序逐条过，每条都对应 §2.3 里的一步，**不要跳着看**：
 
-- [ ] **首页 `/` 返回 200**。首页就是榜单、要读库，所以它 500 就说明 §2.2 的第 ① 或第 ② 步没完成；
+- [ ] **首页 `/` 返回 200**。首页就是榜单、要读库，所以它 500 就说明 §2.3 的第 ① 或第 ② 步没完成；
       第一次打开可能有 Neon 冷启动延迟，但那表现为慢，不是 500
 - [ ] **榜单不是空的**，读到的是种子数据（30 条）；空榜单 + 无报错 = 第 ③ 步没做
 - [ ] `/register` 能注册、`/login` 能登录；cookie 的 `Secure` 标记在线上生效（`NODE_ENV=production` 时自动打开）
@@ -352,8 +365,8 @@ env -u DATABASE_URL NODE_ENV=production npm run build
 | --- | --- | --- |
 | 推代码到 GitHub | GitHub 连接 | ✅ **已接通**（账号 `andrewdeng318` / ZCZY318），仓库见 §6.1 |
 | Vercel 导入仓库 | 用户自己在控制台操作 | ✅ **已完成** —— https://restinprompts.vercel.app ，push 即部署 |
-| 线上有一个数据库（§2.2 第 ① 步） | 用户在 Vercel Storage 挂 Neon，或在 neon.tech 建库 | **未完成** —— 线上还没有 `DATABASE_URL`，首页因此 500 |
-| 跑迁移 + 导种子数据（§2.2 第 ②③ 步） | 走 A 路需要把连接串授权给我们；走 B 路需要先实现 §10 的 bootstrap 路由 | **等用户在 ZCZ-1 的卡片上选 A 还是 B** |
+| 线上有一个数据库（§2.3 第 ① 步） | 用户在 Vercel Storage 挂 Neon，或在 neon.tech 建库 | **未完成** —— 线上还没有 `DATABASE_URL`，首页因此 500 |
+| 跑迁移 + 导种子数据（§2.3 第 ②③ 步） | 走 A 路需要把连接串授权给我们；走 B 路需要先实现 §10 的 bootstrap 路由 | **等用户在 ZCZ-1 的卡片上选 A 还是 B** |
 
 在用户选定之前：**不注册任何第三方账号、不建任何库、不发生任何支出，也不实现 §10 的路由**；
 代码该推照推（§6.1）。
@@ -380,7 +393,7 @@ env -u DATABASE_URL NODE_ENV=production npm run build
   **仍然成功**，但产出的 CSS 只有变量、没有任何工具类（约 3KB 对 18KB），属于静默失效。
   改动样式构建链路后请用 `grep -o 'bg-primary' .next/static/chunks/*.css` 复核。
 - 迁移不在构建期执行，是有意为之（§4）。换成自动迁移前请先想清楚并发构建的问题。
-- 线上验收截图要等 §2.2 三步做完（现在线上首页还是 500），落在 `docs/ACCEPTANCE.md`。
+- 线上验收截图要等 §2.3 三步做完（现在线上首页还是 500），落在 `docs/ACCEPTANCE.md`。
 
 ---
 
