@@ -34,6 +34,7 @@ import {
   SUBSCRIBER_STATUS_VALUES,
 } from "../lib/enums";
 import { PLAN_SOURCE_VALUES, PLAN_VALUES } from "../lib/plans";
+import { BILLING_INTERVAL_VALUES } from "../lib/pricing";
 
 /**
  * The single source of truth for the database schema.
@@ -86,6 +87,19 @@ export const linkHealthEnum = pgEnum("link_health", LINK_HEALTH_VALUES);
 export const planEnum = pgEnum("plan", PLAN_VALUES);
 export const planSourceEnum = pgEnum("plan_source", PLAN_SOURCE_VALUES);
 
+/**
+ * How often a pro subscription bills (ZCZ-14).
+ *
+ * Stored as the semantic value, never derived from the Stripe price id or the
+ * amount. A price id is an opaque handle that *will* change — swapping test
+ * mode for live mode is one such change — so `startsWith("price_annual")` or
+ * `amount === 9504` is a permission check that breaks the day somebody creates
+ * a new price in Stripe. `monthly` / `annual` is the fact we actually know, and
+ * we know it at the moment *we* open the checkout session, which is where it
+ * enters the system (`metadata[billing_interval]`).
+ */
+export const billingIntervalEnum = pgEnum("billing_interval", BILLING_INTERVAL_VALUES);
+
 // ---------------------------------------------------------------------------
 // Auth (T2 / ZCZ-3)
 // ---------------------------------------------------------------------------
@@ -105,6 +119,15 @@ export const users = pgTable(
     plan: planEnum("plan").notNull().default("free"),
     /** Why the account is on this plan. `null` while it has never changed. */
     planSource: planSourceEnum("plan_source"),
+    /**
+     * Which billing cycle a pro account is on. `null` for free accounts — a
+     * free account has no cycle, and the CHECK below makes that binding in both
+     * directions, so "pro with no interval" cannot exist as a row.
+     *
+     * This column, not the Stripe price id, is what the UI and any future
+     * entitlement question read.
+     */
+    planInterval: billingIntervalEnum("plan_interval"),
     planUpdatedAt: timestamp("plan_updated_at", { withTimezone: true }),
     /** Stripe *test mode* ids. Nothing here is ever a live-mode object. */
     stripeCustomerId: text("stripe_customer_id"),
@@ -118,6 +141,21 @@ export const users = pgTable(
     uniqueIndex("users_stripe_customer_id_unique")
       .on(table.stripeCustomerId)
       .where(sql`${table.stripeCustomerId} is not null`),
+    // plan = 'free' ⇔ plan_interval is null. Same approach as the `subscriber`
+    // lifecycle checks: the pairing is an invariant of the data, so it lives in
+    // the database rather than in whichever code path last touched the row.
+    //
+    // `else false` rather than an open CASE: adding a third plan should fail
+    // loudly here and force a decision about its billing cycle, instead of
+    // silently inheriting "anything goes".
+    check(
+      "users_plan_interval_matches_plan",
+      sql`case ${table.plan}
+            when 'free' then ${table.planInterval} is null
+            when 'pro' then ${table.planInterval} is not null
+            else false
+          end`,
+    ),
   ],
 );
 
@@ -182,6 +220,18 @@ export const billingEvents = pgTable(
     /** Stripe event type, or `simulated.upgrade` / `simulated.downgrade`. */
     type: text("type").notNull(),
     planAfter: planEnum("plan_after"),
+    /**
+     * The billing cycle *after* this event: `annual` on an annual upgrade,
+     * `null` on a downgrade to free (no cycle) — and `null` on the rows written
+     * before ZCZ-14, which carried no interval at all.
+     *
+     * No CHECK pairing this with `plan_after`, unlike `users.plan_interval`.
+     * This table is an append-only record of what each event told us, and the
+     * historical rows genuinely told us nothing about the cycle. A constraint
+     * here would have forced the migration to write an inferred value into an
+     * audit log, which is the one place a guess must never be stored.
+     */
+    intervalAfter: billingIntervalEnum("interval_after"),
     source: planSourceEnum("source").notNull(),
     /** Small human-readable note; never the full Stripe payload. */
     note: text("note"),

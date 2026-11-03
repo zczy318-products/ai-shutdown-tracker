@@ -29,8 +29,8 @@
 
 **当前线上只需要填 `DATABASE_URL` 一个变量**，其余全部留空（默认值就是为这个部署形态挑的）。
 会话用的是存在数据库里的不透明 token，不依赖任何签名密钥变量，所以没有 `AUTH_SECRET` 之类的东西要配。
-T6 引入 Stripe 测试模式变量时，**必须同步更新本节的表、`.env.example`，并标明哪些必填、哪些可留空**
-（§1.2 已经先列了清单）。
+Stripe 相关变量**一个都不是必填**：全留空时计费走本地模拟升级（`simulated`），
+月付与年付两条链路都能完整演示，不接触任何外部服务。清单见 §1.2。
 
 ### 1.4 两处和 Neon 免费档直接相关的默认值
 
@@ -63,17 +63,33 @@ Neon 免费档的 compute 空闲后会 autosuspend，冷启动有几百毫秒到
 
 T5 的榜单和仪表盘要守住这条线：合并成尽量少的查询，需要并行时用 `Promise.all`，不要一个指标一个 `await`。
 
-### 1.2 T6（SaaS 分档 + Stripe 测试模式）落地后会新增
+### 1.2 计费相关变量（Stripe 测试模式，ZCZ-7 + ZCZ-14）
 
-以下变量**代码里还没有**，列在这里是为了建站时一次性配齐，等 T6 合并后再填：
+**没有一个是必填的。** 全部留空 → `simulated` 模式：定价页的升级按钮直接把账号标成专业版，
+标注「本地模拟升级」，不碰任何外部服务，月付与年付两条链路都能演示。
+这是**当前线上的状态**，也是默认推荐状态。
 
-| 变量 | 说明 |
-| --- | --- |
-| `STRIPE_SECRET_KEY` | 测试模式密钥，必须以 `sk_test_` 开头。出现 `sk_live_` 即为配置错误，应当拒绝启动。 |
-| `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | 测试模式公钥，`pk_test_` 开头。 |
-| `STRIPE_PRICE_ID_PRO` | 付费档价格 ID（测试模式下创建的 price）。**这个 price 必须是 USD 9.90 / 月**，和 `src/lib/plans.ts` 里 `PLAN.pro.priceLabel` 对得上；代码无法校验 Stripe 那边的金额，建错了的后果是页面写一个数、结账页写另一个数。 |
-| `STRIPE_WEBHOOK_SECRET` | webhook 签名密钥，本地用 `stripe listen` 产出的那个。 |
-| `NEXT_PUBLIC_APP_URL` | Checkout 回跳地址的基准 URL，例如 `https://<project>.vercel.app`。 |
+| 变量 | 本地 | 线上（Vercel） | 该填什么 / 从哪里拿 | 漏了会怎样 |
+| --- | --- | --- | --- | --- |
+| `STRIPE_SECRET_KEY` | 可留空 | 可留空（当前就是空） | 测试模式密钥，必须 `sk_test_` / `rk_test_` 开头。`sk_live_` 会被 `src/lib/billing/config.ts` **直接拒绝**（抛错，不是警告）。 | 不填就走本地模拟升级，功能链路完整。**是否上真实收款是 Team Leader 的放行节点**，不要自行配置 live key。 |
+| `STRIPE_PRICE_ID_PRO_MONTHLY` | 可留空 | 可留空 | 月付 price id（测试模式）。这个 price **必须是 USD 9.90 / 月 = 990 分**。 | 只在配了 `STRIPE_SECRET_KEY` 时才有意义。漏了：**月付按钮**显示「缺少 STRIPE_PRICE_ID_PRO_MONTHLY」，**年付照常可用**，页面其余部分不受影响。 |
+| `STRIPE_PRICE_ID_PRO_ANNUAL` | 可留空 | 可留空 | 年付 price id（测试模式）。这个 price **必须是 USD 95.04 / 年 = 9504 分**（990 × 12 × 4/5，整除无余数）。 | 同上，方向相反：漏了只影响年付按钮，月付照常可用。 |
+| `STRIPE_PRICE_ID_PRO` | 可留空 | **保留** | **月付的兼容别名。** 线上现在配的就是这个名字，所以代码仍然读它；`…_PRO_MONTHLY` 同时存在时后者优先。 | 新部署可以只用带后缀的两个名字。已有部署**不要删这个变量**——改名不能把已上线的月付结账弄断。 |
+| `STRIPE_WEBHOOK_SECRET` | 可留空 | 可留空 | `POST /api/billing/webhook` 的端点密钥。两种模式下都生效：没有 Stripe key 但设了 `whsec_…` 时，可以用自签事件跑通真实的验签与升级代码（`npm run verify:saas` 的第 9 段就是这么测的）。 | 不填时 webhook 返回 503 并说明未配置（不会假装处理成功）。 |
+| `NEXT_PUBLIC_APP_URL` | 可留空 | 建议填 | Checkout 回跳与订阅邮件链接的基准 URL，例如 `https://<project>.vercel.app`。 | 回落到 `VERCEL_URL`，再回落到请求头。 |
+| `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | 可留空 | 可留空 | 测试模式公钥，`pk_test_` 开头。**目前代码里没有任何地方读它**，预留。 | 无影响。 |
+| `BILLING_SIMULATION` | 可选 | 不设 | 设成 `true` 可在有 Stripe key 的机器上强制走模拟升级。 | 不设即按有无 `STRIPE_SECRET_KEY` 自动判断。 |
+
+两件代码**管不了**、只能靠建 price 的人管住的事：
+
+1. **金额对不对。** 代码只拿到一个 price id，看不到 Stripe 那边的金额。
+   页面上的数字全部由 `src/lib/pricing.ts` 从 `MONTHLY_CENTS = 990` 与折扣比 `4/5` 推导，
+   Stripe 里的 price 建错了，结果就是页面写一个数、结账页写另一个数。
+   年付特别要小心：页面写着「8 折」，**收的钱就不能多于 8 折**，
+   向上取整到 $95.99 / $96 会让那句话变成假话。
+2. **周期对不对。** `…_ANNUAL` 必须建成 `recurring interval = year`。
+   代码不会去反查这一点，也**不会**从 price id 或金额反推计费周期——
+   周期是我们自己发起结账时就知道的值，随 `metadata[billing_interval]` 一路带到 webhook。
 
 ### 1.3 本地怎么填
 
@@ -252,6 +268,19 @@ npm run db:migrate
 所以 drizzle-kit 不会生成它，改 `schema.ts` 也不会把它删掉或重写。它写成可重复执行的
 （`CREATE OR REPLACE FUNCTION` + `DROP TRIGGER IF EXISTS`），所以对一个被手工改过的库再跑一次也会收敛。
 需要改这条约束时直接编辑该文件或再加一个 custom 迁移，**不要**指望 `db:generate` 处理它。
+
+`drizzle/0005_billing_interval.sql` 是 `db:generate` 生成的，但**中间手工插了一条回填**：
+
+```sql
+UPDATE "users" SET "plan_interval" = 'monthly' WHERE "plan" = 'pro' AND "plan_interval" IS NULL;
+```
+
+必须插在 `ADD COLUMN` 之后、`ADD CONSTRAINT users_plan_interval_matches_plan` 之前。
+新约束要求每个 pro 行都写明计费周期，而线上现存的 pro 行一个都没写（列是这次迁移才加的），
+先加约束会让迁移在真实数据上直接失败。回填成 `'monthly'` 不是猜：年付是这次迁移才存在的，
+在它之前能买到的只有 US$9.90 / 月，所以既有的 pro 行**按构造**就是月付。
+`billing_events.interval_after` **故意不回填**——那张表记录的是每个事件当时告诉我们什么，
+历史事件没带周期，往审计日志里写一个推导值是另一类错误。迁移文件里的注释写了同样的理由。
 
 ### 迁移路径怎么验证
 

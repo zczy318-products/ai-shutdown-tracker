@@ -4,8 +4,22 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { getCurrentUser } from "@/lib/auth";
-import { describeBilling } from "@/lib/billing/config";
+import { describeBilling, missingPriceIdErrorZh } from "@/lib/billing/config";
 import { PLAN, TIER_COLUMNS, TIER_MATRIX, type Plan } from "@/lib/plans";
+import {
+  ANNUAL_DISCOUNT_LABEL_ZH,
+  ANNUAL_EFFECTIVE_MONTHLY_LABEL,
+  ANNUAL_PRICE_LABEL,
+  ANNUAL_SAVING_LABEL,
+  ANNUAL_SAVING_MONTHS_LABEL,
+  BILLING_INTERVAL,
+  BILLING_INTERVAL_VALUES,
+  DEFAULT_BILLING_INTERVAL,
+  MONTHLY_PRICE_LABEL,
+  MONTHS_PER_YEAR,
+  isBillingInterval,
+  type BillingInterval,
+} from "@/lib/pricing";
 
 import { UpgradeButton } from "./upgrade-button";
 
@@ -19,16 +33,98 @@ import { UpgradeButton } from "./upgrade-button";
  * comparison table leads with an "匿名访客" column that is already ticked for
  * every reading feature, and the page says so again in words above it. If a
  * later edit makes this page look like a paywall, the edit is wrong.
+ *
+ * ZCZ-14 added a second billing interval, and three rules came with it:
+ *
+ *  - **both prices are visible at once**, with no interaction. The monthly
+ *    price, the annual total, the effective monthly price and the saving are
+ *    all in the server-rendered body of an anonymous `GET /pricing`. A visitor
+ *    should not have to click to find out what the other cycle costs.
+ *  - **the choice lives in the URL** (`?interval=annual`), not in component
+ *    state. Same decision as the listing's `?view=`: it renders on the server,
+ *    works without JavaScript, survives a share, and has no hydration flash.
+ *  - **no promise we cannot keep.** No refunds, no proration, no switching
+ *    cycle mid-term, no "cancel any time and we'll pay you back" — none of
+ *    that is implemented, so none of it is written here.
+ *
+ * Every number comes from `src/lib/pricing.ts`. Do not type a price into this
+ * file.
  */
 
 export const dynamic = "force-dynamic";
 
 const EXPORT_PATH = "/api/export/records";
 
-type SearchParams = Promise<Record<string, string | string[] | undefined>>;
+type RawSearchParams = Record<string, string | string[] | undefined>;
+type SearchParams = Promise<RawSearchParams>;
 
 function first(value: string | string[] | undefined): string | undefined {
   return Array.isArray(value) ? value[0] : value;
+}
+
+/**
+ * The same URL with a different `interval`, every other parameter kept.
+ *
+ * Kept means kept: `?reason=upgrade&from=account` has to survive the switch, or
+ * flipping to annual would silently drop the banner explaining why the visitor
+ * is on this page. Repeated keys are preserved too, which is why this appends
+ * rather than assigning.
+ */
+function hrefWithInterval(params: RawSearchParams, interval: BillingInterval): string {
+  const search = new URLSearchParams();
+  for (const [key, value] of Object.entries(params)) {
+    if (key === "interval" || value === undefined) continue;
+    for (const item of Array.isArray(value) ? value : [value]) search.append(key, item);
+  }
+  search.append("interval", interval);
+  return `/pricing?${search.toString()}`;
+}
+
+/**
+ * The billing-cycle chooser: two links, not a toggle.
+ *
+ * Links because the state is the URL. Styling is deliberately colourless —
+ * border weight and background, no green "best value" flag — both because the
+ * project's design rules keep semantic colour for things that actually have a
+ * status, and because «8 折 / 折合 US$7.92 / 省 US$23.76» already makes the
+ * case in numbers. `aria-current` is what tells a screen reader which one is
+ * active; the border alone would not.
+ */
+function IntervalChoice({
+  params,
+  selected,
+}: {
+  params: RawSearchParams;
+  selected: BillingInterval;
+}) {
+  return (
+    <div role="group" aria-label="计费周期" className="flex flex-wrap gap-2">
+      {BILLING_INTERVAL_VALUES.map((value) => {
+        const active = value === selected;
+        return (
+          <Link
+            key={value}
+            href={hrefWithInterval(params, value)}
+            aria-current={active ? "true" : undefined}
+            className={[
+              // min-h-11 keeps this well clear of the 24px floor in
+              // `npm run verify:a11y` (WCAG 2.2 §2.5.8) at phone widths.
+              "flex min-h-11 flex-col justify-center rounded-md border px-4 py-2 text-sm transition-colors",
+              active
+                ? "border-foreground bg-foreground/5 font-medium"
+                : "border-border text-muted-foreground hover:bg-muted",
+            ].join(" ")}
+          >
+            <span>
+              {BILLING_INTERVAL[value].zh}
+              {value === "annual" ? ` · ${ANNUAL_DISCOUNT_LABEL_ZH}` : null}
+            </span>
+            <span className="text-xs">{BILLING_INTERVAL[value].priceLabel}</span>
+          </Link>
+        );
+      })}
+    </div>
+  );
 }
 
 /** Why the visitor landed here, when they arrived by being turned away. */
@@ -81,6 +177,20 @@ export default async function PricingPage({ searchParams }: { searchParams: Sear
   const plan = (user?.plan ?? null) as Plan | null;
   const billing = describeBilling();
 
+  // An unknown `?interval=` falls back to monthly *for display only*. That is
+  // not the silent fallback `startUpgrade` forbids: here it picks which of two
+  // visible prices is emphasised, and the button carries the interval it
+  // actually resolved to. Nothing is charged on a GET.
+  const rawInterval = first(params.interval);
+  const interval: BillingInterval = isBillingInterval(rawInterval)
+    ? rawInterval
+    : DEFAULT_BILLING_INTERVAL;
+
+  // `stripe_test` with only one price id configured: that one cycle cannot be
+  // checked out, and says so where its button would be. The other is untouched.
+  const priceIdMissing =
+    billing.ok && billing.config.mode === "stripe_test" && !billing.config.priceIds[interval];
+
   return (
     <main className="mx-auto flex min-h-screen max-w-4xl flex-col gap-8 px-6 py-16">
       <div className="space-y-3">
@@ -92,8 +202,15 @@ export default async function PricingPage({ searchParams }: { searchParams: Sear
           付费买的是「把整个数据集拿走」和「接进自己的系统」，不是阅读权限。
         </p>
         <p className="text-muted-foreground text-sm">
-          全站只有一个付费档：<strong>{PLAN.pro.zh} {PLAN.pro.priceLabel}</strong>
-          ，按月订阅、以美元计价。免费账号不收费，也不是第二个价位。
+          全站只有一个付费档：<strong>{PLAN.pro.zh}</strong>，以美元计价，
+          两种计费周期任选 ——{" "}
+          <strong>
+            按月 {MONTHLY_PRICE_LABEL}，或按年 {ANNUAL_PRICE_LABEL}
+          </strong>
+          （{ANNUAL_DISCOUNT_LABEL_ZH}，折合 {ANNUAL_EFFECTIVE_MONTHLY_LABEL}，比按月付满{" "}
+          {MONTHS_PER_YEAR} 个月省 {ANNUAL_SAVING_LABEL}）。
+          两种周期解锁的功能<strong>完全一样</strong>，年付不会多给任何权限。
+          免费账号不收费，也不是第二个价位。
         </p>
       </div>
 
@@ -180,44 +297,76 @@ export default async function PricingPage({ searchParams }: { searchParams: Sear
           </CardContent>
         </Card>
 
+        {/*
+          One pro card, two billing cycles — not two pro cards. The tier
+          comparison above still has exactly four columns, because a billing
+          cycle is not a fifth kind of visitor.
+        */}
         <Card className="border-foreground/20">
           <CardHeader>
             <div className="flex items-center justify-between">
               <CardTitle>{PLAN.pro.zh}</CardTitle>
               {plan === "pro" ? <Badge>当前套餐</Badge> : null}
             </div>
-            <CardDescription>{PLAN.pro.priceLabel}</CardDescription>
+            <CardDescription>
+              <span className="text-foreground text-xl font-semibold">
+                {BILLING_INTERVAL[interval].priceLabel}
+              </span>
+            </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4 text-sm">
+            <IntervalChoice params={params} selected={interval} />
+
+            {/*
+              Shown for both selections, so the annual arithmetic is on the page
+              for an anonymous visitor who never touches the chooser. All four
+              numbers are derived in src/lib/pricing.ts from 990 分 and 4/5.
+            */}
+            <p className="text-muted-foreground text-xs">
+              年付 {ANNUAL_PRICE_LABEL}：{ANNUAL_DISCOUNT_LABEL_ZH}，折合{" "}
+              {ANNUAL_EFFECTIVE_MONTHLY_LABEL}，比按月付满 {MONTHS_PER_YEAR} 个月省{" "}
+              {ANNUAL_SAVING_LABEL}（相当于 {ANNUAL_SAVING_MONTHS_LABEL}的月付费用）。
+              年付按年计费，一次支付 {MONTHS_PER_YEAR} 个月。
+            </p>
+
             <p className="text-muted-foreground">{PLAN.pro.taglineZh}</p>
             <ul className="text-muted-foreground list-disc space-y-1 pl-5">
               <li>免费档的全部内容</li>
               <li>全量 CSV 导出：一行一条来源，含来源 URL、媒体、发布日期与原文引述</li>
               <li>API key（可生成、可吊销）与只读查询接口 <code>GET /api/v1/records</code></li>
+              <li>按月与按年解锁的功能完全一致：计费周期不影响任何权限、配额或导出范围</li>
             </ul>
 
             {plan === "pro" ? (
               <Button asChild className="w-full">
                 <Link href="/account">去账户页导出 / 管理 key</Link>
               </Button>
-            ) : billing.ok ? (
-              <UpgradeButton
-                mode={billing.config.mode}
-                label={
-                  billing.config.mode === "stripe_test"
-                    ? "用 Stripe 测试模式结账"
-                    : user
-                      ? "模拟升级为专业版"
-                      : "注册并升级"
-                }
-              />
-            ) : (
+            ) : !billing.ok ? (
               <p
                 role="alert"
                 className="border-destructive/50 bg-destructive/10 rounded-md border p-3 text-sm"
               >
                 {billing.errorZh}
               </p>
+            ) : priceIdMissing ? (
+              <p
+                role="alert"
+                className="border-destructive/50 bg-destructive/10 rounded-md border p-3 text-sm"
+              >
+                {missingPriceIdErrorZh(interval)}
+              </p>
+            ) : (
+              <UpgradeButton
+                mode={billing.config.mode}
+                interval={interval}
+                label={`${
+                  billing.config.mode === "stripe_test"
+                    ? "用 Stripe 测试模式结账"
+                    : user
+                      ? "模拟升级为专业版"
+                      : "注册并升级"
+                }（${BILLING_INTERVAL[interval].zh}）`}
+              />
             )}
           </CardContent>
         </Card>

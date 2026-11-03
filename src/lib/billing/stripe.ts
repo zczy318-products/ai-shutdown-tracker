@@ -1,5 +1,7 @@
 import { createHmac, timingSafeEqual } from "node:crypto";
 
+import type { BillingInterval } from "@/lib/pricing";
+
 /**
  * The two pieces of Stripe we actually use, spoken over plain `fetch`.
  *
@@ -47,10 +49,24 @@ export type CheckoutSession = { id: string; url: string };
  * `client_reference_id` carries our own user id through Stripe and back on the
  * webhook, which is what lets the webhook upgrade the right account without
  * trusting anything in the browser's return trip.
+ *
+ * `metadata[billing_interval]` does the same job for the billing cycle, and for
+ * the same reason the webhook must not work it out for itself. We know which
+ * cycle this is *here*, because we chose the price id from it a line ago; the
+ * webhook, looking at a finished session, would have to reverse-engineer it
+ * from the price id or the amount. Both are wrong: a price id is an opaque
+ * handle that changes (test → live is one such change), and an amount is a
+ * number that happens to match today. So the value rides along with the
+ * session, and the webhook refuses events that arrive without it.
+ *
+ * It is set twice on purpose: on the session (read back from
+ * `checkout.session.completed`) and on `subscription_data`, which copies it onto
+ * the Subscription object so later subscription events carry it too.
  */
 export async function createCheckoutSession(options: {
   secretKey: string;
   priceId: string;
+  billingInterval: BillingInterval;
   userId: string;
   customerEmail: string;
   successUrl: string;
@@ -66,7 +82,9 @@ export async function createCheckoutSession(options: {
     cancel_url: options.cancelUrl,
     client_reference_id: options.userId,
     "metadata[user_id]": options.userId,
+    "metadata[billing_interval]": options.billingInterval,
     "subscription_data[metadata][user_id]": options.userId,
+    "subscription_data[metadata][billing_interval]": options.billingInterval,
   };
 
   // Stripe rejects `customer` and `customer_email` together.
@@ -79,8 +97,18 @@ export async function createCheckoutSession(options: {
       authorization: `Bearer ${options.secretKey}`,
       "content-type": "application/x-www-form-urlencoded",
       "stripe-version": STRIPE_API_VERSION,
-      // Retrying a failed checkout must not create a second subscription.
-      "idempotency-key": `checkout:${options.userId}:${options.priceId}`,
+      /*
+       * Scoped to account + interval + price, so what it guarantees is precise:
+       * clicking the same button twice, or a retry after a network error,
+       * reuses one Checkout Session instead of opening a second one.
+       *
+       * It is *not* what stops an account from holding two subscriptions, and
+       * it never was — two different keys (monthly and annual) are two
+       * sessions. That guard is `startUpgrade`'s early return for an account
+       * that is already pro, plus the webhook's idempotency ledger. See the
+       * note there for the one window those leave open.
+       */
+      "idempotency-key": `checkout:${options.userId}:${options.billingInterval}:${options.priceId}`,
     },
     body: encodeForm(params),
   });

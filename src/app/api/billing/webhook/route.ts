@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { describeBilling } from "@/lib/billing/config";
 import { applyPlanChange, findUserById, findUserByStripeCustomerId } from "@/lib/billing/store";
 import { StripeError, verifyWebhookSignature, type StripeEvent } from "@/lib/billing/stripe";
+import { BILLING_INTERVAL, isBillingInterval } from "@/lib/pricing";
 
 /**
  * Stripe's side of the upgrade: `checkout → webhook → plan`.
@@ -83,19 +84,48 @@ async function handleEvent(event: StripeEvent): Promise<Outcome> {
       const user = await findUserById(userId);
       if (!user) return { handled: false, detail: `账号 ${userId} 不存在。` };
 
+      /*
+       * The billing cycle comes from the metadata *we* put on the session when
+       * we opened it, and from nowhere else.
+       *
+       * If it is absent or unrecognised this handler stops. It does not fall
+       * back to monthly, and it does not look at the price id or the amount on
+       * the line items: that would be the same mistake as a permission check
+       * that parses `price_…`, and getting it wrong means an account's recorded
+       * cycle disagrees with what Stripe will actually bill. `handled: false`
+       * with a readable reason leaves the account untouched and the event
+       * visible in the Stripe dashboard, which is the state a human can fix.
+       */
+      const rawInterval = metadataOf(object).billing_interval;
+      if (!isBillingInterval(rawInterval)) {
+        return {
+          handled: false,
+          detail:
+            `事件的 metadata.billing_interval ${
+              rawInterval === undefined ? "缺失" : `无法识别（${String(rawInterval)}）`
+            }，` +
+            "套餐未变更。这里不从 price id 或金额反推计费周期——" +
+            "请检查创建 checkout session 时是否带上了 metadata[billing_interval]。",
+        };
+      }
+      const interval = rawInterval;
+
       const result = await applyPlanChange({
         userId,
         plan: "pro",
+        interval,
         source: "stripe_test",
         externalId: event.id,
         type: event.type,
-        note: `Stripe 测试模式 checkout session ${asString(object.id) ?? "?"}`,
+        note:
+          `Stripe 测试模式 checkout session ${asString(object.id) ?? "?"}` +
+          `（${BILLING_INTERVAL[interval].zh}）`,
         stripeCustomerId: asString(object.customer) ?? undefined,
         stripeSubscriptionId: asString(object.subscription) ?? undefined,
       });
 
       return result.applied
-        ? { handled: true, detail: `账号 ${userId} 已升级为 pro。` }
+        ? { handled: true, detail: `账号 ${userId} 已升级为 pro（${BILLING_INTERVAL[interval].zh}）。` }
         : { handled: false, detail: `未应用：${result.reason}。` };
     }
 

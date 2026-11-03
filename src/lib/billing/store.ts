@@ -3,6 +3,7 @@ import { desc, eq } from "drizzle-orm";
 import { getDb } from "@/db";
 import { billingEvents, users, type BillingEvent, type User } from "@/db/schema";
 import type { Plan, PlanSource } from "@/lib/plans";
+import type { BillingInterval } from "@/lib/pricing";
 
 /**
  * Every plan change in the system goes through `applyPlanChange`.
@@ -12,11 +13,15 @@ import type { Plan, PlanSource } from "@/lib/plans";
  * did this account become pro?". The `billing_events` row written alongside it
  * answers that, including for the simulated upgrades, which are the ones most
  * likely to be mistaken for revenue later.
+ *
+ * ZCZ-14 added the billing interval, and it goes through here too — nothing
+ * else updates `users.plan` or `users.plan_interval`. The two columns have a
+ * database CHECK tying them together, so splitting the write would just move
+ * the failure from "wrong row" to "failed transaction".
  */
 
-export type PlanChange = {
+type PlanChangeCommon = {
   userId: string;
-  plan: Plan;
   source: PlanSource;
   /** Stripe `evt_…`, or a locally minted id for a simulated change. */
   externalId: string;
@@ -26,8 +31,18 @@ export type PlanChange = {
   stripeSubscriptionId?: string | null;
 };
 
+/**
+ * A discriminated union rather than `plan: Plan; interval?: BillingInterval`:
+ * an upgrade to pro *must* state which cycle it is, and a downgrade to free
+ * must not carry one. The type makes both impossible to forget, which matters
+ * because the webhook's job is to refuse an event it cannot read the interval
+ * from — a default would reintroduce exactly the guess ZCZ-14 §3 forbids.
+ */
+export type PlanChange = PlanChangeCommon &
+  ({ plan: "pro"; interval: BillingInterval } | { plan: "free"; interval?: null });
+
 export type PlanChangeResult =
-  | { applied: true; plan: Plan }
+  | { applied: true; plan: Plan; interval: BillingInterval | null }
   | { applied: false; reason: "duplicate" | "unknown_user" };
 
 /**
@@ -42,6 +57,9 @@ export type PlanChangeResult =
 export async function applyPlanChange(change: PlanChange): Promise<PlanChangeResult> {
   const db = await getDb();
   const now = new Date();
+  // Normalised once, here: `plan: "free"` means no cycle, whatever the caller
+  // left in the optional field.
+  const interval: BillingInterval | null = change.plan === "pro" ? change.interval : null;
 
   return db.transaction(async (tx) => {
     const ledger = await tx
@@ -51,6 +69,7 @@ export async function applyPlanChange(change: PlanChange): Promise<PlanChangeRes
         externalId: change.externalId,
         type: change.type,
         planAfter: change.plan,
+        intervalAfter: interval,
         source: change.source,
         note: change.note,
       })
@@ -65,6 +84,7 @@ export async function applyPlanChange(change: PlanChange): Promise<PlanChangeRes
       .update(users)
       .set({
         plan: change.plan,
+        planInterval: interval,
         planSource: change.source,
         planUpdatedAt: now,
         updatedAt: now,
@@ -84,7 +104,7 @@ export async function applyPlanChange(change: PlanChange): Promise<PlanChangeRes
       throw new UnknownUserError(change.userId);
     }
 
-    return { applied: true, plan: change.plan } as const;
+    return { applied: true, plan: change.plan, interval } as const;
   }).catch((error) => {
     if (error instanceof UnknownUserError) {
       return { applied: false, reason: "unknown_user" } as const;

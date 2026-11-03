@@ -260,6 +260,22 @@ company 1 ──< ai_impact 1 ──< source
 套餐**只在 webhook 里改写**。Checkout 的 `success_url` 只是一个任何人都能打开的 URL，
 拿它当升级凭据就等于谁都能把自己升级成 pro。
 
+### 一个付费档，两种计费周期
+
+pro 是**一个档**，可以按月（US$9.90 / 月）或按年（US$95.04 / 年，8 折）付费。
+年付**不多给任何权限**：`ENTITLEMENTS` 只以 `Plan` 为键，`can()` 的签名里没有 interval，
+`scripts/verify-saas-flow.mjs` 把两条链路跑完后逐项比对解锁到的东西。
+
+- 金额在 `src/lib/pricing.ts`，只硬编码 `MONTHLY_CENTS = 990` 和折扣比 `4/5`，
+  年付总价、折合月价、省多少、「8 折」这几个字全部推导而来；
+  `ANNUAL_CENTS <= MONTHLY_CENTS × 12 × 4/5` 是 import 时就跑的断言（只许向下取整）。
+- 周期以**语义**存库（`users.plan_interval`、`billing_events.interval_after`，
+  `billing_interval` 枚举），**不从 price id 字符串或金额反推** —— price id 一定会换。
+- 它从我们自己发起结账时就知道的那个值传递：checkout session 带
+  `metadata[billing_interval]`，webhook 从事件里读回。**读不到就不猜**：
+  返回 `handled: false` 并写明原因，套餐不动。
+- 定价页的周期选择走 URL（`?interval=annual`），服务端直出、匿名可用、分享一致。
+
 `billing_events` 用 Stripe 的事件 id 做唯一索引：Stripe 会重投直到拿到 2xx，
 重复投递是常态，幂等是靠这张表而不是靠运气。
 
