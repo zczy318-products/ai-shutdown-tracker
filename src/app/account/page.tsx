@@ -9,6 +9,7 @@ import { getCurrentUser } from "@/lib/auth";
 import { describeBilling } from "@/lib/billing/config";
 import { recentBillingEvents } from "@/lib/billing/store";
 import { PLAN, PLAN_SOURCE, can, labelOfPlanSource, type Plan } from "@/lib/plans";
+import { BILLING_INTERVAL, isBillingInterval, labelOfBillingInterval } from "@/lib/pricing";
 
 import { DowngradeButton } from "../pricing/upgrade-button";
 import { ApiKeysPanel, type KeyRow } from "./api-keys-panel";
@@ -43,7 +44,14 @@ export default async function AccountPage({ searchParams }: { searchParams: Sear
 
   const params = await searchParams;
   const plan = user.plan as Plan;
+  // `can()` takes the plan and nothing else — an annual subscriber is not a
+  // different tier from a monthly one (ZCZ-14 §2). The interval below is shown,
+  // never consulted for a permission.
   const isPro = can(plan, "exportFullCsv");
+  const intervalLabel = labelOfBillingInterval(user.planInterval);
+  const intervalPriceLabel = isBillingInterval(user.planInterval)
+    ? BILLING_INTERVAL[user.planInterval].priceLabel
+    : null;
   const billing = describeBilling();
 
   const [keys, events] = await Promise.all([
@@ -100,17 +108,39 @@ export default async function AccountPage({ searchParams }: { searchParams: Sear
       ) : null}
 
       {/* --- 套餐 --------------------------------------------------------- */}
+      {/*
+        `data-plan` / `data-plan-interval` mirror the two columns on the row, so
+        what the database holds is checkable over plain HTTP — that is how
+        `npm run verify:saas` asserts `plan_interval` is `monthly` on one chain,
+        `annual` on the other and gone after a downgrade. Neither is a secret:
+        it is the viewer's own plan, and the alternative is a verification that
+        trusts the page's prose.
+      */}
       <Card>
         <CardHeader>
-          <div className="flex flex-wrap items-center gap-3">
+          <div
+            className="flex flex-wrap items-center gap-3"
+            data-plan={plan}
+            data-plan-interval={user.planInterval ?? ""}
+          >
             <CardTitle>当前套餐</CardTitle>
-            <Badge variant={isPro ? "default" : "secondary"}>{PLAN[plan].zh}</Badge>
+            <Badge variant={isPro ? "default" : "secondary"}>
+              {PLAN[plan].zh}
+              {intervalLabel ? ` · ${intervalLabel}` : null}
+            </Badge>
             {user.planSource ? (
               <Badge variant="outline">{labelOfPlanSource(user.planSource)}</Badge>
             ) : null}
           </div>
           <CardDescription>
             套餐只影响全量导出与 API key。站内的阅读内容对所有人一致，和账号无关。
+            {intervalLabel ? (
+              <>
+                {" "}
+                计费周期是 <strong>{intervalLabel}</strong>（{intervalPriceLabel}）——
+                它只决定扣款频率，不影响任何权限：按月与按年能用的东西完全一样。
+              </>
+            ) : null}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4 text-sm">
@@ -194,6 +224,13 @@ export default async function AccountPage({ searchParams }: { searchParams: Sear
                   </span>
                   <span className="font-medium">
                     → {event.planAfter ? PLAN[event.planAfter as Plan].zh : "—"}
+                    {/*
+                      Blank on the rows written before ZCZ-14, and on
+                      downgrades. Not backfilled: see drizzle/0005.
+                    */}
+                    {labelOfBillingInterval(event.intervalAfter)
+                      ? ` · ${labelOfBillingInterval(event.intervalAfter)}`
+                      : null}
                   </span>
                   <span className="text-muted-foreground text-xs">
                     {PLAN_SOURCE[event.source].zh} · {event.type}

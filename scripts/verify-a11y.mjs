@@ -24,7 +24,10 @@
 import { chromium } from "playwright";
 
 const BASE = (process.env.BASE_URL ?? "http://localhost:3000").replace(/\/$/, "");
-const PAGES = ["/", "/stats", "/pricing", "/company/chegg"];
+// `?interval=annual` is listed separately: the billing-cycle chooser renders a
+// different element as selected, and "selected" is the state most likely to
+// grow a style that shrinks the target or drops the accessible name.
+const PAGES = ["/", "/stats", "/pricing", "/pricing?interval=annual", "/company/chegg"];
 const VIEWPORTS = [
   { name: "mobile", width: 390, height: 844 },
   { name: "desktop", width: 1280, height: 900 },

@@ -17,13 +17,27 @@
  * button, and the cost of a false negative is charging somebody money.
  */
 
+import { BILLING_INTERVAL, type BillingInterval } from "@/lib/pricing";
+
 export type BillingMode = "stripe_test" | "simulated";
+
+/**
+ * One price id per billing interval, each independently optional.
+ *
+ * Independently, because a deployment that has only configured the monthly
+ * price must keep selling monthly subscriptions: the annual button then
+ * explains which variable is missing, and the monthly one still works. An
+ * all-or-nothing `priceIds` would take the live, working monthly checkout down
+ * the moment the annual price was added to the code — which is the opposite of
+ * what shipping a second interval should do.
+ */
+export type PriceIds = Partial<Record<BillingInterval, string>>;
 
 export type BillingConfig = {
   mode: BillingMode;
   /** Present only in `stripe_test` mode. Always an `sk_test_…` key. */
   secretKey?: string;
-  priceId?: string;
+  priceIds: PriceIds;
   webhookSecret?: string;
   /** Absolute origin for Stripe's redirect URLs. */
   appUrl: string;
@@ -70,6 +84,7 @@ export function resolveBillingConfig(): BillingConfig {
     return {
       mode: "simulated",
       appUrl,
+      priceIds: {},
       reasonZh: "BILLING_SIMULATION=true：已强制使用本地模拟升级。",
     };
   }
@@ -78,6 +93,7 @@ export function resolveBillingConfig(): BillingConfig {
     return {
       mode: "simulated",
       appUrl,
+      priceIds: {},
       // The webhook secret is still honoured in simulated mode: it lets the
       // real signature-verification path be exercised without a Stripe
       // account, which is how ZCZ-7's webhook leg is tested here.
@@ -103,11 +119,47 @@ export function resolveBillingConfig(): BillingConfig {
   return {
     mode: "stripe_test",
     secretKey,
-    priceId: trimmed("STRIPE_PRICE_ID_PRO"),
+    priceIds: resolvePriceIds(),
     webhookSecret: trimmed("STRIPE_WEBHOOK_SECRET"),
     appUrl,
     reasonZh: "已配置 Stripe 测试模式密钥（sk_test_…）：结账走 Stripe 测试环境，不产生真实扣款。",
   };
+}
+
+/**
+ * The price id for each interval.
+ *
+ * `STRIPE_PRICE_ID_PRO` is still read, as an alias for the monthly price. The
+ * monthly subscription has been live since 2026-11-03 configured under that
+ * name, and renaming a variable in the code does not rename it in the
+ * deployment's settings — dropping the old name here would break the running
+ * checkout at the moment of deploy. The explicit `…_PRO_MONTHLY` wins when both
+ * are set, so a deployment can migrate at its own pace.
+ */
+function resolvePriceIds(): PriceIds {
+  const priceIds: PriceIds = {};
+  const monthly = trimmed("STRIPE_PRICE_ID_PRO_MONTHLY") ?? trimmed("STRIPE_PRICE_ID_PRO");
+  const annual = trimmed("STRIPE_PRICE_ID_PRO_ANNUAL");
+  if (monthly) priceIds.monthly = monthly;
+  if (annual) priceIds.annual = annual;
+  return priceIds;
+}
+
+/**
+ * The message shown when one interval has no price id configured.
+ *
+ * Shared by the pricing page (which renders it in place of that one button) and
+ * `startUpgrade` (which re-checks server-side), so the deployer reads the same
+ * variable name either way. It names the variable: "缺少配置" with no further
+ * detail sends somebody digging through source for a string.
+ */
+export function missingPriceIdErrorZh(interval: BillingInterval): string {
+  const { zh, envVar } = BILLING_INTERVAL[interval];
+  return (
+    `已配置 Stripe 测试密钥，但缺少 ${envVar}，${zh}订阅暂时无法结账。` +
+    `请补上这个周期的测试模式 price id（另一个计费周期不受影响），` +
+    "或移除 STRIPE_SECRET_KEY 以回退到本地模拟升级。"
+  );
 }
 
 /**

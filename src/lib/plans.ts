@@ -19,6 +19,10 @@
  * because the question never gets asked.
  */
 
+// Relative, not "@/lib/pricing": `src/db/schema.ts` imports this file through
+// drizzle-kit's own esbuild pass, which does not read tsconfig path aliases.
+import { MONTHLY_PRICE_LABEL } from "./pricing";
+
 type NonEmpty<T> = readonly [T, ...T[]];
 
 export const PLAN = {
@@ -26,11 +30,16 @@ export const PLAN = {
     zh: "免费",
     en: "Free",
     /**
-     * A display string, not a money amount. It is *not* localised by language
-     * — the price is USD for everyone — so do not reintroduce a `Zh`/`En`
-     * split here, and do not parse it: the amount actually charged comes from
-     * the Stripe price behind `STRIPE_PRICE_ID_PRO`, and this label only has
-     * to agree with it. Billing runs in test mode, so nothing is captured.
+     * A display string, not a money amount, and *not* localised by language —
+     * the price is USD for everyone, so do not reintroduce a `Zh`/`En` split
+     * here, and do not parse it. Both labels are derived from
+     * `src/lib/pricing.ts`; the amount actually charged comes from the Stripe
+     * price behind `STRIPE_PRICE_ID_PRO_MONTHLY` / `…_ANNUAL`, and these
+     * labels only have to agree with it. Billing runs in test mode, so nothing
+     * is captured.
+     *
+     * Zero is written out rather than run through `formatUsd`: free is not a
+     * price with cents, and `US$0.00` reads like one.
      */
     priceLabel: "US$0",
     taglineZh: "注册只是为了成为付费主体，它不解锁任何阅读权限。",
@@ -38,7 +47,12 @@ export const PLAN = {
   pro: {
     zh: "专业版",
     en: "Pro",
-    priceLabel: "US$9.90 / 月",
+    /**
+     * The *monthly* label. Pro is one tier with two billing intervals, and the
+     * pricing page shows both — anything that needs the annual figures reads
+     * them from `src/lib/pricing.ts` rather than growing a second plan here.
+     */
+    priceLabel: MONTHLY_PRICE_LABEL,
     taglineZh: "给需要把整个数据集拿走、或接进自己系统的人。",
   },
 } as const;
@@ -74,6 +88,15 @@ export function labelOfPlanSource(source: string, locale: "zh" | "en" = "zh"): s
 /**
  * What each tier adds on top of what everyone — including visitors with no
  * account at all — can already do.
+ *
+ * **Keyed on `Plan` only, and `can()` takes no billing interval.** Pro is one
+ * tier sold with two billing cycles (ZCZ-14); paying a year up front buys the
+ * same capabilities as paying by the month — no larger export, no wider API
+ * quota, nothing. Adding an `interval` parameter to `can()` would turn a
+ * payment schedule into a feature flag, and the first thing it would do is make
+ * "what can this account do?" unanswerable without knowing how they paid.
+ * `scripts/verify-saas-flow.mjs` asserts the two chains unlock item-for-item
+ * the same things, so this is checked rather than promised.
  */
 export const ENTITLEMENTS = {
   free: {

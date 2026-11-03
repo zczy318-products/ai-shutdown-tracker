@@ -3,6 +3,7 @@
 import { useActionState } from "react";
 
 import { Button } from "@/components/ui/button";
+import type { BillingInterval } from "@/lib/pricing";
 
 import { startUpgrade, simulateDowngrade, type BillingFormState } from "./actions";
 
@@ -37,15 +38,25 @@ function Feedback({ state }: { state: BillingFormState }) {
 export function UpgradeButton({
   label,
   mode,
+  interval,
 }: {
   label: string;
   mode: "stripe_test" | "simulated";
+  interval: BillingInterval;
 }) {
   const [state, action, pending] = useActionState<BillingFormState, FormData>(startUpgrade, null);
 
   return (
     <div>
       <form action={action}>
+        {/*
+          The cycle travels with the submission rather than being re-derived
+          server-side from the URL. The button's label named a price; this is
+          the field that makes the server charge that one. `startUpgrade`
+          re-validates it against the whitelist and errors on anything else —
+          it never falls back to monthly.
+        */}
+        <input type="hidden" name="interval" value={interval} />
         <Button type="submit" size="lg" disabled={pending} className="w-full">
           {pending
             ? mode === "stripe_test"

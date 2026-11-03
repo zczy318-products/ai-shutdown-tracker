@@ -6,9 +6,14 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
 import { getCurrentUser } from "@/lib/auth";
-import { BillingConfigError, resolveBillingConfig } from "@/lib/billing/config";
+import {
+  BillingConfigError,
+  missingPriceIdErrorZh,
+  resolveBillingConfig,
+} from "@/lib/billing/config";
 import { applyPlanChange } from "@/lib/billing/store";
 import { StripeError, createCheckoutSession } from "@/lib/billing/stripe";
+import { BILLING_INTERVAL, isBillingInterval } from "@/lib/pricing";
 
 /**
  * Starting and undoing an upgrade.
@@ -25,13 +30,18 @@ import { StripeError, createCheckoutSession } from "@/lib/billing/stripe";
  * demonstrable with nothing external configured at all. It is not a backdoor
  * around payment: there is no payment to go around, the account page labels
  * the result as a simulation, and `billing_events` records it as one.
+ *
+ * ZCZ-14 added the billing interval. It arrives as a form field, is checked
+ * against the whitelist, and an unrecognised value is an error — never a
+ * fallback to monthly. The form said which cycle the visitor was buying, so
+ * quietly buying the other one would be the worst available outcome.
  */
 
 export type BillingFormState = { error: string } | { ok: true; message: string } | null;
 
 export async function startUpgrade(
   _prev: BillingFormState,
-  _formData: FormData,
+  formData: FormData,
 ): Promise<BillingFormState> {
   const user = await getCurrentUser();
   // Anonymous visitors are sent to register rather than refused. Nothing they
@@ -39,6 +49,29 @@ export async function startUpgrade(
   // subject.
   if (!user) redirect("/register?from=pricing");
 
+  const rawInterval = formData.get("interval");
+  if (!isBillingInterval(rawInterval)) {
+    return {
+      error:
+        "计费周期无法识别，没有开始结账。请回到定价页重新选择「按月」或「按年」。" +
+        "（这里不会默认成按月：按错的周期扣款比报错更糟。）",
+    };
+  }
+  const interval = rawInterval;
+
+  /*
+   * One subscription per account.
+   *
+   * This early return is the guard — not the Stripe idempotency key, which
+   * only collapses repeated clicks on the *same* button. The window it leaves
+   * open: a free account could open the monthly checkout and the annual
+   * checkout and pay both before either webhook lands, because `plan` is still
+   * `free` throughout. Closing that properly needs a record of the pending
+   * session (and, in live mode, a cancel call), which is beyond ZCZ-14 and
+   * beyond what test mode can even exercise. Written down rather than silently
+   * assumed away; in test mode the cost is a duplicate test subscription to
+   * cancel in the Stripe dashboard.
+   */
   if (user.plan === "pro") {
     return { ok: true, message: "这个账号已经是专业版了。" };
   }
@@ -52,31 +85,31 @@ export async function startUpgrade(
       const result = await applyPlanChange({
         userId: user.id,
         plan: "pro",
+        interval,
         source: "simulated",
         // Not a Stripe id, and shaped so it can never be mistaken for one.
         externalId: `sim:${randomUUID()}`,
         type: "simulated.upgrade",
-        note: "本地模拟升级：未接入 Stripe，没有任何真实扣款。",
+        note: `本地模拟升级（${BILLING_INTERVAL[interval].zh}）：未接入 Stripe，没有任何真实扣款。`,
       });
       if (!result.applied) {
         return { error: `升级未生效（${result.reason}）。请刷新后重试。` };
       }
     } else {
-      if (!config.priceId) {
-        return {
-          error:
-            "已配置 Stripe 测试密钥，但缺少 STRIPE_PRICE_ID_PRO。" +
-            "请补上测试模式的 price id，或移除 STRIPE_SECRET_KEY 以回退到本地模拟升级。",
-        };
+      const priceId = config.priceIds[interval];
+      if (!priceId) {
+        // Only this interval is unavailable; the other button still works.
+        return { error: missingPriceIdErrorZh(interval) };
       }
       const session = await createCheckoutSession({
         secretKey: config.secretKey!,
-        priceId: config.priceId,
+        priceId,
+        billingInterval: interval,
         userId: user.id,
         customerEmail: user.email,
         customerId: user.stripeCustomerId,
         successUrl: `${config.appUrl}/account?checkout=success`,
-        cancelUrl: `${config.appUrl}/pricing?checkout=cancelled`,
+        cancelUrl: `${config.appUrl}/pricing?checkout=cancelled&interval=${interval}`,
       });
       checkoutUrl = session.url;
     }
@@ -121,6 +154,8 @@ export async function simulateDowngrade(
     const result = await applyPlanChange({
       userId: user.id,
       plan: "free",
+      // No interval: a free account has no billing cycle, and the CHECK on
+      // `users` enforces that. `applyPlanChange` nulls the column.
       source: "simulated",
       externalId: `sim:${randomUUID()}`,
       type: "simulated.downgrade",
