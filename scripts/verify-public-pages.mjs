@@ -182,20 +182,61 @@ await run("npx", ["tsx", "src/db/seed.ts"], dbEnv);
   await client.close();
 }
 
-const server = spawn("npx", ["next", "start", "-p", String(PORT)], {
-  stdio: ["ignore", "pipe", "pipe"],
-  env: {
-    ...process.env,
-    PGLITE_DATA_DIR: DB_DIR,
-    // `next start` forces NODE_ENV=production, which refuses PGlite unless this
-    // opt-in is set. A throwaway local database is exactly what it is for.
-    PGLITE_ALLOW_PRODUCTION: "true",
-    DATABASE_URL: "",
-  },
-});
-let serverLog = "";
-server.stdout.on("data", (chunk) => (serverLog += chunk));
-server.stderr.on("data", (chunk) => (serverLog += chunk));
+/**
+ * One server per database directory; the empty-data phase gets its own.
+ *
+ * `detached` matters more than it looks: `npx next start` is a wrapper around
+ * the process that actually binds the port, so killing the wrapper leaves the
+ * server running. A later run would then silently talk to the *previous* run's
+ * database and pass — which is how this was found. Its own process group means
+ * `stopServer` can take the whole tree down.
+ */
+function startServer(dataDir) {
+  const child = spawn("npx", ["next", "start", "-p", String(PORT)], {
+    stdio: ["ignore", "pipe", "pipe"],
+    detached: true,
+    env: {
+      ...process.env,
+      PGLITE_DATA_DIR: dataDir,
+      // `next start` forces NODE_ENV=production, which refuses PGlite unless
+      // this opt-in is set. A throwaway local database is exactly what it is for.
+      PGLITE_ALLOW_PRODUCTION: "true",
+      DATABASE_URL: "",
+    },
+  });
+  child.log = "";
+  child.stdout.on("data", (chunk) => (child.log += chunk));
+  child.stderr.on("data", (chunk) => (child.log += chunk));
+  return child;
+}
+
+async function stopServer(child) {
+  for (const signal of ["SIGTERM", "SIGKILL"]) {
+    try {
+      process.kill(-child.pid, signal);
+    } catch {
+      /* already gone */
+    }
+    await new Promise((resolve) => setTimeout(resolve, 500));
+  }
+  // PGlite holds a lock on its data directory; give the port and the lock a
+  // moment before the next phase claims it.
+  await new Promise((resolve) => setTimeout(resolve, 500));
+}
+
+/**
+ * Refuses to run against a server this script did not start. Without this, a
+ * leftover process on the port makes the whole run meaningless.
+ */
+async function requirePortFree() {
+  try {
+    await fetch(BASE + "/", { redirect: "manual", signal: AbortSignal.timeout(2000) });
+  } catch {
+    return;
+  }
+  console.error(`something is already serving ${BASE}. Stop it, or set PORT=<other>.`);
+  process.exit(1);
+}
 
 async function waitForServer() {
   for (let attempt = 0; attempt < 60; attempt++) {
@@ -210,9 +251,51 @@ async function waitForServer() {
   return false;
 }
 
+// ---------------------------------------------------------------------------
+// Phase 0: an empty (but migrated) database
+// ---------------------------------------------------------------------------
+//
+// A completion criterion in its own right: before any data exists, the three
+// pages must render an empty state rather than an error. This is also the state
+// of a fresh deployment between `db:migrate` and the first import, so it is the
+// first thing a visitor could possibly see.
+
+await requirePortFree();
+
+const EMPTY_DIR = `${DB_DIR}-empty`;
+await rm(EMPTY_DIR, { recursive: true, force: true });
+await run("npx", ["tsx", "src/db/migrate.ts"], { PGLITE_DATA_DIR: EMPTY_DIR, DATABASE_URL: "" });
+
+{
+  console.log("\n--- 空数据库（迁移完成、尚未导入）---");
+  const empty = startServer(EMPTY_DIR);
+  try {
+    if (!(await waitForServer())) {
+      console.error(`server did not start on ${BASE}\n${empty.log}`);
+      process.exit(1);
+    }
+    const home = await get("/");
+    eq("空库 GET / is 200", home.status, 200);
+    eq("空库榜单条数", num(home.html, "result-total"), 0);
+    check("空库榜单给出空状态而不是报错", home.html.includes("还没有已发布的记录"));
+    const stats = await get("/stats");
+    eq("空库 GET /stats is 200", stats.status, 200);
+    check("空库仪表盘给出空状态而不是报错", stats.html.includes("暂无可统计数据"));
+    const filtered = await get("/?confidence=high&year=2025");
+    eq("空库带筛选参数仍是 200", filtered.status, 200);
+    const missing = await get("/company/anything");
+    eq("空库公司页 404", missing.status, 404);
+  } finally {
+    await stopServer(empty);
+    if (!process.env.KEEP_DB) await rm(EMPTY_DIR, { recursive: true, force: true });
+  }
+}
+
+const server = startServer(DB_DIR);
+
 try {
   if (!(await waitForServer())) {
-    console.error(`server did not start on ${BASE}\n${serverLog}`);
+    console.error(`server did not start on ${BASE}\n${server.log}`);
     process.exit(1);
   }
 
@@ -548,9 +631,7 @@ try {
     ),
   );
 } finally {
-  server.kill("SIGTERM");
-  await new Promise((resolve) => setTimeout(resolve, 300));
-  server.kill("SIGKILL");
+  await stopServer(server);
   if (!process.env.KEEP_DB) await rm(DB_DIR, { recursive: true, force: true });
 }
 
