@@ -3,7 +3,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { resolveDbTarget, describeDbTarget } from "@/db/config";
-import { requireUser } from "@/lib/auth";
+import { requireEditor } from "@/lib/auth";
 import {
   RECORD_STATUS,
   RECORD_STATUS_VALUES,
@@ -18,8 +18,8 @@ import { countSubscribersByStatus } from "@/lib/subscribe/store";
 export const dynamic = "force-dynamic";
 
 export default async function AdminPage() {
-  // Gated here and not only in the layout — see `requireUser`.
-  await requireUser();
+  // Gated here and not only in the layout — see `requireEditor`.
+  await requireEditor();
 
   const [counts, subscriberCounts] = await Promise.all([countByStatus(), countSubscribersByStatus()]);
   const total = Object.values(counts).reduce((sum, value) => sum + value, 0);

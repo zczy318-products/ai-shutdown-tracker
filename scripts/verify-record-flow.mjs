@@ -13,8 +13,25 @@
  * action bypasses the browser's `required` attributes, which is exactly the
  * "someone skipped the form" case the server layer has to refuse on its own.
  *
- * Each run uses a fresh throwaway account and a unique company slug, so it is
- * safe to re-run against the same database.
+ * Each run uses a unique company slug, so it is safe to re-run against the same
+ * database.
+ *
+ * It needs an **editor** account (ZCZ-15): every write below goes through the
+ * role gate, and a self-registered account is a `viewer`. Registration cannot
+ * grant the role — nothing in the application can — so pass the credentials of
+ * an account that has it:
+ *
+ *   VERIFY_EDITOR_EMAIL=you@example.com VERIFY_EDITOR_PASSWORD=… npm run verify:records
+ *
+ * To make one locally: register at /register, stop the dev server (PGlite locks
+ * its data directory, so the grant cannot run while the server holds it), then
+ *
+ *   node scripts/grant-role.mjs you@example.com editor
+ *
+ * and start the server again. With no credentials the script registers a
+ * throwaway account, discovers it is a viewer, and says this instead of
+ * reporting a wall of failures. The gate itself is verified by
+ * `npm run verify:roles`, which owns its own database.
  */
 const BASE = process.env.BASE_URL ?? "http://127.0.0.1:3000";
 const RUN = Date.now();
@@ -170,20 +187,44 @@ function sourceFields(index, overrides = {}) {
 }
 
 // ---------------------------------------------------------------------------
-// 0. A session, because every record action is behind the auth gate.
+// 0. A session with the editor role, because every record action is behind it.
 // ---------------------------------------------------------------------------
+const EDITOR_EMAIL = process.env.VERIFY_EDITOR_EMAIL?.trim();
+const EDITOR_PASSWORD = process.env.VERIFY_EDITOR_PASSWORD?.trim();
 {
-  const { body } = await get("/register");
-  await postAction("/register", {
-    ...actionFieldsFor(body, 'name="email"'),
-    email: `t3-${RUN}@example.com`,
-    password: "correct-horse-8",
-  });
-  check("signed in for the record flow", cookie.startsWith("aist_session="));
+  if (EDITOR_EMAIL && EDITOR_PASSWORD) {
+    const { body } = await get("/login");
+    await postAction("/login", {
+      ...actionFieldsFor(body, 'name="email"'),
+      email: EDITOR_EMAIL,
+      password: EDITOR_PASSWORD,
+    });
+    check(`signed in as ${EDITOR_EMAIL}`, cookie.startsWith("aist_session="));
+  } else {
+    const { body } = await get("/register");
+    await postAction("/register", {
+      ...actionFieldsFor(body, 'name="email"'),
+      email: `t3-${RUN}@example.com`,
+      password: "correct-horse-8",
+    });
+    check("signed in for the record flow", cookie.startsWith("aist_session="));
+  }
 }
 
 // `new` renders the editor; its action fields are reused by every POST below.
 const newPage = await get("/admin/records/new");
+if (newPage.res.status !== 200) {
+  // Not a failure of the record flow: this account simply may not write. Saying
+  // so once beats twenty assertions failing for a reason none of them names.
+  console.error(
+    `\n/admin/records/new answered ${newPage.res.status} → ` +
+      `${newPage.res.headers.get("location") ?? "(no redirect)"}.\n` +
+      "This account has no write access (ZCZ-15). Sign in as an editor:\n" +
+      "  VERIFY_EDITOR_EMAIL=… VERIFY_EDITOR_PASSWORD=… npm run verify:records\n" +
+      "and see the header of this file for how to grant the role.",
+  );
+  process.exit(1);
+}
 check("/admin/records/new renders the editor", newPage.res.status === 200, `status=${newPage.res.status}`);
 const createFields = actionFieldsFor(newPage.body, 'name="company.slug"');
 
@@ -428,8 +469,9 @@ console.log("\n-- 鉴权 --");
   // Reads, too — and not only the status code. A layout that calls `redirect()`
   // does not stop the page under it from rendering, so the 307 turning an
   // anonymous visitor away used to carry the rendered backoffice list in its
-  // body. Every /admin page that reads anything now calls `requireUser()`
-  // itself; this is what holds that line.
+  // body. Every /admin page now calls `requireEditor()` in its own body (it
+  // used to be `requireUser()`, which only checked the session); this is what
+  // holds that line.
   const list = await get("/admin/records");
   check(
     "an anonymous GET of the backoffice list is redirected",

@@ -1,14 +1,15 @@
 import Link from "next/link";
-import { redirect } from "next/navigation";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { logout } from "@/app/(auth)/actions";
 import { listApiKeys } from "@/lib/api-keys";
-import { getCurrentUser } from "@/lib/auth";
+import { requireUser } from "@/lib/auth";
 import { describeBilling } from "@/lib/billing/config";
 import { recentBillingEvents } from "@/lib/billing/store";
 import { PLAN, PLAN_SOURCE, can, labelOfPlanSource, type Plan } from "@/lib/plans";
+import { ROLE, isEditor, isRole, labelOfRole } from "@/lib/roles";
 
 import { DowngradeButton } from "../pricing/upgrade-button";
 import { ApiKeysPanel, type KeyRow } from "./api-keys-panel";
@@ -38,8 +39,9 @@ function formatTime(value: Date | null): string | null {
 }
 
 export default async function AccountPage({ searchParams }: { searchParams: SearchParams }) {
-  const user = await getCurrentUser();
-  if (!user) redirect("/login");
+  // Any signed-in account, whatever its role: this page is about the
+  // subscription, and a `viewer` is exactly who it is for (ZCZ-15).
+  const user = await requireUser();
 
   const params = await searchParams;
   const plan = user.plan as Plan;
@@ -61,6 +63,10 @@ export default async function AccountPage({ searchParams }: { searchParams: Sear
   }));
 
   const justUpgraded = first(params.upgraded) || first(params.checkout);
+  // `requireEditor()` sends a signed-in non-editor here with this marker
+  // rather than to /login, so the refusal has to be explained somewhere. This
+  // is that somewhere.
+  const deniedAdmin = first(params.denied) === "admin";
 
   return (
     <main className="mx-auto flex min-h-screen max-w-3xl flex-col gap-6 px-6 py-16">
@@ -77,16 +83,61 @@ export default async function AccountPage({ searchParams }: { searchParams: Sear
           <p className="text-muted-foreground font-mono text-xs" data-user-id={user.id}>
             账号 ID {user.id}
           </p>
+          {/*
+            `data-role` mirrors `users.role` so «this account cannot write» is
+            checkable over plain HTTP (`npm run verify:roles`) instead of being
+            inferred from whether a link happens to be rendered. Not a secret:
+            it is the viewer's own account, and it is the one thing on this page
+            that explains why /admin turns them away.
+          */}
+          <p className="text-muted-foreground text-xs" data-role={user.role}>
+            权限 {labelOfRole(user.role)} ·{" "}
+            {isRole(user.role) ? ROLE[user.role].descriptionZh : null}
+          </p>
         </div>
         <div className="flex gap-2">
           <Button asChild variant="outline" size="sm">
             <Link href="/">榜单</Link>
           </Button>
-          <Button asChild variant="outline" size="sm">
-            <Link href="/admin">后台</Link>
-          </Button>
+          {/*
+            Hidden for a viewer because the link would only lead to a refusal —
+            and *only* hidden, which is not the gate. The gate is
+            `requireEditor()` on every /admin page and on all five write
+            actions; this is just not advertising a door that is locked.
+          */}
+          {isEditor(user.role) ? (
+            <Button asChild variant="outline" size="sm">
+              <Link href="/admin">后台</Link>
+            </Button>
+          ) : null}
+          {/*
+            The only logout control a viewer can reach: the other one is in the
+            /admin layout, which is the page they are no longer allowed to open
+            (ZCZ-15). Signing in with no way to sign out is not a gate, it is a
+            trap.
+          */}
+          <form action={logout}>
+            <Button type="submit" variant="outline" size="sm">
+              登出
+            </Button>
+          </form>
         </div>
       </div>
+
+      {deniedAdmin ? (
+        <div
+          className="rounded-lg border border-amber-500/40 bg-amber-500/10 p-4 text-sm"
+          role="status"
+          data-denied="admin"
+        >
+          <p className="font-medium">这个账号没有录入权限，/admin 后台已拒绝访问。</p>
+          <p className="text-muted-foreground mt-1">
+            注册得到的是只读账号（{ROLE.viewer.zh}）：可以订阅、导出与使用 API key，
+            不能录入、修改、发布或删除任何记录。录入权限（{ROLE.editor.zh}）
+            由管理员单独授予，和付费套餐无关 —— 升级到专业版不会解锁后台。
+          </p>
+        </div>
+      ) : null}
 
       {justUpgraded === "simulated" ? (
         <div className="rounded-lg border border-emerald-500/40 bg-emerald-500/10 p-4 text-sm">

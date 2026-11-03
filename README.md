@@ -32,7 +32,16 @@ npm run dev          # http://localhost:3000
 
 不需要 Docker、不需要本地 Postgres、不需要任何第三方账号即可跑通。
 
-然后在 `/register` 注册一个账号，会自动登录并跳转到 `/admin`。
+然后在 `/register` 注册一个账号，会自动登录并跳转到 `/account`。注册得到的是**只读账号**
+（`viewer`）：可以订阅、导出、用 API key，但不能录入或修改记录。要进 `/admin`，需要有人把
+这个账号授为 `editor`（应用里没有任何代码路径能做这件事）：
+
+```bash
+# dev server 先停掉：PGlite 会锁住数据目录
+node scripts/grant-role.mjs you@example.com editor
+```
+
+见 [`docs/ROLE_GATE.md`](docs/ROLE_GATE.md)。
 
 ### 页面
 
@@ -44,9 +53,9 @@ npm run dev          # http://localhost:3000
 | `/api/export/records` | 全量 CSV（pro）。免费 / 匿名会被引导到定价页，不是 403 |
 | `/api/v1/records` | 只读 JSON（pro），用 API key 鉴权 |
 | `/api/billing/webhook` | Stripe 测试模式 webhook，签名校验后改写 plan |
-| `/register` | 注册（T2 阶段开放自助注册，T4 会收紧为邀请制） |
+| `/register` | 注册。对所有人开放（账号是付费主体的载体），但只产生 `viewer`：没有任何写权限 |
 | `/login` | 登录 |
-| `/admin` | 后台首页：各状态记录数与入口。**以下全部需登录**，未登录跳 `/login` |
+| `/admin` | 后台首页：各状态记录数与入口。**以下全部需要 `editor` 角色**：未登录跳 `/login`，登录了但角色不够跳 `/account?denied=admin` |
 | `/admin/records` | 记录列表：按状态 / 关键词筛选，分页（每页 20 条） |
 | `/admin/records/new` | 新建记录：公司字段 + 事件字段 + 可增删的多条来源 |
 | `/admin/records/[id]` | 编辑 + 审核：发布 / 下架 / 拒收 / 删除草稿，并展示已存来源与原文引述 |
@@ -63,12 +72,14 @@ npm run dev          # http://localhost:3000
 | `npm run db:generate` | 改完 `src/db/schema.ts` 后生成迁移 SQL 到 `drizzle/` |
 | `npm run db:migrate` | 把 `drizzle/` 里的迁移应用到当前数据库 |
 | `npm run db:studio` | Drizzle Studio |
-| `npm run verify:auth` | 对**已启动**的服务跑注册/登录/登出全链路检查 |
-| `npm run verify:records` | 对**已启动**的服务跑录入 / 发布 / 筛选 / 下架全链路检查（40 项） |
+| `npm run verify:auth` | 对**已启动**的服务跑注册/登录/登出全链路检查（落点为 `/account`，并验证 viewer 被 `/admin` 拒绝） |
+| `npm run verify:records` | 对**已启动**的服务跑录入 / 发布 / 筛选 / 下架全链路检查（40 项）。写操作都要过角色门禁，所以要给一个 editor 账号：`VERIFY_EDITOR_EMAIL=… VERIFY_EDITOR_PASSWORD=… npm run verify:records` |
 | `npm run verify:saas` | 对**已启动**的服务跑分档 / 导出 / 升级 / API key 全链路检查（51 项） |
 | `npm run verify:db` | 不启服务：在临时 PGlite 库上跑迁移并直接用 SQL 验证数据库约束（26 项） |
 | `npm run verify:pg` | 不启服务：验证 `DATABASE_URL` 这条路径能建表（走真实 `pg` 驱动） |
-| `npm run verify:subscribe` | 不启服务：匿名订阅 / 双重确认 / 一键退订 / 枚举防护 / 速率限制 / `/admin` 只读视图全链路检查（55 项，自己起 dev server） |
+| `npm run verify:subscribe` | 不启服务：匿名订阅 / 双重确认 / 一键退订 / 枚举防护 / 速率限制 / `/admin` 只读视图全链路检查（58 项，自己起 dev server） |
+| `npm run verify:roles` | 不启服务：`/admin` 角色门禁与五个写操作的全链路检查（120 项，自带库与服务器，见 [`docs/ROLE_GATE.md`](docs/ROLE_GATE.md)） |
+| `npm run grant:role` | 把某个账号设为 `viewer` / `editor`：`npm run grant:role -- you@example.com editor` |
 
 `verify:auth` 与 `verify:records` 走真实 HTTP 请求（cookie、重定向、server action 都会被验证），每次用新的临时邮箱与唯一 slug，可重复执行：
 

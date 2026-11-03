@@ -7,6 +7,7 @@ import { getDb } from "@/db";
 import { users } from "@/db/schema";
 import { createSession, destroyCurrentSession } from "@/lib/auth";
 import { hashPassword, verifyPassword } from "@/lib/password";
+import { landingPathFor } from "@/lib/roles";
 import { credentialsSchema } from "@/lib/validation";
 
 export type AuthFormState = { error: string } | null;
@@ -39,6 +40,9 @@ export async function register(
     return { error: "该邮箱已注册" };
   }
 
+  // No `role` here. The column defaults to the least privileged grade, and
+  // leaving it out is the point: there is no code path — not this one, not the
+  // billing webhook — that grants write access. See `src/lib/roles.ts`.
   const inserted = await db
     .insert(users)
     .values({ email, passwordHash: await hashPassword(password) })
@@ -53,7 +57,10 @@ export async function register(
   }
 
   await createSession(userId);
-  redirect("/admin");
+  // `/account`, never `/admin`: a new account is a `viewer`, so /admin would
+  // turn it straight back around. What registering actually gets you is the
+  // account page — the subscription, the export and the API keys (ZCZ-15).
+  redirect("/account");
 }
 
 export async function login(
@@ -69,7 +76,7 @@ export async function login(
   const db = await getDb();
 
   const rows = await db
-    .select({ id: users.id, passwordHash: users.passwordHash })
+    .select({ id: users.id, passwordHash: users.passwordHash, role: users.role })
     .from(users)
     .where(eq(users.email, email))
     .limit(1);
@@ -82,7 +89,10 @@ export async function login(
   }
 
   await createSession(user.id);
-  redirect("/admin");
+  // Split by role, not by habit: an editor wants the backoffice, and a viewer
+  // sent to /admin would be bounced to /account with a refusal — a working
+  // login that reads as a broken one.
+  redirect(landingPathFor(user.role));
 }
 
 export async function logout(): Promise<void> {

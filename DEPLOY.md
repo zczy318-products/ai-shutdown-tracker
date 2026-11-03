@@ -483,3 +483,34 @@ env -u DATABASE_URL NODE_ENV=production npm run build
 
 此外要注意：Vercel 函数有执行时长上限，迁移 + 30 条记录的导入（每条一个事务）在冷启动的
 Neon 上并非瞬时完成。路由要分两个动作（先迁移、再导入）分别触发，而不是一次请求干完两件事。
+
+---
+
+## 附：录入权限（ZCZ-15）
+
+`/admin` 以前只验「会话是否有效」，而 `/register` 对所有人开放 —— 等于任何陌生人注册完就能
+改、能发、能删榜单。修法是给 `users` 加一列 `role`（`viewer` / `editor`），默认最低权限。
+
+部署这版需要多做两件事，顺序不能反：
+
+1. **跑迁移**（`drizzle/0006_user_role.sql`）：
+
+   ```bash
+   DATABASE_URL='<连接串>' npm run db:migrate
+   ```
+
+   这一步会把 `role = 'viewer'` 写进**所有既有账号**。那是有意的：这个漏洞修之前后台对
+   任何账号都是开的，所以没有任何既有账号是被授予过写权限的。迁移里没有写死任何邮箱，也
+   没有「第一个注册的人自动是 editor」的规则。
+
+2. **人工授予第一个 editor**。应用里没有任何代码路径会写这一列（注册不会，计费 webhook
+   不会），所以这一步必须由人做：
+
+   ```sql
+   update users set role = 'editor' where email = '<地址>';
+   select email, role, plan from users order by role, email;
+   ```
+
+跑完第 1 步、还没跑第 2 步的那段时间里，线上**没有人**能进后台 —— 公开前台不受影响（浏览
+不需要账号，公开页面里一个角色判断都没有）。细节与本地复验方式见
+[`docs/ROLE_GATE.md`](docs/ROLE_GATE.md)。

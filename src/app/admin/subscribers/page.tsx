@@ -1,6 +1,6 @@
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { requireUser } from "@/lib/auth";
+import { requireEditor } from "@/lib/auth";
 import { SUBSCRIBER_STATUS, SUBSCRIBER_STATUS_VALUES, labelOf, type SubscriberStatus } from "@/lib/enums";
 import { getMailer } from "@/lib/mailer";
 import { countSubscribersByStatus, listRecentSubscribers } from "@/lib/subscribe/store";
@@ -20,7 +20,7 @@ import { countSubscribersByStatus, listRecentSubscribers } from "@/lib/subscribe
  * hand. Confirming on someone's behalf would record a consent they never gave,
  * and would put them on the first real send.
  *
- * Addresses are shown in full. This is behind the `/admin` session gate, and a
+ * Addresses are shown in full. This is behind the `/admin` editor-role gate, and a
  * masked list could not answer "are these real signups or junk", which is the
  * question an operator actually has.
  */
@@ -52,11 +52,11 @@ function formatTimestamp(value: Date | null): string {
 }
 
 export default async function SubscribersPage() {
-  // Before any read, not only in the layout: see `requireUser`. A layout that
+  // Before any read, not only in the layout: see `requireEditor`. A layout that
   // redirects still lets this page's queries run, and subscriber addresses are
   // the last thing that should be rendered into a response that is on its way
   // to someone being turned away.
-  await requireUser();
+  await requireEditor();
 
   const [counts, rows] = await Promise.all([
     countSubscribersByStatus(),

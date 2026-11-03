@@ -11,6 +11,14 @@
  * redirects and session revocation are all exercised for real.
  *
  * Registers a unique throwaway email per run, so it is safe to re-run.
+ *
+ * Scope note (ZCZ-15): registering produces a `viewer`, and a viewer has no
+ * write access, so this script stops at the session — it checks that the
+ * session is issued, honoured, revoked on logout and refused afterwards, with
+ * `/account` as the page a session gets you. Everything about the role itself
+ * — that /admin refuses a viewer, that the five write actions refuse one, that
+ * an editor can still do all of it — lives in `npm run verify:roles`, which
+ * owns its own database and can therefore grant the role.
  */
 const BASE = process.env.BASE_URL ?? "http://127.0.0.1:3000";
 let cookie = "";
@@ -91,7 +99,7 @@ function redirectTarget({ res, body }) {
   return (
     res.headers.get("location") ||
     res.headers.get("x-action-redirect") ||
-    (body.match(/"(?:\/admin|\/login)"/)?.[0]?.replaceAll('"', "") ?? "")
+    (body.match(/"(?:\/account|\/admin|\/login)"/)?.[0]?.replaceAll('"', "") ?? "")
   );
 }
 
@@ -126,24 +134,47 @@ const PASSWORD = "correct-horse-8";
     email: EMAIL,
     password: PASSWORD,
   });
-  check("register redirects to /admin", redirectTarget(r) === "/admin", redirectTarget(r));
+  // /account, not /admin: a new account is a viewer, and /admin would refuse
+  // it. What registering gets you is the account page (ZCZ-15).
+  check("register redirects to /account", redirectTarget(r) === "/account", redirectTarget(r));
   check("register sets session cookie", cookie.startsWith("aist_session="), cookie.slice(0, 24));
 }
 
-// 4. The session actually grants /admin.
+// 4. The session actually grants the page a session is for.
+{
+  const r = await get("/account");
+  check("/account reachable when logged in", r.res.status === 200, `status=${r.res.status}`);
+  check("/account shows the signed-in email", r.body.includes(EMAIL));
+  check(
+    "and says what this account may do",
+    r.body.includes('data-role="viewer"'),
+    r.body.match(/data-role="([a-z]*)"/)?.[1] ?? "no data-role",
+  );
+}
+
+// 4b. /admin is not what a session gets you. The refusal is a role refusal, so
+// it goes to /account — a signed-in visitor sent to /login learns nothing.
 {
   const r = await get("/admin");
-  check("/admin reachable when logged in", r.res.status === 200, `status=${r.res.status}`);
-  check("/admin shows the signed-in email", r.body.includes(EMAIL));
-  check("/admin reports the PGlite driver", r.body.includes("PGlite"));
+  const location = r.res.headers.get("location") ?? "";
+  check(
+    "a viewer is refused by /admin",
+    r.res.status === 307 && location.startsWith("/account"),
+    `status=${r.res.status} location=${location}`,
+  );
+  check("and is not bounced to /login", !location.includes("/login"), location);
 }
 
 // 5. Logging out clears the cookie and the row.
 let sessionCookieBeforeLogout = cookie;
 {
-  const { body } = await get("/admin");
-  // Form 0 in the admin layout is the logout form.
-  const r = await postAction("/admin", actionFields(body, 0));
+  // The logout form on /account — the one a viewer can actually reach.
+  const { body } = await get("/account");
+  const logoutForm = (body.match(/<form[\s\S]*?<\/form>/g) ?? []).findIndex((f) =>
+    f.includes("登出"),
+  );
+  check("/account renders a logout control", logoutForm >= 0, `form index ${logoutForm}`);
+  const r = await postAction("/account", actionFields(body, logoutForm));
   check("logout redirects to /login", redirectTarget(r) === "/login", redirectTarget(r));
   check("logout clears cookie", cookie === "", `cookie=${cookie || "(cleared)"}`);
 }
@@ -152,7 +183,7 @@ let sessionCookieBeforeLogout = cookie;
 {
   const saved = cookie;
   cookie = sessionCookieBeforeLogout;
-  const r = await get("/admin");
+  const r = await get("/account");
   check(
     "revoked session token is rejected",
     r.res.status === 307,
@@ -192,10 +223,12 @@ let sessionCookieBeforeLogout = cookie;
     email: EMAIL,
     password: PASSWORD,
   });
-  check("login redirects to /admin", redirectTarget(r) === "/admin", redirectTarget(r));
+  // By role: a viewer lands on /account. `verify:roles` covers the other half
+  // of this split — an editor lands on /admin.
+  check("login redirects to /account", redirectTarget(r) === "/account", redirectTarget(r));
   check("login sets session cookie", cookie.startsWith("aist_session="));
-  const admin = await get("/admin");
-  check("re-login reaches /admin", admin.res.status === 200, `status=${admin.res.status}`);
+  const account = await get("/account");
+  check("re-login reaches /account", account.res.status === 200, `status=${account.res.status}`);
 }
 
 // 10. Email is unique, case-insensitively.

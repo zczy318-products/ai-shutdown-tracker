@@ -1,0 +1,38 @@
+-- ZCZ-15 — users.role: who may write.
+--
+-- Numbered 0006 and not 0005: 0005_billing_interval (ZCZ-14, annual billing) is
+-- in flight on its own branch and keeps that number. The two migrations are
+-- independent — this one touches no column 0005 touches — so they can land in
+-- either order. Whoever rebases second should re-run `npm run db:generate` so
+-- drizzle's snapshot chain picks up both columns; the applied SQL does not
+-- change either way.
+--
+-- The `default` is the load-bearing word in this file, and it points at the
+-- least privileged grade on purpose:
+--
+--   * `ADD COLUMN ... DEFAULT 'viewer' NOT NULL` writes 'viewer' into every row
+--     that already exists. That is the intended outcome, not a side effect:
+--     before this migration the backoffice was open to any account, so no
+--     existing row has ever been *granted* write access, and backfilling
+--     'editor' would convert an open door into a set of accounts that are
+--     already through it.
+--
+--   * There is deliberately nothing else here. No email address is named, and
+--     there is no "the first account becomes an editor" rule — that would turn
+--     the hole this migration closes into a race for whoever registers first.
+--
+-- Granting the first editor is a separate, human act. After this migration has
+-- run, one explicit statement, with the address typed out by the person running
+-- it (see docs/ROLE_GATE.md):
+--
+--   update users set role = 'editor' where email = '<the address>';
+--
+-- and to read back who can write:
+--
+--   select email, role, plan from users order by role, email;
+--
+-- `role` and `plan` are independent by design: this migration does not read
+-- `plan`, and nothing derives one from the other.
+
+CREATE TYPE "public"."user_role" AS ENUM('viewer', 'editor');--> statement-breakpoint
+ALTER TABLE "users" ADD COLUMN "role" "user_role" DEFAULT 'viewer' NOT NULL;

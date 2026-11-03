@@ -3,12 +3,16 @@ import { redirect } from "next/navigation";
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { getCurrentUser } from "@/lib/auth";
+import { landingPathFor } from "@/lib/roles";
 
 import { login } from "../actions";
 import { CredentialsForm } from "../credentials-form";
 
 export default async function LoginPage() {
-  if (await getCurrentUser()) redirect("/admin");
+  // By role: a viewer opening /login must not be thrown at /admin, which would
+  // only refuse them (ZCZ-15).
+  const signedIn = await getCurrentUser();
+  if (signedIn) redirect(landingPathFor(signedIn.role));
 
   return (
     <main className="mx-auto flex min-h-screen max-w-md flex-col justify-center px-6 py-16">

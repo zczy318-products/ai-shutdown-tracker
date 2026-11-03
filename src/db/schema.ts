@@ -34,6 +34,7 @@ import {
   SUBSCRIBER_STATUS_VALUES,
 } from "../lib/enums";
 import { PLAN_SOURCE_VALUES, PLAN_VALUES } from "../lib/plans";
+import { DEFAULT_ROLE, ROLE_VALUES } from "../lib/roles";
 
 /**
  * The single source of truth for the database schema.
@@ -86,6 +87,14 @@ export const linkHealthEnum = pgEnum("link_health", LINK_HEALTH_VALUES);
 export const planEnum = pgEnum("plan", PLAN_VALUES);
 export const planSourceEnum = pgEnum("plan_source", PLAN_SOURCE_VALUES);
 
+/**
+ * Write access, and nothing else — see `src/lib/roles.ts` (ZCZ-15).
+ *
+ * The type is called `user_role` rather than `role` so the type name and the
+ * column name cannot be confused for each other in a migration.
+ */
+export const userRoleEnum = pgEnum("user_role", ROLE_VALUES);
+
 // ---------------------------------------------------------------------------
 // Auth (T2 / ZCZ-3)
 // ---------------------------------------------------------------------------
@@ -98,6 +107,22 @@ export const users = pgTable(
     email: text("email").notNull(),
     /** scrypt digest, never a reversible encoding. Format in `src/lib/password.ts`. */
     passwordHash: text("password_hash").notNull(),
+    /**
+     * Whether the account may write (ZCZ-15). Defaults to the *least*
+     * privileged grade, which is what makes self-service registration safe:
+     * `/register` is open to anyone, so a new row must not be able to reach
+     * `/admin`. `drizzle/0006_user_role.sql` adds the column with this same
+     * default, so every account that existed before it lands on `viewer` too.
+     *
+     * Separate from `plan` on purpose, in both directions: paying does not
+     * grant write access, and an editor is not a pro subscriber. Nothing
+     * derives one of these two columns from the other.
+     *
+     * `editor` is only ever granted out of band, by a human running one
+     * explicit UPDATE (`docs/ROLE_GATE.md`). No code path in the application
+     * writes this column — not registration, not the billing webhook.
+     */
+    role: userRoleEnum("role").notNull().default(DEFAULT_ROLE),
     /**
      * Gates bulk export and API keys only (ZCZ-7 §0). Never gates reading:
      * the public pages do not look at this column, and must not start to.
