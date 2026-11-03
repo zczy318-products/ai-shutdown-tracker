@@ -5,7 +5,7 @@
 
 **花钱口径：只用免费额度，不产生任何真实付费支出。Stripe 全程测试模式，不接真实收款。**
 
-> 本文件记录"怎么部署"。实际执行需要用户的账号授权，授权状态见文末 §7。
+> 本文件记录"怎么部署"。实际执行需要用户的账号授权，授权状态见文末 §8。
 
 ---
 
@@ -13,13 +13,47 @@
 
 ### 1.1 现在代码里真实读取的变量
 
-| 变量 | 本地 | 线上（Vercel） | 说明 |
-| --- | --- | --- | --- |
-| `DATABASE_URL` | 不设 | **必填** | 不设时自动走 PGlite（内嵌 Postgres，存在 `./.pglite`），本地零外部依赖即可开发。设置后走 `node-postgres`。 |
-| `PGLITE_DATA_DIR` | 可选 | 不设 | PGlite 数据目录，默认 `.pglite`。仅本地有意义。 |
-| `DATABASE_SSL` | 不设 | 不设 | 默认开启并**校验**服务端证书。只有数据库证书不是公共 CA 签发时才设 `false` 关掉 TLS——Neon 不属于这种情况，线上请勿设置。 |
+| 变量 | 本地 | 线上（Vercel） | 该填什么 / 从哪里拿 | 漏了会怎样 |
+| --- | --- | --- | --- | --- |
+| `DATABASE_URL` | 不设 | **必填** | Neon 控制台的 **pooled** 连接串（主机名带 `-pooler`）。不设时本地自动走 PGlite，零外部依赖即可开发。 | **线上第一次访问数据库就 500**，函数日志里是一句明确的 `DATABASE_URL is required in production...`（不是 EROFS 堆栈）。注意首页匿名访问不碰数据库，所以可能看起来「能打开」，一到登录/榜单就炸。 |
+| `PGLITE_DATA_DIR` | 可选 | 不设 | PGlite 数据目录，默认 `.pglite`。仅本地有意义。 | 无影响，用默认值。 |
+| `DATABASE_SSL` | 不设 | **不要设** | 默认开启并**校验**服务端证书。只有数据库证书不是公共 CA 签发时才设 `false`——Neon 不属于这种情况。 | 不设才是对的。设成 `false` 会关掉 TLS 校验，等于把到数据库的那一跳暴露给 MITM。 |
+| `DATABASE_POOL_MAX` | 不设 | 不设 | 连接池上限，默认 `1`（理由见 §1.4）。 | 不设才是对的。设大了会按函数实例数翻倍，吃满 Neon 免费档连接数，表现为间歇性 `too many connections`。 |
+| `DATABASE_IDLE_TIMEOUT_MS` | 不设 | 不设 | 空闲连接回收时间，默认 `10000`。 | 无影响，用默认值。 |
+| `PGLITE_ALLOW_PRODUCTION` | 仅冒烟测试时 | **绝对不要设** | 只为本地 `npm run build && npm start` 临时放行 PGlite。 | 不设才是对的。线上设了会让函数去写只读文件系统，拿到 EROFS 而不是上面那句清楚的报错。 |
 
 驱动选择逻辑在 `src/db/config.ts`，应用、迁移脚本、`drizzle.config.ts` 共用同一份解析，不会各自为政。
+
+### 1.4 两处和 Neon 免费档直接相关的默认值
+
+**连接池默认 `max: 1`，`idleTimeoutMillis: 10000`。** 这里在 PM 给的两条路里选了 **(a) pooled 连接串 + `pg` 收紧池子**，没有选 (b) `@neondatabase/serverless` + `drizzle-orm/neon-http`。理由：
+
+- `neon-http` 走的是 HTTP 单条查询通道，**不支持事务**。T4 的后台录入要「记录 + 来源」一起写，这是产品负责人定的硬要求（每条记录至少一个来源），必须在一个事务里；
+- 选 (b) 等于让本地 PGlite 和线上用两套不同的 drizzle 驱动入口，`db.transaction()` 在两边语义不一致，**这正是「schema 不许分叉」要避免的那种分叉**，只是挪到了驱动层；
+- 选 (a) 不增加依赖，`pg` 本来就在依赖里；连接数问题本质上由 Neon 的 pooled endpoint 解决，`pg` 这边只要别自己攒连接。
+
+`connectionTimeoutMillis` 设成 15 秒而不是 `pg` 默认的 0（永久等待），是为了配合下面的 autosuspend：等不到连接就报错，比挂住一个请求好排查。
+
+**PGlite 不会进生产产物。** 三道闸：驱动用动态 `import()` 加载；`next.config.ts` 里 `outputFileTracingExcludes` 把 `@electric-sql/pglite` 从函数 trace 里排掉（那 27MB wasm 否则很容易顶穿 Vercel Hobby 的解压体积上限）；`NODE_ENV=production` 且无 `DATABASE_URL` 时 `resolveDbTarget()` 直接抛错。构建后可以这样复核：
+
+```bash
+find .next -name '*.wasm'                      # 应当无输出
+grep -rho 'node_modules/@electric-sql[^"]*' .next --include='*.nft.json' | sort -u
+```
+
+当前构建的实测结果：`.next` 下没有任何 `.wasm`，trace 里只剩一个 219 字节的 external 存根。
+
+> 已核实的一个反直觉点：`@electric-sql/pglite` 放在 `devDependencies` 里**不足以**让它不被安装——它同时是 `drizzle-orm` 的 optional peer，`npm ci --omit=dev` 照样会装。所以真正起作用的是 trace 排除 + 生产抛错，不是依赖分类。
+
+### 1.5 冷启动与首屏查询
+
+Neon 免费档的 compute 空闲后会 autosuspend，冷启动有几百毫秒到数秒延迟。因此**首屏不要在 server component 里串行打多次数据库**。当前状态：
+
+- 首页匿名访问 **0 次**查询（`getCurrentUser()` 先看 cookie，没有就直接返回）；
+- 已登录时 **1 次**查询：session 和 user 是一条 `innerJoin`，不是两跳；
+- `/admin` 的鉴权在 layout 里做 **1 次**查询，页面本身 0 次。
+
+T5 的榜单和仪表盘要守住这条线：合并成尽量少的查询，需要并行时用 `Promise.all`，不要一个指标一个 `await`。
 
 ### 1.2 T6（SaaS 分档 + Stripe 测试模式）落地后会新增
 
@@ -137,7 +171,7 @@ select count(*) from shutdown_records r                                 -- 必�
 
 ## 6. ④⑤ 推 GitHub 与 Vercel 导入
 
-### 6.1 推代码（需要用户授权，见 §7）
+### 6.1 推代码（需要用户授权，见 §8）
 
 ```bash
 git add -A
@@ -151,20 +185,37 @@ git push -u origin main
 1. Vercel → Add New → Project → 选刚才那个 GitHub 仓库；
 2. Framework Preset 会自动识别为 Next.js，**Build / Output 设置全部保持默认**。本项目不需要 `vercel.json`：构建命令、输出目录、Node 版本都走 Vercel 对 Next.js 的默认约定，手写一份只会多一个会过期的配置文件；
 3. Environment Variables 按 §1 填入（Production + Preview 都要填，否则 Preview 部署会连不上库）：
-   - `DATABASE_URL` = Neon 的 **pooled** 连接串
+   - `DATABASE_URL` = Neon 的 **pooled** 连接串 —— 这是唯一必填项
+   - 其余变量**一个都不要设**，默认值就是为这个部署形态挑的（§1.1 最后一列说明了设错的后果）
    - T6 合并后再加 Stripe 的那几个（全部 test 模式）
 4. Deploy。之后往 `main` push 即自动部署，Preview 分支自动出预览环境。
 
+构建期**不会连数据库**：`build` 脚本就是 `next build`，迁移只在 `npm run db:migrate` 里手动跑（§4）。所以即使 `DATABASE_URL` 填错，构建也会成功——错误要到运行时才暴露，看 §6.3 的自查。
+
 ### 6.3 部署后自查
 
-- [ ] 首页能打开（第一次可能有 Neon 冷启动延迟）
-- [ ] `/register` 能注册、`/login` 能登录，cookie 的 `Secure` 标记在线上生效（`NODE_ENV=production` 时自动打开）
+- [ ] 首页能打开（第一次可能有 Neon 冷启动延迟）。**注意：首页匿名访问不碰数据库，打得开不代表库连通了**，必须继续走下一条
+- [ ] `/register` 能注册、`/login` 能登录 —— 这是第一个真正打数据库的动作；cookie 的 `Secure` 标记在线上生效（`NODE_ENV=production` 时自动打开）
 - [ ] 榜单读到的是 Neon 里的种子数据，不是空列表
-- [ ] Vercel 的 Function 日志里没有数据库连接错误
+- [ ] Vercel 的 Function 日志里没有 `DATABASE_URL is required in production`（= 环境变量没填或没填到对应 environment），也没有 `too many connections`
 
 ---
 
-## 7. 授权状态（当前卡在这里）
+## 7. 免费额度红线
+
+只用免费额度，不产生任何真实付费支出。因此**不引入**下列能力，需要时先找 Master PM 走授权卡片：
+
+| 不用 | 替代做法 |
+| --- | --- |
+| Vercel Postgres / KV / Blob | 数据库只用 Neon 免费档；暂时不需要 KV 和对象存储 |
+| Edge Config | 配置走环境变量 |
+| Vercel Cron | 过期 session 在读取时顺手清理（`src/lib/auth.ts`），不需要定时任务 |
+| Image Optimization 超额 | 目前没有需要优化的远程图片；真要加先算额度 |
+| Stripe 真实收款 | 全程测试模式，`sk_test_` / `pk_test_`，不接真实支付 |
+
+本项目也**不需要 `vercel.json`**：构建命令、输出目录、Node 版本全部走 Vercel 对 Next.js 的默认约定，手写一份只会多一个会过期的配置文件。
+
+## 8. 授权状态（当前卡在这里）
 
 | 事项 | 需要什么 | 状态 |
 | --- | --- | --- |
@@ -176,10 +227,14 @@ git push -u origin main
 
 ---
 
-## 8. 已知问题与未完成项
+## 9. 已知问题与未完成项
 
 - **种子导入脚本还没写**：依赖 T3 领域表 + T4 数据集（§5）。
 - **Stripe 相关环境变量还没进代码**：依赖 T6（§1.2）。
+- **线上这条路还没有被真实跑过一次。** 本机既没有 GitHub 凭证也没有 Neon 授权（§8），所以
+  node-postgres 这一侧只做到了「配置解析 + `pg.Pool` 接受这些参数」级别的验证，**没有真实连过一个
+  Postgres**。生产抛错、trace 排除、PGlite 冒烟都是在本地实测过的；首次部署时请按 §6.3 逐条核对，
+  真连上之后才算验证完整。
 - `npm run build` 当前通过。修掉的两个会影响线上的问题：
   - `globals.css` 引了 `tw-animate-css` 导致构建失败。**最终处理是移除该依赖与那行 `@import`**，不是补装：
     该包只通过 `style` export 条件暴露自身，而 Turbopack 的 CSS 解析器不套用这个条件，裸包名和

@@ -13,7 +13,6 @@
     "verify:auth": "node scripts/verify-auth-flow.mjs"
   },
   "dependencies": {
-    "@electric-sql/pglite": "^0.5.15",
     "@radix-ui/react-label": "^2.1.17",
     "@radix-ui/react-slot": "^1.5.0",
     "class-variance-authority": "^0.7.1",
@@ -28,6 +27,7 @@
     "zod": "^4.6.7"
   },
   "devDependencies": {
+    "@electric-sql/pglite": "^0.5.15",
     "@tailwindcss/postcss": "^4.3.4",
     "@types/node": "^26.6.6",
     "@types/pg": "^8.23.1",

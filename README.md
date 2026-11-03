@@ -63,11 +63,16 @@ BASE_URL=http://127.0.0.1:3000 npm run verify:auth
 
 复制 `.env.example` 为 `.env.local` 后按需填写。`.env.local` 已被 git 忽略，**真实密钥一律不进仓库**。
 
-| 变量 | 必填 | 说明 |
-| --- | --- | --- |
-| `DATABASE_URL` | 否 | 托管 Postgres 连接串。**留空则使用本地 PGlite**，这是切换驱动的唯一开关。 |
-| `PGLITE_DATA_DIR` | 否 | PGlite 数据目录，默认 `.pglite`（已 gitignore）。 |
-| `DATABASE_SSL` | 否 | node-postgres 是否用 TLS，默认开启**且校验证书**。只有连私网内可信 Postgres 时才设 `false`。 |
+| 变量 | 本地必填 | 线上必填 | 说明 |
+| --- | --- | --- | --- |
+| `DATABASE_URL` | 否 | **是** | 托管 Postgres 连接串。**本地留空则使用 PGlite**，这是切换驱动的唯一开关。线上必须填（见下方「生产环境禁用 PGlite」）。Vercel 上填 Neon 的 **pooled** 连接串。 |
+| `PGLITE_DATA_DIR` | 否 | 否 | PGlite 数据目录，默认 `.pglite`（已 gitignore）。仅本地有意义。 |
+| `DATABASE_SSL` | 否 | 否 | node-postgres 是否用 TLS，默认开启**且校验证书**。只有连私网内可信 Postgres 时才设 `false`；Neon 不属于此类。 |
+| `DATABASE_POOL_MAX` | 否 | 否 | 连接池上限，默认 `1`。serverless 下每个实例各有一个池，调大会按实例数翻倍。 |
+| `DATABASE_IDLE_TIMEOUT_MS` | 否 | 否 | 空闲连接回收时间，默认 `10000`。 |
+| `PGLITE_ALLOW_PRODUCTION` | 否 | 否 | 仅用于本地 `npm run build && npm start` 冒烟测试，**不要在部署环境设置**。 |
+
+T6 的 Stripe 变量（全部测试模式）见 [`.env.example`](./.env.example) 与 [`DEPLOY.md`](./DEPLOY.md)，代码里还没读取。
 
 ## PGlite 与托管 Postgres 的切换
 
@@ -88,6 +93,22 @@ npm run db:migrate
 ```
 
 `/admin` 页面会显示当前进程实际连到哪个驱动，可据此确认切换生效。
+
+### 生产环境禁用 PGlite
+
+PGlite 把数据写到磁盘，而 serverless 函数的文件系统是只读的。为避免线上以一个难读的 `EROFS` 堆栈收场，`resolveDbTarget()` 在 `NODE_ENV=production` 且没有 `DATABASE_URL` 时**直接抛错**，并在错误信息里说明该填什么。
+
+驱动本身用动态 `import()` 加载，加上 `next.config.ts` 里的 `outputFileTracingExcludes`，PGlite 那 27MB 的 wasm 不会进 serverless 产物（构建后 trace 里只剩一个 219 字节的 external 存根，`.next` 下没有任何 `.wasm`）。
+
+需要在本地跑生产构建做冒烟测试时，用 `PGLITE_ALLOW_PRODUCTION=true npm start`。
+
+> 注意：`@electric-sql/pglite` 虽然放在 `devDependencies`，但它同时是 `drizzle-orm` 的 optional peer，所以 `npm install --omit=dev` **仍会装上它**（实测如此）。真正起作用的是上面两道闸：trace 排除 + 生产抛错。
+
+### 连接池为什么默认只给 1 条
+
+部署目标是 Vercel Serverless + Neon 免费档。每个函数实例都会各自初始化一个连接池，池大小 `n` 实际等于 `实例数 × n` 条服务端连接，很容易在流量还没起来时就把免费档的连接数吃满。多路复用交给 Neon 的 pooled endpoint（主机名带 `-pooler`）去做，`pg` 这边每个实例只需要握住一条、空闲就尽快放掉。长驻服务器部署可以用 `DATABASE_POOL_MAX` 调大。
+
+同理，`connectionTimeoutMillis` 设成 15 秒而不是 `pg` 默认的 0（永久等待）：Neon 免费档空闲后会 autosuspend，冷启动要几秒，但「等不到就报错」比「挂住一个请求」好排查。
 
 ### 本地重置数据库
 

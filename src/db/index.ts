@@ -24,10 +24,25 @@ async function createDb(target: DbTarget): Promise<Database> {
       // certificate, i.e. no protection against a MITM on the hop to the
       // managed database. Neon/Supabase/RDS all present a public CA chain.
       ssl: target.ssl ? { rejectUnauthorized: true } : undefined,
+      // See DEFAULT_POOL_MAX in ./config: one socket per function instance,
+      // released quickly, with Neon's pooled endpoint doing the multiplexing.
+      max: target.poolMax,
+      idleTimeoutMillis: target.idleTimeoutMillis,
+      // Neon's free tier autosuspends when idle; a cold start can take a few
+      // seconds. The pg default of 0 means "wait forever", which would hang a
+      // request rather than surface a connectivity problem.
+      connectionTimeoutMillis: 15_000,
+    });
+    // A pool error with no listener is an unhandled 'error' event, which takes
+    // the whole function instance down. Neon dropping an idle socket is normal.
+    pool.on("error", (error) => {
+      console.error("[db] idle client error:", error);
     });
     return drizzle(pool, { schema }) as unknown as Database;
   }
 
+  // Loaded lazily and never on a production path (resolveDbTarget throws first),
+  // so the PGlite wasm payload stays out of the serverless bundle.
   const [{ drizzle }, { PGlite }] = await Promise.all([
     import("drizzle-orm/pglite"),
     import("@electric-sql/pglite"),

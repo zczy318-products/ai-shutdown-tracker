@@ -3,10 +3,36 @@
  * agree on which database they are talking to.
  */
 export type DbTarget =
-  | { kind: "postgres"; connectionString: string; ssl: boolean }
+  | {
+      kind: "postgres";
+      connectionString: string;
+      ssl: boolean;
+      poolMax: number;
+      idleTimeoutMillis: number;
+    }
   | { kind: "pglite"; dataDir: string };
 
 const DEFAULT_PGLITE_DIR = ".pglite";
+
+/**
+ * One connection per instance by default.
+ *
+ * The deployment target is Vercel Serverless against Neon's free tier. Each
+ * concurrent function instance evaluates this module separately, so a pool of
+ * `n` means `instances * n` server-side connections — the free tier's connection
+ * limit is reached long before traffic is interesting. The pooled Neon endpoint
+ * (hostname containing `-pooler`) does the actual multiplexing; `pg` only needs
+ * to hold one socket per instance and drop it quickly when idle.
+ *
+ * Raise `DATABASE_POOL_MAX` for a long-lived (non-serverless) deployment.
+ */
+const DEFAULT_POOL_MAX = 1;
+const DEFAULT_IDLE_TIMEOUT_MS = 10_000;
+
+function positiveInt(raw: string | undefined, fallback: number): number {
+  const parsed = Number(raw?.trim());
+  return Number.isInteger(parsed) && parsed > 0 ? parsed : fallback;
+}
 
 /**
  * `dataDir` stays a relative path on purpose. Resolving it against
@@ -25,7 +51,22 @@ export function resolveDbTarget(env: NodeJS.ProcessEnv = process.env): DbTarget 
       kind: "postgres",
       connectionString: url,
       ssl: env.DATABASE_SSL?.trim().toLowerCase() !== "false",
+      poolMax: positiveInt(env.DATABASE_POOL_MAX, DEFAULT_POOL_MAX),
+      idleTimeoutMillis: positiveInt(env.DATABASE_IDLE_TIMEOUT_MS, DEFAULT_IDLE_TIMEOUT_MS),
     };
+  }
+
+  // PGlite is a local-development convenience and must never serve production
+  // traffic: it persists to the filesystem, and a serverless function's
+  // filesystem is read-only. Failing here with an actionable message beats the
+  // EROFS stack trace a first request would otherwise produce.
+  if (env.NODE_ENV === "production" && env.PGLITE_ALLOW_PRODUCTION?.trim() !== "true") {
+    throw new Error(
+      "DATABASE_URL is required in production. PGlite is local-development only " +
+        "(it writes to disk, which serverless runtimes do not allow). Set " +
+        "DATABASE_URL to the pooled Postgres connection string, or set " +
+        "PGLITE_ALLOW_PRODUCTION=true for a local production-build smoke test.",
+    );
   }
 
   return { kind: "pglite", dataDir: env.PGLITE_DATA_DIR?.trim() || DEFAULT_PGLITE_DIR };
