@@ -23,6 +23,8 @@ import {
 import {
   ATTRIBUTION_CONFIDENCE_VALUES,
   COMPANY_SIZE_VALUES,
+  CORRECTION_KIND_VALUES,
+  CORRECTION_STATUS_VALUES,
   EVENT_DATE_PRECISION_VALUES,
   IMPACT_TYPE_VALUES,
   INDUSTRY_VALUES,
@@ -510,6 +512,118 @@ export const subscribeThrottle = pgTable(
   ],
 );
 
+// ---------------------------------------------------------------------------
+// Corrections & disputes (S2-1 / ZCZ-16) — anonymous, and not an account either
+// ---------------------------------------------------------------------------
+
+export const correctionKindEnum = pgEnum("correction_kind", CORRECTION_KIND_VALUES);
+export const correctionStatusEnum = pgEnum("correction_status", CORRECTION_STATUS_VALUES);
+
+/**
+ * One row per dispute or correction somebody sent us about a published record.
+ *
+ * Every name listed on this site is a real company, so this table is the only
+ * channel a subject of a record has. That shapes three decisions:
+ *
+ *  1. **No link to `users`, and no `user_id` column.** Requiring an account to
+ *     correct a record *about yourself* is the exact thing the product口径
+ *     forbids, and a nullable FK would be an invitation to start filtering the
+ *     queue by "real" (signed-in) submitters.
+ *
+ *  2. **`record_ref` is free text, not a foreign key to `ai_impact`.** Two
+ *     reasons, and the second is the load-bearing one:
+ *       - the field has to accept «我不确定是哪一条», which no FK can hold;
+ *       - an FK would turn this public form into an existence oracle. An
+ *         anonymous POST with a guessed uuid would fail on the constraint for
+ *         rows that do not exist and succeed for rows that do — including
+ *         `draft` and `rejected` records the public site is never allowed to
+ *         reveal. Text cannot answer that question.
+ *     The cost is that the admin queue joins by hand. That is the right side of
+ *     this trade.
+ *
+ *  3. **`email` is nullable and stays that way.** Mail delivery is not wired up
+ *     (user decision, 2026-11-03), so the address buys the submitter nothing
+ *     today and must not be the price of being heard.
+ *
+ * `status` only ever gets written as `pending` — see `CORRECTION_STATUS`.
+ */
+export const correctionRequest = pgTable(
+  "correction_request",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    /**
+     * Whatever identifies the disputed record: the `slug:impactId` handle the
+     * link on a company page carries, a company name typed by hand, or null for
+     * "not sure which one". Opaque to the database on purpose — see note 2.
+     */
+    recordRef: varchar("record_ref", { length: 200 }),
+    kind: correctionKindEnum("kind").notNull(),
+    /** What they say is wrong. The one required field besides `kind`. */
+    body: text("body").notNull(),
+    /**
+     * Optional supporting source. Held to the same two rules a published
+     * `source` row is held to (http(s) URL, 20–2000 character verbatim quote),
+     * because the policy page tells submitters it is the same requirement.
+     */
+    sourceUrl: text("source_url"),
+    sourceQuote: text("source_quote"),
+    /** Optional. Normalized like every other address in the schema. */
+    email: text("email"),
+    status: correctionStatusEnum("status").notNull().default("pending"),
+    /** Which page the submission came from; `normalizeSubscribeSource` shapes it. */
+    source: varchar("source", { length: 120 }).notNull().default("unknown"),
+    /**
+     * SHA-256 of the client address, never the address itself — the same stance
+     * as `subscribe_throttle.key_hash`. It exists so a flood can be told apart
+     * from twenty people independently disputing the same record, and so a
+     * double-click does not create two rows. It is not a contact detail.
+     */
+    ipHash: text("ip_hash"),
+    /** SHA-256 over (`record_ref`, `kind`, normalized `body`, `ip_hash`). */
+    dedupeHash: text("dedupe_hash").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    /** Set by a human when they resolve the row. The CHECK below ties it to `status`. */
+    resolvedAt: timestamp("resolved_at", { withTimezone: true }),
+  },
+  (t) => [
+    index("correction_request_status_created_idx").on(t.status, t.createdAt),
+    index("correction_request_record_ref_idx").on(t.recordRef),
+    index("correction_request_dedupe_hash_idx").on(t.dedupeHash),
+    // 20 so a row carries something actionable; 5000 so a company can paste a
+    // full statement. The lower bound is the same one `source.quote` uses.
+    check("correction_request_body_length", sql`char_length(btrim(${t.body})) between 20 and 5000`),
+    check(
+      "correction_request_source_url_format",
+      sql`${t.sourceUrl} is null or ${t.sourceUrl} ~ '^https?://'`,
+    ),
+    check(
+      "correction_request_source_quote_length",
+      sql`${t.sourceQuote} is null or char_length(${t.sourceQuote}) between 20 and 2000`,
+    ),
+    // A bare quote with no link is not checkable, which is the whole point of
+    // asking for one. A bare link is fine — we can open it ourselves.
+    check(
+      "correction_request_quote_needs_url",
+      sql`${t.sourceQuote} is null or ${t.sourceUrl} is not null`,
+    ),
+    check(
+      "correction_request_email_normalized",
+      sql`${t.email} is null or ${t.email} = lower(btrim(${t.email}))`,
+    ),
+    check(
+      "correction_request_email_format",
+      sql`${t.email} is null
+          or ${t.email} ~ '^[^@[:space:]]+@[^@[:space:]]+\\.[^@[:space:]]+$'`,
+    ),
+    // `pending` means nobody has acted; a resolution timestamp without a
+    // resolved status (or the reverse) is a half-written claim about work.
+    check(
+      "correction_request_resolved_at_matches_status",
+      sql`(${t.status} = 'pending') = (${t.resolvedAt} is null)`,
+    ),
+  ],
+);
+
 export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;
 export type Session = typeof sessions.$inferSelect;
@@ -525,3 +639,6 @@ export type NewSource = typeof source.$inferInsert;
 
 export type Subscriber = typeof subscriber.$inferSelect;
 export type NewSubscriber = typeof subscriber.$inferInsert;
+
+export type CorrectionRequest = typeof correctionRequest.$inferSelect;
+export type NewCorrectionRequest = typeof correctionRequest.$inferInsert;

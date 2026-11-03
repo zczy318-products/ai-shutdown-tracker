@@ -93,17 +93,41 @@ export default async function PublicLayout({ children }: { children: React.React
       </div>
 
       <footer className="mt-8 border-t">
-        <div className="text-muted-foreground mx-auto max-w-6xl space-y-2 px-6 py-8 text-xs">
-          <p>
-            本站所有数据来自<strong className="font-medium">公开报道的人工标注</strong>
-            ，每条记录都必须附带可核查的来源（原文链接 + 逐字引述）与归因置信度评级。
-            页面只转述来源说过的话，<strong className="font-medium">不构成对任何公司的结论</strong>
-            ，也不做模型推断的因果归因。
-          </p>
-          <p>
-            置信度分档衡量的是<span className="font-medium">证据强度</span>
-            ，不是对公司的评价；标为「已撤回 / 回退」的记录表示该事件后来被推翻，请以来源原文为准。
-          </p>
+        <div className="text-muted-foreground mx-auto max-w-6xl space-y-4 px-6 py-8 text-xs">
+          {/*
+            S2-1 / ZCZ-16. The two policy pages belong in the footer of every
+            public page, and they are the one pair of links here that has to
+            work for a visitor with no account: 《我们怎么判断一条记录》 is the
+            standard the paragraph below claims we follow, and 《提出异议》 is
+            the only channel a company named on this site has. A dispute page
+            nobody can find is the same as not having one.
+
+            `text-sm` rather than the `text-xs` of the surrounding disclaimer —
+            at 12 px these two links measured under the 24 px minimum in WCAG
+            2.2 §2.5.8, and the padding below buys back the hit area without
+            making the footer taller.
+          */}
+          <nav aria-label="站点说明" className="flex flex-wrap items-center gap-x-5 gap-y-1 text-sm">
+            <Link href="/methodology" className={navLink}>
+              我们怎么判断一条记录
+            </Link>
+            <Link href="/corrections" className={navLink}>
+              提出异议或更正
+            </Link>
+          </nav>
+          <div className="space-y-2">
+            <p>
+              本站所有数据来自<strong className="font-medium">公开报道的人工标注</strong>
+              ，每条记录都必须附带可核查的来源（原文链接 + 逐字引述）与归因置信度评级。
+              页面只转述来源说过的话，
+              <strong className="font-medium">不构成对任何公司的结论</strong>
+              ，也不做模型推断的因果归因。
+            </p>
+            <p>
+              置信度分档衡量的是<span className="font-medium">证据强度</span>
+              ，不是对公司的评价；标为「已撤回 / 回退」的记录表示该事件后来被推翻，请以来源原文为准。
+            </p>
+          </div>
         </div>
       </footer>
     </div>

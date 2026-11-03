@@ -24,7 +24,20 @@
 import { chromium } from "playwright";
 
 const BASE = (process.env.BASE_URL ?? "http://localhost:3000").replace(/\/$/, "");
-const PAGES = ["/", "/stats", "/pricing", "/company/chegg"];
+// `/corrections` earns its place here rather than riding along with the other
+// prose pages: it is the only public page with a multi-field form on it, so it
+// is the one most likely to grow an input with no `<label>` or a submit button
+// under the minimum. `/methodology` is pure text, and is listed because its
+// cross-reference to `/corrections` and the new footer nav are links that have
+// to clear the target size on a phone.
+const PAGES = [
+  "/",
+  "/stats",
+  "/pricing",
+  "/company/chegg",
+  "/methodology",
+  "/corrections",
+];
 const VIEWPORTS = [
   { name: "mobile", width: 390, height: 844 },
   { name: "desktop", width: 1280, height: 900 },
@@ -65,7 +78,27 @@ for (const vp of VIEWPORTS) {
         if (!inline && (box.height < min || box.width < min)) {
           result.small.push(`${el.tagName.toLowerCase()} ${Math.round(box.width)}x${Math.round(box.height)} "${text.slice(0, 28)}"`);
         }
-        if (!text && !el.getAttribute("title") && !el.getAttribute("placeholder")) {
+        // `textContent` is the wrong source for a form control — for a
+        // `<textarea>` it is the *value*, so an empty one with a perfectly good
+        // `<label for>` used to be reported as nameless while its neighbour
+        // passed purely because it happened to carry a placeholder. Check the
+        // things that actually name a control, in roughly the order the
+        // accessible-name computation does.
+        const labelledBy = el.getAttribute("aria-labelledby");
+        const named =
+          text ||
+          el.getAttribute("title") ||
+          el.getAttribute("placeholder") ||
+          (labelledBy &&
+            labelledBy
+              .split(/\s+/)
+              .some((id) => document.getElementById(id)?.textContent?.trim())) ||
+          (el.id &&
+            document
+              .querySelector(`label[for="${CSS.escape(el.id)}"]`)
+              ?.textContent?.trim()) ||
+          el.closest("label")?.textContent?.trim();
+        if (!named) {
           result.unnamed.push(el.tagName.toLowerCase() + (el.id ? "#" + el.id : ""));
         }
       }

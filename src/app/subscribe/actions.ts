@@ -1,7 +1,6 @@
 "use server";
 
-import { headers } from "next/headers";
-
+import { clientIp } from "@/lib/client-ip";
 import { getMailer } from "@/lib/mailer";
 import { confirmSubscriptionEmail } from "@/lib/subscribe/emails";
 import { confirmUrl, normalizeSubscribeSource, unsubscribeUrl } from "@/lib/subscribe/links";
@@ -16,27 +15,6 @@ export type SubscribeFormState =
    */
   | { status: "ok"; canDeliver: boolean }
   | { status: "error"; message: string };
-
-/**
- * Best-effort client address for the IP throttle.
- *
- * On Vercel these headers are set by the platform edge and can be trusted. On a
- * deployment with no trusted proxy in front, `x-forwarded-for` is just a
- * request header and anyone can rotate it — which is why the per-address budget
- * exists as well, and why it is the tighter of the two.
- *
- * A request with no usable header falls into a single shared `unknown` bucket.
- * That fails closed rather than open: an unidentifiable flood gets throttled
- * together instead of waved through.
- */
-async function clientIp(): Promise<string> {
-  const h = await headers();
-  const candidate =
-    h.get("x-vercel-forwarded-for")?.trim() ||
-    h.get("x-real-ip")?.trim() ||
-    h.get("x-forwarded-for")?.split(",")[0]?.trim();
-  return candidate || "unknown";
-}
 
 /**
  * The public subscribe form's only entry point.
