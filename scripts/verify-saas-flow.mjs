@@ -130,6 +130,24 @@ console.log("-- 0. 匿名访客不需要账号就能读 --");
     pricing.body.includes("浏览全部内容不需要账号"),
   );
   check("定价表里有匿名访客这一列", pricing.body.includes("匿名访客"));
+
+  // 价格：用户 2026-11-03 14:54 定稿「一层收费、9.9 美金包月」。
+  // 这三条断言分工不同：第一条锁住该出现的那个数字，第二条锁住**不该**出现的
+  // 旧币种——改价最常见的失败不是忘了改，而是改了一处、另一处还留着￥，
+  // 于是同一页同时写着两个货币，谁也不知道到底收多少。
+  const PRICE_LABEL = "US$9.90 / 月";
+  check(`定价页渲染出 ${PRICE_LABEL}`, pricing.body.includes(PRICE_LABEL));
+  check(
+    "定价页不再出现人民币符号或旧价格",
+    !/[￥¥]/.test(pricing.body) && !/49\s*\/\s*月/.test(pricing.body),
+    (pricing.body.match(/.{0,12}[￥¥].{0,12}/) ?? ["无"])[0],
+  );
+  check(
+    "定价页只有一个付费价位",
+    [...pricing.body.matchAll(/US\$(\d+\.\d{2})/g)].filter((m) => m[1] !== "0.00").length > 0 &&
+      new Set([...pricing.body.matchAll(/US\$\d[\d.]*/g)].map((m) => m[0])).size === 2,
+    [...new Set([...pricing.body.matchAll(/US\$\d[\d.]*/g)].map((m) => m[0]))].join(" | "),
+  );
 }
 
 // ---------------------------------------------------------------------------

@@ -21,18 +21,55 @@
 
 type NonEmpty<T> = readonly [T, ...T[]];
 
+/**
+ * The single paid tier's price, as data rather than as a formatted string.
+ *
+ * The owner's 2026-11-03 14:54 cut is **one paid tier at USD 9.90 / month**.
+ * The page previously said `￥49 / 月`, which was wrong in both currency and
+ * amount.
+ *
+ * Currency and minor units are kept apart from the rendered label on purpose:
+ * this is the only place in the codebase where the amount is written down
+ * (Stripe's side is a price id in `STRIPE_PRICE_ID_PRO`, never a number here),
+ * so when a test-mode price is eventually created, whoever creates it has one
+ * value to copy and any later drift between the page and the checkout line
+ * item is a one-line diff instead of a hunt through JSX.
+ *
+ * `free` below is *not* a second price point — it is an account that is not
+ * charged. "Only one paid tier" is therefore already satisfied without
+ * deleting it, and deleting it would take away the thing that makes an account
+ * useful to someone who will never pay.
+ */
+export const PRO_PRICE = {
+  currency: "USD",
+  /** Minor units, i.e. cents. `990` = 9.90. */
+  amountMinor: 990,
+  interval: "month",
+} as const;
+
+/** `990` → `US$9.90`. `US$` rather than a bare `$`, which several currencies share. */
+function formatUsd(amountMinor: number): string {
+  return `US$${(amountMinor / 100).toFixed(2)}`;
+}
+
 export const PLAN = {
   free: {
     zh: "免费",
     en: "Free",
-    /** Shown on the pricing page. Test mode: the number is illustrative. */
-    priceZh: "￥0",
+    /**
+     * A display string, not a monetary amount — the machine-readable figure is
+     * `PRO_PRICE`. Named `priceLabel` and not `priceZh` because the currency
+     * does not vary with the language: every visitor is quoted the same USD
+     * number, and a `…Zh` suffix would invite a future `priceEn` holding a
+     * *different* currency, i.e. two prices for one product.
+     */
+    priceLabel: "US$0 / 月",
     taglineZh: "注册只是为了成为付费主体，它不解锁任何阅读权限。",
   },
   pro: {
     zh: "专业版",
     en: "Pro",
-    priceZh: "￥49 / 月",
+    priceLabel: `${formatUsd(PRO_PRICE.amountMinor)} / 月`,
     taglineZh: "给需要把整个数据集拿走、或接进自己系统的人。",
   },
 } as const;

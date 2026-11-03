@@ -91,6 +91,10 @@ export default async function PricingPage({ searchParams }: { searchParams: Sear
           没有试读截断，没有模糊遮挡，也不会弹登录框。
           付费买的是「把整个数据集拿走」和「接进自己的系统」，不是阅读权限。
         </p>
+        <p className="text-muted-foreground text-sm">
+          全站只有一个付费档：<strong>{PLAN.pro.zh} {PLAN.pro.priceLabel}</strong>
+          ，按月订阅、以美元计价。免费账号不收费，也不是第二个价位。
+        </p>
       </div>
 
       <Notice reason={first(params.reason)} checkout={first(params.checkout)} />
@@ -147,7 +151,7 @@ export default async function PricingPage({ searchParams }: { searchParams: Sear
               <CardTitle>{PLAN.free.zh}</CardTitle>
               {plan === "free" ? <Badge variant="secondary">当前套餐</Badge> : null}
             </div>
-            <CardDescription>{PLAN.free.priceZh}</CardDescription>
+            <CardDescription>{PLAN.free.priceLabel}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4 text-sm">
             <p className="text-muted-foreground">{PLAN.free.taglineZh}</p>
@@ -182,7 +186,7 @@ export default async function PricingPage({ searchParams }: { searchParams: Sear
               <CardTitle>{PLAN.pro.zh}</CardTitle>
               {plan === "pro" ? <Badge>当前套餐</Badge> : null}
             </div>
-            <CardDescription>{PLAN.pro.priceZh}</CardDescription>
+            <CardDescription>{PLAN.pro.priceLabel}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4 text-sm">
             <p className="text-muted-foreground">{PLAN.pro.taglineZh}</p>
