@@ -41,6 +41,10 @@ export const SUBSCRIBE_RATE_LIMITS = {
 
 export type ThrottleScope = keyof typeof SUBSCRIBE_RATE_LIMITS;
 
+const LONGEST_WINDOW_MS = Math.max(
+  ...Object.values(SUBSCRIBE_RATE_LIMITS).map((limit) => limit.windowMs),
+);
+
 function sha256(value: string): string {
   return createHash("sha256").update(value).digest("hex");
 }
@@ -84,11 +88,15 @@ export async function consumeRateLimit(scope: ThrottleScope, key: string): Promi
   const count = rows.at(0)?.count ?? 1;
 
   // Opportunistic prune, only when this call opened a new window — that caps it
-  // at once per key per hour instead of once per request.
+  // at once per key per window instead of once per request.
+  //
+  // The cutoff uses the *longest* window of any scope, not this scope's. The
+  // table is shared, so pruning on a one-hour window would silently reset the
+  // counters of a scope with a longer one the day somebody adds it.
   if (count === 1) {
     await db
       .delete(subscribeThrottle)
-      .where(lt(subscribeThrottle.windowStart, new Date(now - 2 * windowMs)));
+      .where(lt(subscribeThrottle.windowStart, new Date(now - 2 * LONGEST_WINDOW_MS)));
   }
 
   return count <= limit;
