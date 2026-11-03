@@ -18,7 +18,8 @@
     "verify:pg": "node scripts/verify-postgres-migration.mjs",
     "verify:saas": "node scripts/verify-saas-flow.mjs",
     "capture:acceptance": "node scripts/capture-acceptance.mjs",
-    "verify:subscribe": "tsx scripts/verify-subscribe-flow.mts"
+    "verify:subscribe": "tsx scripts/verify-subscribe-flow.mts",
+    "verify:a11y": "node scripts/verify-a11y.mjs"
   },
   "dependencies": {
     "@radix-ui/react-label": "^2.1.17",

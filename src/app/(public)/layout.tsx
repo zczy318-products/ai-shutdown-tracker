@@ -24,6 +24,16 @@ import { getCurrentUser } from "@/lib/auth";
  * «读不到» must never be rendered as «没有».
  */
 
+/**
+ * Header links are one line of small text, which measured 16–20 CSS px tall —
+ * under the 24×24 minimum in WCAG 2.2 §2.5.8, and these are the site's primary
+ * navigation on a phone. The padding enlarges the hit area while the matching
+ * negative margin keeps the header exactly as tall as before, so this buys the
+ * tappable area without a visual redesign.
+ */
+const navLink =
+  "text-muted-foreground hover:text-foreground -my-2 inline-flex items-center py-2";
+
 export default async function PublicLayout({ children }: { children: React.ReactNode }) {
   const user = await readSessionQuietly();
 
@@ -35,10 +45,10 @@ export default async function PublicLayout({ children }: { children: React.React
             Rest In Prompts
           </Link>
           <nav className="flex items-center gap-4 text-sm">
-            <Link href="/" className="text-muted-foreground hover:text-foreground">
+            <Link href="/" className={navLink}>
               记录榜单
             </Link>
-            <Link href="/stats" className="text-muted-foreground hover:text-foreground">
+            <Link href="/stats" className={navLink}>
               统计仪表盘
             </Link>
             {/*
@@ -46,7 +56,7 @@ export default async function PublicLayout({ children }: { children: React.React
               in the two links above is behind it. Pricing sells bulk export
               and an API key; reading this site needs no account at all.
             */}
-            <Link href="/pricing" className="text-muted-foreground hover:text-foreground">
+            <Link href="/pricing" className={navLink}>
               定价
             </Link>
           </nav>
@@ -54,15 +64,15 @@ export default async function PublicLayout({ children }: { children: React.React
             {user ? (
               <>
                 <span className="font-mono">{user.email}</span>
-                <Link href="/account" className="hover:text-foreground underline">
+                <Link href="/account" className={`${navLink} underline`}>
                   账户
                 </Link>
-                <Link href="/admin" className="hover:text-foreground underline">
+                <Link href="/admin" className={`${navLink} underline`}>
                   进入后台
                 </Link>
               </>
             ) : (
-              <Link href="/login" className="hover:text-foreground underline">
+              <Link href="/login" className={`${navLink} underline`}>
                 编辑登录
               </Link>
             )}

@@ -71,7 +71,7 @@ T5 的榜单和仪表盘要守住这条线：合并成尽量少的查询，需�
 | --- | --- |
 | `STRIPE_SECRET_KEY` | 测试模式密钥，必须以 `sk_test_` 开头。出现 `sk_live_` 即为配置错误，应当拒绝启动。 |
 | `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | 测试模式公钥，`pk_test_` 开头。 |
-| `STRIPE_PRICE_ID_PRO` | 付费档价格 ID（测试模式下创建的 price）。**这个 price 必须是 USD 9.90 / 月**，和 `src/lib/plans.ts` 里的 `PRO_PRICE` 对得上；代码无法校验 Stripe 那边的金额，建错了的后果是页面写一个数、结账页写另一个数。 |
+| `STRIPE_PRICE_ID_PRO` | 付费档价格 ID（测试模式下创建的 price）。**这个 price 必须是 USD 9.90 / 月**，和 `src/lib/plans.ts` 里 `PLAN.pro.priceLabel` 对得上；代码无法校验 Stripe 那边的金额，建错了的后果是页面写一个数、结账页写另一个数。 |
 | `STRIPE_WEBHOOK_SECRET` | webhook 签名密钥，本地用 `stripe listen` 产出的那个。 |
 | `NEXT_PUBLIC_APP_URL` | Checkout 回跳地址的基准 URL，例如 `https://<project>.vercel.app`。 |
 

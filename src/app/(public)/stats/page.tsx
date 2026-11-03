@@ -72,7 +72,7 @@ export default async function StatsPage({
       {stats.records === 0 ? (
         <div className="text-muted-foreground rounded-xl border border-dashed p-12 text-center text-sm">
           <p>还没有已发布的记录，暂无可统计数据。</p>
-          <Link href="/" className="mt-2 inline-block underline">
+          <Link href="/" className="mt-2 inline-flex items-center py-1.5 underline">
             返回记录榜单
           </Link>
         </div>
