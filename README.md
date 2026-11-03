@@ -50,6 +50,7 @@ npm run dev          # http://localhost:3000
 | `/admin/records` | 记录列表：按状态 / 关键词筛选，分页（每页 20 条） |
 | `/admin/records/new` | 新建记录：公司字段 + 事件字段 + 可增删的多条来源 |
 | `/admin/records/[id]` | 编辑 + 审核：发布 / 下架 / 拒收 / 删除草稿，并展示已存来源与原文引述 |
+| `/admin/subscribers` | 订阅者只读视图：总数与 `pending` / `confirmed` / `unsubscribed` 分布，以及最近 200 个邮箱。没有任何写操作，**没有「手动确认」** |
 
 ## 命令
 
@@ -63,11 +64,11 @@ npm run dev          # http://localhost:3000
 | `npm run db:migrate` | 把 `drizzle/` 里的迁移应用到当前数据库 |
 | `npm run db:studio` | Drizzle Studio |
 | `npm run verify:auth` | 对**已启动**的服务跑注册/登录/登出全链路检查 |
-| `npm run verify:records` | 对**已启动**的服务跑录入 / 发布 / 筛选 / 下架全链路检查（38 项） |
+| `npm run verify:records` | 对**已启动**的服务跑录入 / 发布 / 筛选 / 下架全链路检查（40 项） |
 | `npm run verify:saas` | 对**已启动**的服务跑分档 / 导出 / 升级 / API key 全链路检查（51 项） |
 | `npm run verify:db` | 不启服务：在临时 PGlite 库上跑迁移并直接用 SQL 验证数据库约束（26 项） |
 | `npm run verify:pg` | 不启服务：验证 `DATABASE_URL` 这条路径能建表（走真实 `pg` 驱动） |
-| `npm run verify:subscribe` | 不启服务：匿名订阅 / 双重确认 / 一键退订 / 枚举防护 / 速率限制全链路检查（39 项，自己起 dev server） |
+| `npm run verify:subscribe` | 不启服务：匿名订阅 / 双重确认 / 一键退订 / 枚举防护 / 速率限制 / `/admin` 只读视图全链路检查（55 项，自己起 dev server） |
 
 `verify:auth` 与 `verify:records` 走真实 HTTP 请求（cookie、重定向、server action 都会被验证），每次用新的临时邮箱与唯一 slug，可重复执行：
 
@@ -94,13 +95,11 @@ BASE_URL=http://127.0.0.1:3000 npm run verify:records
 | `DATABASE_POOL_MAX` | 否 | 否 | 连接池上限，默认 `1`。serverless 下每个实例各有一个池，调大会按实例数翻倍。 |
 | `DATABASE_IDLE_TIMEOUT_MS` | 否 | 否 | 空闲连接回收时间，默认 `10000`。 |
 | `PGLITE_ALLOW_PRODUCTION` | 否 | 否 | 仅用于本地 `npm run build && npm start` 冒烟测试，**不要在部署环境设置**。 |
-| `MAIL_PROVIDER` | 否 | 否 | 邮件驱动。**留空即 `log` 驱动**：邮件写服务端日志并报「未送达」，订阅页文案照此说话。指向一个还没注册适配器的名字会打 error 日志并退回 `log`，不会假装发送。见 [`docs/SUBSCRIPTION.md`](docs/SUBSCRIPTION.md)。 |
-| `MAIL_FROM` | 否 | 否 | 发信人头，接通 provider 后才有意义。 |
 | `NEXT_PUBLIC_APP_URL` | 否 | 建议 | 站点绝对地址，用于邮件里的确认 / 退订链接以及 Stripe 回跳。邮件链接留空时依次回退到 `VERCEL_URL` 和请求的 `Host` 头。 |
 
 T6 的 Stripe 变量（全部测试模式）见 [`.env.example`](./.env.example) 与 [`DEPLOY.md`](./DEPLOY.md)，代码里还没读取。
 
-目前**没有任何邮件服务凭证**，订阅功能默认跑在 `log` 驱动上；选 provider 需要用户的授权卡，由 Master PM 申请。
+**邮件订阅没有任何环境变量。** 按 2026-11-03 的定稿，本站只收集订阅、不发信：`src/lib/mailer.ts` 只有一个 `log` 驱动，把邮件写进服务端日志并报「未送达」，订阅页文案照此说话。因此订阅会长期停在「待确认」——这是预期结果，不是故障，`/admin/subscribers` 会把这件事讲清楚，并且不提供任何手动确认的入口。选 provider 需要用户的授权卡，由 Master PM 申请。见 [`docs/SUBSCRIPTION.md`](docs/SUBSCRIPTION.md)。
 
 ## PGlite 与托管 Postgres 的切换
 
@@ -157,7 +156,8 @@ rm -rf .pglite && npm run db:migrate
 - session token 为 32 字节随机数，**数据库里只存它的 SHA-256**；原值只存在于客户端 cookie。库被拖走也无法直接当登录态重放。
 - cookie `aist_session`：`httpOnly`、`sameSite=lax`、生产环境 `secure`、有效期 30 天。
 - 登录失败时，"邮箱不存在" 与 "密码错误" 返回**同一句提示**，不泄漏哪些邮箱已注册。
-- `/admin` 的鉴权放在 `src/app/admin/layout.tsx`（服务端），**不用 middleware**：middleware 只能看到 cookie 存不存在，看不出 session 是否有效或已吊销。
+- `/admin` 的鉴权放在服务端，**不用 middleware**：middleware 只能看到 cookie 存不存在，看不出 session 是否有效或已吊销。
+- 鉴权有**两道**，这不是冗余：`src/app/admin/layout.tsx` 挡页面框架，而每个会读数据的 `/admin` 页面还要在自己的函数体里先调一次 `requireUser()`。Next 并发渲染 layout 和 page，layout 里的 `redirect()` 挡不住下面的页面去查库——实测中那次 307 的**响应体里带着整页渲染结果**。详见 `requireUser` 的注释与 [`docs/SUBSCRIPTION.md`](docs/SUBSCRIPTION.md) §7。
 
 相关文件：`src/lib/auth.ts`、`src/lib/password.ts`、`src/app/(auth)/actions.ts`。
 

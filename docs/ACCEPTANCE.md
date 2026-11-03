@@ -124,7 +124,7 @@ Route (app)
 | 命令 | 覆盖 | 要先启服务 |
 | --- | --- | --- |
 | `npm run verify:auth` | 注册 / 登录 / 登出 / session 吊销 | 是 |
-| `npm run verify:records` | 录入含 2 条来源的记录并发布、5 条失败路径、筛选分页、下架、删除、鉴权（38 项） | 是 |
+| `npm run verify:records` | 录入含 2 条来源的记录并发布、5 条失败路径、筛选分页、下架、删除、鉴权（40 项，含匿名读 `/admin` 不泄露内容） | 是 |
 | `npm run verify:public` | 公开前台：筛选组合条数、分页、排序、可见性、详情页全部来源、仪表盘数字（86 项） | 否（自带临时库与服务） |
 | `npm run verify:db` | 迁移从空库跑通 + 幂等 + 数据库层约束（26 项） | 否 |
 | `npm run verify:pg` | `DATABASE_URL` 这条路径能建表（真实 `pg` 驱动 + 线协议） | 否 |

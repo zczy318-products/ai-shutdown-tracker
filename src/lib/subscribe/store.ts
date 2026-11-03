@@ -1,9 +1,10 @@
 import { createHash, randomBytes } from "node:crypto";
 
-import { and, eq, gt, lt, ne, sql } from "drizzle-orm";
+import { and, count, desc, eq, gt, lt, ne, sql } from "drizzle-orm";
 
 import { getDb } from "@/db";
 import { subscribeThrottle, subscriber } from "@/db/schema";
+import { SUBSCRIBER_STATUS_VALUES, type SubscriberStatus } from "@/lib/enums";
 
 /**
  * Every read and write of the subscription tables.
@@ -18,6 +19,15 @@ import { subscribeThrottle, subscriber } from "@/db/schema";
  *     rows even if two requests race.
  *  3. `listMailableSubscribers` is the only way to get addresses to send to.
  *     Nothing else in the codebase should ever `select ... from subscriber`.
+ *     The `/admin` read-only view at the bottom of this file is the one other
+ *     reader, and it is explicitly *not* a sending query.
+ *
+ * There is deliberately no function here that sets `confirmed` without spending
+ * a token. `confirmed` means "this person clicked the link in their mail"; with
+ * no mail provider wired up nobody has clicked anything, so a "mark confirmed"
+ * helper — however convenient the numbers would look — would write a claim into
+ * the database that no human ever made, and would later mail a batch of
+ * addresses that never agreed to it.
  */
 
 /** Seven days, per the task brief. Long enough for a mail that sat unread. */
@@ -277,4 +287,68 @@ export async function listMailableSubscribers(): Promise<{ id: string; email: st
     .select({ id: subscriber.id, email: subscriber.email })
     .from(subscriber)
     .where(eq(subscriber.status, "confirmed"));
+}
+
+// ---------------------------------------------------------------------------
+// The /admin read-only view
+// ---------------------------------------------------------------------------
+
+/**
+ * Collected rows nobody can look at are collected rows nobody can use, and
+ * "collect now, send later" is only worth anything if the rows survive to be
+ * used. These two functions back `/admin/subscribers`.
+ *
+ * Both are reads. Neither returns a token digest — not because rendering one
+ * would be exploitable on its own, but because a digest in a page is a digest
+ * in a screenshot, a bug report and a browser cache, and the admin view has no
+ * use for it. Leaving the columns out of the `select` is a stronger guarantee
+ * than remembering not to render them.
+ */
+
+export type AdminSubscriber = {
+  id: string;
+  email: string;
+  status: SubscriberStatus;
+  source: string;
+  createdAt: Date;
+  confirmedAt: Date | null;
+  unsubscribedAt: Date | null;
+};
+
+/** Every status key present, zero-filled: a missing status is `0`, not absent. */
+export async function countSubscribersByStatus(): Promise<Record<SubscriberStatus, number>> {
+  const db = await getDb();
+  const rows = await db
+    .select({ status: subscriber.status, value: count() })
+    .from(subscriber)
+    .groupBy(subscriber.status);
+
+  const counts = Object.fromEntries(SUBSCRIBER_STATUS_VALUES.map((status) => [status, 0])) as Record<
+    SubscriberStatus,
+    number
+  >;
+  for (const row of rows) counts[row.status] = Number(row.value);
+  return counts;
+}
+
+/**
+ * The newest rows first, capped. The cap is why the page prints the total from
+ * `countSubscribersByStatus` instead of the length of this list: the distribution
+ * has to stay correct after the list stops being complete.
+ */
+export async function listRecentSubscribers(limit = 200): Promise<AdminSubscriber[]> {
+  const db = await getDb();
+  return db
+    .select({
+      id: subscriber.id,
+      email: subscriber.email,
+      status: subscriber.status,
+      source: subscriber.source,
+      createdAt: subscriber.createdAt,
+      confirmedAt: subscriber.confirmedAt,
+      unsubscribedAt: subscriber.unsubscribedAt,
+    })
+    .from(subscriber)
+    .orderBy(desc(subscriber.createdAt))
+    .limit(limit);
 }

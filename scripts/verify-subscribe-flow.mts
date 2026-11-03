@@ -101,6 +101,16 @@ async function get(pathname: string, ip?: string) {
   return { res, body: visibleText(await res.text()), setCookie: res.headers.getSetCookie?.() ?? [] };
 }
 
+/**
+ * The one request in this script that carries a session, used only for the
+ * `/admin` subscriber view. Everything about subscribing itself is asserted
+ * without a cookie.
+ */
+async function getAs(pathname: string, cookie: string) {
+  const res = await fetch(BASE + pathname, { redirect: "manual", headers: { cookie } });
+  return { res, body: visibleText(await res.text()) };
+}
+
 /** Hidden server-action fields of the form containing `marker`. */
 function actionFieldsFor(html: string, marker: string): Record<string, string> {
   const form = (html.match(/<form[\s\S]*?<\/form>/g) ?? []).find((f) => f.includes(marker));
@@ -114,6 +124,14 @@ function actionFieldsFor(html: string, marker: string): Record<string, string> {
 }
 
 let subscribeFields: Record<string, string> = {};
+
+/**
+ * Every address this script expects to find a row for: the ones whose
+ * submission came back accepted. Throttled and malformed submissions are
+ * excluded, which is what makes it a usable expectation for the total the
+ * `/admin` view prints.
+ */
+const expectedStored = new Set<string>();
 
 /**
  * Submits the subscribe form the way a browser with JavaScript disabled would:
@@ -136,7 +154,10 @@ async function postSubscribe(address: string, ip: string, source = "/") {
     // plain page instead of the re-render carrying the action's result.
     headers: { "x-forwarded-for": ip, origin: BASE },
   });
-  return { res, body: visibleText(await res.text()) };
+  const body = visibleText(await res.text());
+  // Hoisted: `errorText` is declared below.
+  if (!errorText(body)) expectedStored.add(address);
+  return { res, body };
 }
 
 /**
@@ -166,6 +187,28 @@ function loggedLinks(kind: "confirm" | "unsubscribe", address: string): string[]
 
 function tokenOf(url: string): string {
   return decodeURIComponent(new URL(url).searchParams.get("token") ?? "");
+}
+
+/** An absolute logged link as a path this script can `get()`. */
+function pathOf(url: string): string {
+  const parsed = new URL(url);
+  return parsed.pathname + parsed.search;
+}
+
+/**
+ * The three counters of the `/admin` distribution card, read back out of the
+ * rendered page. Tag-stripped rather than parsed: the claim being checked is
+ * what an operator sees, not the markup it arrived in.
+ */
+function distributionOf(html: string): Record<"pending" | "confirmed" | "unsubscribed", number> {
+  const block = html.match(/订阅分布[\s\S]*?<\/dl>/)?.[0] ?? "";
+  const text = block.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ");
+  const read = (label: string) => Number(text.match(new RegExp(`${label} (\\d+)`))?.[1] ?? NaN);
+  return {
+    pending: read("待确认"),
+    confirmed: read("已确认"),
+    unsubscribed: read("已退订"),
+  };
 }
 
 async function waitFor(predicate: () => Promise<boolean>, timeoutMs: number, what: string) {
@@ -214,9 +257,8 @@ try {
     // this script's own server rather than at a deployment.
     NEXT_PUBLIC_APP_URL: "",
     VERCEL_URL: "",
-    // No provider: the mailer must fall back to `log`. This is the default, set
-    // explicitly so the test does not depend on an empty .env.local.
-    MAIL_PROVIDER: "",
+    // Nothing to set for mail: `src/lib/mailer.ts` has one driver and reads no
+    // environment at all, so this run cannot accidentally inherit a provider.
     NODE_ENV: "development",
   };
 
@@ -430,6 +472,123 @@ try {
   check("a token is available for the expiry check", Boolean(daveConfirm), daveConfirm ?? "none");
 
   // -------------------------------------------------------------------------
+  // Phase 1b — the /admin read-only subscriber view
+  // -------------------------------------------------------------------------
+  console.log("\n--- phase 1b: the /admin subscriber view ---");
+
+  // Two rows that then stay put, so the distribution has something in every
+  // bucket: erin confirms and stays confirmed, frank unsubscribes and stays out.
+  const erin = email("erin");
+  await postSubscribe(erin, "198.51.100.20");
+  await get(pathOf(loggedLinks("confirm", erin)[0]!));
+  const frank = email("frank");
+  await postSubscribe(frank, "198.51.100.21");
+  await get(pathOf(loggedLinks("unsubscribe", frank)[0]!));
+
+  const anonymousAdmin = await get("/admin/subscribers");
+  check(
+    "an anonymous visitor is redirected away from the subscriber view",
+    [302, 303, 307].includes(anonymousAdmin.res.status) &&
+      (anonymousAdmin.res.headers.get("location") ?? "").includes("/login"),
+    `HTTP ${anonymousAdmin.res.status} → ${anonymousAdmin.res.headers.get("location")}`,
+  );
+  // The redirect status is not the claim. Before `requireUser()` was called in
+  // the page body, this exact response was a 307 to /login whose *body* carried
+  // the rendered page — every address included — because a layout's redirect
+  // does not stop the page under it from rendering.
+  const leaked = [...expectedStored].filter((address) => anonymousAdmin.body.includes(address));
+  check(
+    "and the body of that redirect contains no subscriber address",
+    leaked.length === 0,
+    leaked.length ? `leaked ${leaked.length}: ${leaked.slice(0, 2).join(", ")}` : `${anonymousAdmin.body.length}B, 0 of ${expectedStored.size} addresses`,
+  );
+
+  // An operator account, created the ordinary way. This is the only session in
+  // the whole script — and it belongs to `users`, not to any subscriber.
+  const operator = email("operator");
+  const registerPage = await get("/register");
+  const registerForm = new FormData();
+  for (const [k, v] of Object.entries(actionFieldsFor(registerPage.body, 'name="password"'))) {
+    registerForm.append(k, v);
+  }
+  registerForm.set("email", operator);
+  registerForm.set("password", "verify-subscribe-pw");
+  const registered = await fetch(`${BASE}/register`, {
+    method: "POST",
+    body: registerForm,
+    redirect: "manual",
+    headers: { origin: BASE },
+  });
+  const cookie = (registered.headers.getSetCookie?.() ?? [])
+    .map((value) => value.split(";")[0])
+    .join("; ");
+  check(
+    "an operator can register and gets a session",
+    cookie.length > 0,
+    cookie ? "session cookie issued" : `HTTP ${registered.status}`,
+  );
+
+  const adminView = await getAs("/admin/subscribers", cookie);
+  const expectedTotal = expectedStored.size;
+  check(
+    "the subscriber view reports the total number of collected addresses",
+    adminView.res.status === 200 && adminView.body.includes(`共 ${expectedTotal} 个邮箱`),
+    `expected 共 ${expectedTotal} 个邮箱 (HTTP ${adminView.res.status})`,
+  );
+
+  const distribution = distributionOf(adminView.body);
+  check(
+    "the distribution matches what the flows actually did",
+    distribution.confirmed === 1 &&
+      distribution.unsubscribed === 1 &&
+      distribution.pending === expectedTotal - 2,
+    `待确认 ${distribution.pending} · 已确认 ${distribution.confirmed} · 已退订 ${distribution.unsubscribed}`,
+  );
+  check(
+    "a confirmed and an unsubscribed address are each shown with their own state",
+    adminView.body.includes(erin) && adminView.body.includes(frank),
+  );
+
+  // The point of the finalized decision is that `pending` is the resting state.
+  // The page has to say so in a way that does not read as a malfunction.
+  check(
+    "the view explains that pending is the expected state, not a failure",
+    adminView.body.includes("这是预期结果") && adminView.body.includes("不是故障"),
+  );
+  check(
+    "the view names the driver that is actually in use",
+    adminView.body.includes("只写进服务端日志") && adminView.body.includes(">log<"),
+  );
+
+  // Read-only, structurally: the layout's logout form and its button are the
+  // only ones on the page. No "mark as confirmed", because nobody clicked
+  // anything.
+  const adminForms = adminView.body.match(/<form[\s\S]*?<\/form>/g) ?? [];
+  const adminButtons = adminView.body.match(/<button[\s\S]*?<\/button>/g) ?? [];
+  check(
+    "the subscriber view is strictly read-only — the only form and button are 登出",
+    adminForms.length === 1 &&
+      adminForms[0].includes("登出") &&
+      adminButtons.length === 1 &&
+      adminButtons[0].includes("登出"),
+    `${adminForms.length} form(s), ${adminButtons.length} button(s)`,
+  );
+
+  const frankDigest = sha256(tokenOf(loggedLinks("unsubscribe", frank)[0]!));
+  check(
+    "the view renders no token digest",
+    !adminView.body.includes(frankDigest),
+    `looked for ${frankDigest.slice(0, 16)}…`,
+  );
+
+  const dashboard = await getAs("/admin", cookie);
+  check(
+    "the /admin dashboard carries the same total and the real mail driver",
+    dashboard.body.includes(`共 ${expectedTotal} 个邮箱`) &&
+      dashboard.body.includes("只写日志，不发信"),
+  );
+
+  // -------------------------------------------------------------------------
   // Phase 2 — direct, after the server releases the database
   // -------------------------------------------------------------------------
   console.log("\n--- phase 2: database and store, server stopped ---");
@@ -550,6 +709,51 @@ try {
     "the throttle table stores digests, not addresses or IPs",
     !storesPlaintext && throttle.rows.every((r) => /^[0-9a-f]{64}$/.test(r.key_hash)),
     throttle.rows.map((r) => `${r.scope}:${r.count}`).join(" "),
+  );
+
+  // --- what the admin view reads -------------------------------------------
+  const adminCounts = await store.countSubscribersByStatus();
+  const grouped = await db.execute<{ status: string; n: number }>(
+    sql`select status, count(*)::int as n from subscriber group by status`,
+  );
+  const fromSql = Object.fromEntries(grouped.rows.map((r) => [r.status, r.n]));
+  check(
+    "countSubscribersByStatus() matches a direct GROUP BY and zero-fills the rest",
+    Object.entries(adminCounts).every(([status, n]) => n === (fromSql[status] ?? 0)) &&
+      Object.keys(adminCounts).length === 3,
+    JSON.stringify(adminCounts),
+  );
+  check(
+    "the counts cover every row in the table",
+    Object.values(adminCounts).reduce((a, b) => a + b, 0) === expectedStored.size,
+    `${Object.values(adminCounts).reduce((a, b) => a + b, 0)} counted vs ${expectedStored.size} accepted submissions`,
+  );
+
+  const adminRows = await store.listRecentSubscribers(5);
+  check(
+    "listRecentSubscribers() never selects a token column",
+    adminRows.every((row) => !("confirmTokenHash" in row) && !("unsubTokenHash" in row)),
+    Object.keys(adminRows[0] ?? {}).join(","),
+  );
+  check(
+    "listRecentSubscribers() honours its limit and returns newest first",
+    adminRows.length === 5 &&
+      adminRows.every(
+        (row, i) => i === 0 || row.createdAt <= adminRows[i - 1]!.createdAt,
+      ),
+    `${adminRows.length} row(s)`,
+  );
+
+  // The finalized decision, asserted against the data rather than the copy: no
+  // address is `confirmed` unless a confirm token was actually spent for it.
+  const confirmedRows = await db.execute<{ email: string }>(
+    sql`select email from subscriber where status = 'confirmed'`,
+  );
+  const clicked = new Set([erin, dave]);
+  check(
+    "only addresses whose confirm link was actually visited are confirmed",
+    confirmedRows.rows.every((row) => clicked.has(row.email)),
+    confirmedRows.rows.map((r) => r.email.replace(`-${RUN}@example.com`, "")).join(", ") || "none",
   );
 } finally {
   if (server && server.exitCode === null) server.kill("SIGKILL");

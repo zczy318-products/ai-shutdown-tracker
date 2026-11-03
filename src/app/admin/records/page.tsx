@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
+import { requireUser } from "@/lib/auth";
 import {
   IMPACT_TYPE,
   OUTCOME,
@@ -40,6 +41,8 @@ export default async function RecordsPage({
 }: {
   searchParams: Promise<SearchParams>;
 }) {
+  await requireUser();
+
   const params = await searchParams;
   const status = isStatus(params.status) ? params.status : "all";
   const q = params.q?.trim() ?? "";
