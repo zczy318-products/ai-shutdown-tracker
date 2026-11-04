@@ -1,0 +1,514 @@
+{
+  "schema_version": 1,
+  "research_date": "2026-11-04",
+  "publication_status": "research_only",
+  "purpose": "Counter large-company source bias while separating AI displacement from AI-business failure.",
+  "methodology": {
+    "scope": "Six bounded historical company/team examples; not a representative census or current-status audit.",
+    "scale_policy": "Use time-specific headcount evidence. Team size is not company size; startup is not a size threshold. Unknown stays null.",
+    "attribution_policy": "Only Tailwind has a directly read founder claim of AI harming commercial funnel. Other five are separately labeled AI-business context, not proven AI-caused failures.",
+    "human_review": "not_performed",
+    "Jev_used": false
+  },
+  "counts": {
+    "candidates": 6,
+    "AI_impact_candidates": 1,
+    "AI_business_context_only": 5,
+    "exact_or_approximate_company_headcount_evidence": 3,
+    "team_only_size_evidence": 2,
+    "profile_band_only_evidence": 1,
+    "with_directly_retrieved_company_founder_or_acquirer_source": 3,
+    "publication_approved": 0,
+    "machine_records_generated": 0
+  },
+  "candidates": [
+    {
+      "id": "tailwind-labs-2026-01",
+      "name": "Tailwind Labs",
+      "identity": {
+        "entity_type": "commercial_company_supporting_open_source",
+        "legal_name": null,
+        "not_assumed_personal_side_project": true
+      },
+      "event": {
+        "scope": "engineering_team_reduction",
+        "dates": {
+          "announcement_date": "2026-01-07",
+          "event_date": null,
+          "event_month": "2026-01",
+          "precision": "month",
+          "note": "Founder GitHub comment says yesterday; trade report says Monday. Exact layoff day is unresolved."
+        },
+        "summary": "Commercial framework business downsized engineering; open-source framework was not declared closed.",
+        "verified_completed_layoffs": false
+      },
+      "scale_evidence": {
+        "company_total": null,
+        "company_total_status": "unknown",
+        "engineering_team_before": 4,
+        "engineering_jobs_cut": 3,
+        "engineering_cut_pct": 75,
+        "evidence_source_ids": [
+          "tailwind-founder",
+          "tailwind-scale"
+        ],
+        "note": "Four refers to paid engineering staff, not total company employees or maintainers. Owners and part-time operations also reported."
+      },
+      "AI_relationship": {
+        "type": "founder_claim_AI_competition_reduces_documentation_funnel",
+        "causality": "explicit_first_hand_claim_not_independently_proven",
+        "note": "Founder links lower documentation traffic and commercial revenue to AI despite growing framework adoption."
+      },
+      "research_category": "AI_impact_candidate",
+      "counterevidence_and_limits": "Company-wide headcount and independently measured AI causal share remain unknown. This is not evidence that the framework stopped operating.",
+      "unknown_fields": [
+        "legal_entity_name",
+        "company_total_headcount",
+        "exact_layoff_day",
+        "independent_causal_allocation"
+      ],
+      "sources": [
+        {
+          "id": "tailwind-founder",
+          "url": "https://github.com/tailwindlabs/tailwindcss.com/pull/2388#issuecomment-3717222957",
+          "publisher": "Adam Wathan via GitHub",
+          "published_at": "2026-01-07",
+          "short_quote": "75% of the people on our engineering team lost their jobs here yesterday",
+          "quote_language": "en",
+          "access_status": "full_text_retrieved",
+          "source_type": "founder_public_statement",
+          "supports": [
+            "AI_attribution",
+            "engineering_reduction"
+          ],
+          "human_review_status": "not_performed"
+        },
+        {
+          "id": "tailwind-scale",
+          "url": "https://thenewstack.io/tailwind-creator-says-ai-played-a-role-in-downsizing/",
+          "publisher": "The New Stack",
+          "published_at": "2026-01-09",
+          "short_quote": "we have four engineers on staff, and now we have one",
+          "quote_language": "en",
+          "access_status": "search_excerpt_retrieved_open_403",
+          "source_type": "reporting",
+          "supports": [
+            "engineering_headcount",
+            "three_engineers_cut"
+          ],
+          "human_review_status": "not_performed"
+        }
+      ],
+      "publication_approved": false,
+      "machine_record_generated": false,
+      "seed_dedup": {
+        "name_match": false,
+        "note": "Names differ from existing seed; no private or production database queried."
+      }
+    },
+    {
+      "id": "tome-2024-04",
+      "name": "Tome",
+      "identity": {
+        "entity_type": "startup_company",
+        "legal_name": null,
+        "not_assumed_personal_side_project": true
+      },
+      "event": {
+        "scope": "company_restructuring_and_customer_segment_pivot",
+        "dates": {
+          "report_date": "2024-04-16",
+          "event_date": null,
+          "event_month": "2024-04",
+          "precision": "month"
+        },
+        "summary": "CEO interview describes an AI-presentation startup shifting its customer and product focus toward revenue-generating sales teams, with layoffs.",
+        "verified_completed_layoffs": false
+      },
+      "scale_evidence": {
+        "company_total": 59,
+        "company_total_status": "reported_at_event",
+        "jobs_cut": null,
+        "jobs_cut_pct": 20,
+        "evidence_source_ids": [
+          "tome-semafor"
+        ],
+        "note": "Approximate percentage, no rounded employee cut count manufactured. 59 is event-time staff, not current headcount."
+      },
+      "AI_relationship": {
+        "type": "AI_startup_pivot_to_paying_B2B_customers",
+        "causality": "AI_replacement_or_AI_competition_not_established"
+      },
+      "research_category": "AI_business_context_only",
+      "counterevidence_and_limits": "Customer willingness to pay and product-market fit explain the reorganization. An AI startup restructuring does not prove that AI caused its failure.",
+      "unknown_fields": [
+        "legal_entity_name",
+        "exact_announcement_day",
+        "AI_displacement_causality",
+        "absolute_jobs_cut",
+        "current_company_status"
+      ],
+      "sources": [
+        {
+          "id": "tome-semafor",
+          "url": "https://www.semafor.com/article/04/16/2024/ai-startup-tome-lays-off-staff-to-focus-on-revenue",
+          "publisher": "Semafor",
+          "published_at": "2024-04-16",
+          "short_quote": "laying off about 20% of its 59 employees",
+          "quote_language": "en",
+          "access_status": "full_text_retrieved",
+          "source_type": "reporting",
+          "supports": [
+            "CEO_interview",
+            "company_scale",
+            "restructuring",
+            "AI_business_identity"
+          ],
+          "human_review_status": "not_performed"
+        }
+      ],
+      "publication_approved": false,
+      "machine_record_generated": false,
+      "seed_dedup": {
+        "name_match": false,
+        "note": "Names differ from existing seed; no private or production database queried."
+      }
+    },
+    {
+      "id": "sunshine-2025-09",
+      "name": "Sunshine (formerly Lumi Labs)",
+      "identity": {
+        "entity_type": "startup_company",
+        "legal_name": null,
+        "not_assumed_personal_side_project": true
+      },
+      "event": {
+        "scope": "reported_company_winddown_and_asset_sale",
+        "dates": {
+          "shareholder_email_date": "2025-09-17",
+          "report_date": "2025-09-29",
+          "closing_date": null,
+          "precision": "day_for_email_and_reporting_only"
+        },
+        "summary": "WIRED reports a proposed wind-down/asset sale to Dazzle, with staff expected to transfer.",
+        "verified_completed_layoffs": false
+      },
+      "scale_evidence": {
+        "company_total": 15,
+        "company_total_status": "reported_approximate",
+        "jobs_cut": null,
+        "evidence_source_ids": [
+          "sunshine-wired"
+        ],
+        "note": "Staff expected to find roles at buyer; not 15 verified layoffs."
+      },
+      "AI_relationship": {
+        "type": "AI_startup_asset_transfer_to_another_AI_company",
+        "causality": "AI_caused_failure_not_established"
+      },
+      "research_category": "AI_business_context_only",
+      "counterevidence_and_limits": "Shareholder approval and final legal completion are distinct from reporting. Do not count staff as unemployed or assert AI caused failure.",
+      "unknown_fields": [
+        "legal_entity_name",
+        "transaction_completion",
+        "actual_staff_transfers",
+        "AI_causal_role"
+      ],
+      "sources": [
+        {
+          "id": "sunshine-wired",
+          "url": "https://www.wired.com/story/marissa-mayer-sunshine-startup-shut-down/",
+          "publisher": "WIRED",
+          "published_at": "2025-09-29",
+          "short_quote": "Sunshine’s roughly 15 employees are expecting to find new roles at Dazzle",
+          "quote_language": "en",
+          "access_status": "full_text_retrieved",
+          "source_type": "reporting",
+          "supports": [
+            "shareholder_email_review",
+            "startup_identity",
+            "approximate_staff",
+            "asset_sale_scope"
+          ],
+          "human_review_status": "not_performed"
+        }
+      ],
+      "publication_approved": false,
+      "machine_record_generated": false,
+      "seed_dedup": {
+        "name_match": false,
+        "note": "Names differ from existing seed; no private or production database queried."
+      }
+    },
+    {
+      "id": "artifact-2024",
+      "name": "Artifact (news app)",
+      "identity": {
+        "entity_type": "startup_team_and_product",
+        "legal_name": null,
+        "not_assumed_personal_side_project": true
+      },
+      "event": {
+        "scope": "product_winddown_announcement_then_acquisition",
+        "dates": {
+          "winddown_announcement_date": "2024-01-12",
+          "acquisition_closed_date": "2024-03-29",
+          "acquisition_announcement_date": "2024-04-02",
+          "precision": "day",
+          "note": "January announcement is not the final business outcome."
+        },
+        "summary": "January product wind-down was followed by Yahoo acquisition; proprietary AI technology continued within Yahoo rather than an unqualified company-death outcome.",
+        "verified_completed_layoffs": false
+      },
+      "scale_evidence": {
+        "company_total": null,
+        "company_total_status": "unknown",
+        "reported_product_team": 8,
+        "evidence_source_ids": [
+          "artifact-report"
+        ],
+        "note": "Eight-person team reported; exact legal-company employment count not independently verified."
+      },
+      "AI_relationship": {
+        "type": "AI_news_product_discontinued_standalone_after_acquisition",
+        "causality": "AI_caused_failure_not_established"
+      },
+      "research_category": "AI_business_context_only",
+      "counterevidence_and_limits": "Limited market opportunity and moderation capacity were reported. Acquisition is separately confirmed by buyer. Legal dissolution and job losses are unknown.",
+      "unknown_fields": [
+        "legal_entity_name",
+        "company_total_headcount",
+        "legal_dissolution",
+        "job_losses",
+        "AI_displacement_causality"
+      ],
+      "sources": [
+        {
+          "id": "artifact-report",
+          "url": "https://indianexpress.com/article/technology/artificial-intelligence/artifact-ai-news-app-shutting-down-9108918/",
+          "publisher": "The Indian Express",
+          "published_at": "2024-01-14",
+          "short_quote": "Artifact’s small 8-person team",
+          "quote_language": "en",
+          "access_status": "full_text_retrieved",
+          "source_type": "reporting",
+          "supports": [
+            "team_size",
+            "product_winddown",
+            "reported_founder_reason"
+          ],
+          "human_review_status": "not_performed"
+        },
+        {
+          "id": "artifact-acquirer",
+          "url": "https://unified.www.yahooinc.com/press/yahoo-announces-the-acquisition-of-artifact-the-news-discovery-platform-created-by-instagram-cofounders-kevin-systrom-and-mike-krieger",
+          "publisher": "Yahoo",
+          "published_at": "2024-04-02",
+          "short_quote": "Artifact will no longer operate as a standalone app",
+          "quote_language": "en",
+          "access_status": "full_text_retrieved",
+          "source_type": "acquirer_announcement",
+          "supports": [
+            "acquisition",
+            "standalone_product_scope",
+            "technology_continuation",
+            "closing_date"
+          ],
+          "human_review_status": "not_performed"
+        }
+      ],
+      "publication_approved": false,
+      "machine_record_generated": false,
+      "seed_dedup": {
+        "name_match": false,
+        "note": "Names differ from existing seed; no private or production database queried."
+      }
+    },
+    {
+      "id": "ghost-autonomy-2024-04",
+      "name": "Ghost Autonomy",
+      "identity": {
+        "entity_type": "startup_company",
+        "legal_name": null,
+        "not_assumed_personal_side_project": true
+      },
+      "event": {
+        "scope": "company_operational_shutdown",
+        "dates": {
+          "shutdown_announcement_date": "2024-04-03",
+          "report_date": "2024-04-04",
+          "precision": "day"
+        },
+        "summary": "CEO confirmed closure and severance for 100 workers.",
+        "verified_completed_layoffs": false
+      },
+      "scale_evidence": {
+        "company_total": 100,
+        "company_total_status": "CEO_confirmed_reported_at_event",
+        "jobs_cut": 100,
+        "evidence_source_ids": [
+          "ghost-sfgate"
+        ],
+        "note": "Approximately 100 is a medium-size startup under a 51-250 threshold, not a microbusiness."
+      },
+      "AI_relationship": {
+        "type": "autonomous_driving_AI_startup_failure",
+        "causality": "funding_and_commercialization_barriers_not_AI_displacement"
+      },
+      "research_category": "AI_business_context_only",
+      "counterevidence_and_limits": "Funding and long commercialization runway were cited. AI-industry closure is not proof AI destroyed another business.",
+      "unknown_fields": [
+        "legal_entity_name",
+        "legal_dissolution_date",
+        "AI_displacement_causality"
+      ],
+      "sources": [
+        {
+          "id": "ghost-sfgate",
+          "url": "https://www.sfgate.com/tech/article/ghost-autonomy-shutdown-tech-layoff-19385702.php",
+          "publisher": "SFGATE",
+          "published_at": "2024-04-04",
+          "short_quote": "100 employees across Mountain View, Dallas and Sydney would lose their jobs",
+          "quote_language": "en",
+          "access_status": "full_text_retrieved",
+          "source_type": "reporting",
+          "supports": [
+            "CEO_email_confirmation",
+            "company_shutdown",
+            "workforce_count",
+            "funding_reason"
+          ],
+          "human_review_status": "not_performed"
+        }
+      ],
+      "publication_approved": false,
+      "machine_record_generated": false,
+      "seed_dedup": {
+        "name_match": false,
+        "note": "Names differ from existing seed; no private or production database queried."
+      }
+    },
+    {
+      "id": "yupp-2026-03",
+      "name": "Yupp",
+      "identity": {
+        "entity_type": "startup_company_and_service",
+        "legal_name": null,
+        "not_assumed_personal_side_project": true
+      },
+      "event": {
+        "scope": "company_winddown_and_product_access_termination",
+        "dates": {
+          "announcement_date": "2026-03-31",
+          "scheduled_product_access_end": "2026-04-15",
+          "precision": "day",
+          "note": "Company LinkedIn post shows relative age; contemporaneous reporting dates announcement."
+        },
+        "summary": "Company announced wind-down and ended access to its AI service.",
+        "verified_completed_layoffs": false
+      },
+      "scale_evidence": {
+        "company_total": null,
+        "company_total_status": "unknown",
+        "company_profile_size_band": "11-50",
+        "profile_size_band_status": "self_reported_profile_not_event_time_verified",
+        "evidence_source_ids": [
+          "yupp-company"
+        ],
+        "note": "Do not treat LinkedIn profiles associated with company as an actual employee census."
+      },
+      "AI_relationship": {
+        "type": "AI_model_comparison_startup_failure",
+        "causality": "AI_caused_failure_not_established"
+      },
+      "research_category": "AI_business_context_only",
+      "counterevidence_and_limits": "An AI business failure is separate from AI displacement. Profile size band is not audited or anchored to the announcement date.",
+      "unknown_fields": [
+        "legal_entity_name",
+        "event_time_headcount",
+        "job_losses",
+        "legal_dissolution",
+        "independent_AI_causal_allocation"
+      ],
+      "sources": [
+        {
+          "id": "yupp-company",
+          "url": "https://www.linkedin.com/company/yuppai",
+          "publisher": "Yupp company LinkedIn",
+          "published_at": null,
+          "short_quote": "We’ve made the decision to wind down Yupp.",
+          "quote_language": "en",
+          "access_status": "full_text_retrieved",
+          "source_type": "company_public_statement",
+          "supports": [
+            "company_identity",
+            "profile_size_band",
+            "winddown",
+            "product_access_end"
+          ],
+          "human_review_status": "not_performed"
+        },
+        {
+          "id": "yupp-report",
+          "url": "https://techcrunch.com/2026/03/31/yupp-ai-shuts-down-33m-a16z-crypto-chris-dixon/",
+          "publisher": "TechCrunch",
+          "published_at": "2026-03-31",
+          "short_quote": "didn’t reach a strong enough product-market fit",
+          "quote_language": "en",
+          "access_status": "full_text_retrieved",
+          "source_type": "reporting",
+          "supports": [
+            "announcement_date",
+            "reported_founder_reason"
+          ],
+          "human_review_status": "not_performed"
+        }
+      ],
+      "publication_approved": false,
+      "machine_record_generated": false,
+      "seed_dedup": {
+        "name_match": false,
+        "note": "Names differ from existing seed; no private or production database queried."
+      }
+    }
+  ],
+  "access_anomalies": [
+    {
+      "url": "https://thenewstack.io/tailwind-creator-says-ai-played-a-role-in-downsizing/",
+      "status": "search_excerpt_retrieved_open_403",
+      "note": "Scale comes from indexed trade report; founder causal claim itself was directly retrieved on GitHub."
+    },
+    {
+      "url": "https://www.ghostautonomy.com/",
+      "status": "domain_repurposed",
+      "note": "Current page is unrelated gambling content; rejected as present original-company evidence. CEO email reporting is used."
+    },
+    {
+      "url": "https://blog.yupp.ai/winddown/",
+      "status": "403",
+      "note": "Official LinkedIn statement and dated reporting used instead."
+    },
+    {
+      "url": "https://yupp.ai/",
+      "status": "403"
+    },
+    {
+      "url": "https://www.yupp.dev/",
+      "status": "timeout_after_search_excerpt"
+    }
+  ],
+  "next_channels": [
+    {
+      "url": "https://github.com/tailwindlabs/tailwindcss.com/pull/2388",
+      "purpose": "Founder/maintainer business disclosures; distinguish commercial company from open-source project."
+    },
+    {
+      "url": "https://www.linkedin.com/company/yuppai",
+      "purpose": "Official company wind-down notices; profile ranges are unverified size leads."
+    },
+    {
+      "url": "https://www.semafor.com/article/04/16/2024/ai-startup-tome-lays-off-staff-to-focus-on-revenue",
+      "purpose": "Founder interviews with event-time staffing and alternative explanations."
+    }
+  ]
+}

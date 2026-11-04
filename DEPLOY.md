@@ -1,5 +1,27 @@
 # 部署手册（Rest In Prompts）
 
+## Current delivery contract — 2026-11-04
+
+The user authorized local development, local tests, and GitHub pushes. Existing
+Git integration handles deployment; no Vercel login or manual deployment is
+required. Historical observations below are dated evidence, not current checks.
+
+`vercel.json` now selects `npm run build:vercel` and the daily ingestion schedule.
+Production builds require `DATABASE_URL_UNPOOLED` for incremental migrations;
+runtime requests use `DATABASE_URL`. Migration runners use a session advisory
+lock and a single direct connection to serialize concurrent builds. Keep changes
+compatible with the preceding deployment: completed migrations can remain even
+if the subsequent application build fails. Local and preview builds skip this
+migration gate; page rendering during `next build` still must not query the DB.
+
+Daily retries require production `CRON_SECRET` and the ingestion migration.
+Neither successful deployment nor daily execution has been verified for this
+change. New-company discovery is not configured. See [ingestion operations](docs/INGESTION.md)
+and [local acceptance evidence](docs/acceptance/2026-11-04/README.md).
+Paid services remain unauthorized; the daily schedule does not authorize paid
+capacity or upgrades.
+
+
 目标形态：代码放在**用户自己的 GitHub 仓库** → 用户在 **Vercel** 控制台导入该仓库 → 之后每次 push 自动部署；
 线上数据库用 **Neon 免费档**。
 
@@ -27,7 +49,7 @@
 
 驱动选择逻辑在 `src/db/config.ts`，应用、迁移脚本、`drizzle.config.ts` 共用同一份解析，不会各自为政。
 
-**当前线上只需要填 `DATABASE_URL` 一个变量**，其余全部留空（默认值就是为这个部署形态挑的）。
+**Historical runtime-only setup required `DATABASE_URL`; current production builds also require `DATABASE_URL_UNPOOLED`, and daily ingestion requires `CRON_SECRET`. The remaining legacy defaults below apply**，其余全部留空（默认值就是为这个部署形态挑的）。
 会话用的是存在数据库里的不透明 token，不依赖任何签名密钥变量，所以没有 `AUTH_SECRET` 之类的东西要配。
 T6 引入 Stripe 测试模式变量时，**必须同步更新本节的表、`.env.example`，并标明哪些必填、哪些可留空**
 （§1.2 已经先列了清单）。
@@ -106,8 +128,7 @@ cp .env.example .env.local   # .env.local 已在 .gitignore 中，不会被提�
 > 2. 紧接着写的「首页 500 本身就是库没通的信号」——现在库已通、数据已导，**首页 200 且有 30 条才是正常态**。
 >    首页若再出现 500，是真的回归，不要再当成「库还没接」。
 
-构建侧一直没有问题：构建期不查库（§6.3），所以 `DATABASE_URL` 缺失**不会**让部署失败，
-只会在运行时炸。这正是为什么「部署成功」和「站点可用」在本项目里是两件事。
+This historical observation concerned `next build`. The current production wrapper also checks and migrates the direct database before building (§4); deployment success still does not verify runtime behavior.
 
 ### 2.2 `main` 已经包含全部功能（2026-11-03 15:05 合并）
 
@@ -222,7 +243,7 @@ DATABASE_URL="$DATABASE_URL_UNPOOLED" npm run db:seed
 
 ## 4. ② 迁移线上库
 
-迁移在本地执行，推送到 Vercel 的构建流程里**不跑** migration（构建环境跑 DDL 会在多实例并发时互相打架，也会让一次失败的构建留下半套 schema）。
+Production migrations now run through `scripts/vercel-build.mjs` using the direct connection and advisory lock described above. The manual command below remains available for an explicitly authorized maintenance operation; ordinary delivery uses the GitHub integration.
 
 ```bash
 # 用 Neon 的 direct 连接串，临时注入，不写进文件
@@ -363,17 +384,17 @@ npm run typecheck && npm run build
 ### 6.2 Vercel 导入（由用户在控制台操作，我们不碰 Vercel API）
 
 1. Vercel → Add New → Project → 选刚才那个 GitHub 仓库；
-2. Framework Preset 会自动识别为 Next.js，**Build / Output 设置全部保持默认**。本项目不需要 `vercel.json`：构建命令、输出目录、Node 版本都走 Vercel 对 Next.js 的默认约定，手写一份只会多一个会过期的配置文件；
+2. Use the Next.js framework preset and the repository `vercel.json` build command and schedule.
 3. Environment Variables 按 §1 填入（Production + Preview 都要填，否则 Preview 部署会连不上库）：
-   - `DATABASE_URL` = Neon 的 **pooled** 连接串 —— 这是唯一必填项
-   - 其余变量**一个都不要设**，默认值就是为这个部署形态挑的（§1.1 最后一列说明了设错的后果）
+   - `DATABASE_URL`: pooled runtime connection.
+   - `DATABASE_URL_UNPOOLED`: direct production migration connection.
+   - `CRON_SECRET`: production daily-route authentication; absent values fail closed. Other defaults remain as documented.
    - T6 合并后再加 Stripe 的那几个（全部 test 模式）
 4. Deploy。之后往 `main` push 即自动部署，Preview 分支自动出预览环境。
 
-### 6.3 构建期不碰数据库（必须保持的不变量）
+### 6.3 Page rendering must not query the database during build
 
-Vercel 的**第一次**构建发生在用户填环境变量之前，所以构建必须在没有 `DATABASE_URL` 的情况下成功。
-这条已实测通过：
+The plain local `build` command must succeed without a database. Production uses the separate migration wrapper described in §4. Local verification:
 
 ```bash
 env -u DATABASE_URL NODE_ENV=production npm run build
@@ -387,8 +408,7 @@ env -u DATABASE_URL NODE_ENV=production npm run build
 `unstable_cache`，让查询发生在运行时的第一次请求，而不是构建期。
 加完页面后用上面那条命令复核一遍：**新路由如果出现在 `○ (Static)` 一侧且它要读库，就是踩了这条线。**
 
-迁移同理不在构建期跑：`build` 脚本就是 `next build`，DDL 只在 `npm run db:migrate` 手动执行（§4）。
-所以即使 `DATABASE_URL` 填错构建也会成功——错误要到运行时才暴露，看 §6.4 的自查。
+`build` runs `next build`; `build:vercel` adds the production-only migration gate (§4). Runtime connection configuration still requires separate verification (§6.4).
 
 ### 6.4 部署后自查
 
@@ -412,11 +432,11 @@ env -u DATABASE_URL NODE_ENV=production npm run build
 | --- | --- |
 | Vercel Postgres / KV / Blob | 数据库只用 Neon 免费档；暂时不需要 KV 和对象存储 |
 | Edge Config | 配置走环境变量 |
-| Vercel Cron | 过期 session 在读取时顺手清理（`src/lib/auth.ts`），不需要定时任务 |
+| Paid scheduling capacity | One daily ingestion schedule is configured; no paid upgrades are authorized. Session cleanup remains on read. |
 | Image Optimization 超额 | 目前没有需要优化的远程图片；真要加先算额度 |
 | Stripe 真实收款 | 全程测试模式，`sk_test_` / `pk_test_`，不接真实支付 |
 
-本项目也**不需要 `vercel.json`**：构建命令、输出目录、Node 版本全部走 Vercel 对 Next.js 的默认约定，手写一份只会多一个会过期的配置文件。
+`vercel.json` now contains the production build command and one daily ingestion schedule. See the current contract above for activation requirements.
 
 ## 8. 授权状态
 
@@ -457,7 +477,7 @@ env -u DATABASE_URL NODE_ENV=production npm run build
 - Tailwind v4 必须保留 `postcss.config.mjs` + `@tailwindcss/postcss`。去掉之后 `npm run build`
   **仍然成功**，但产出的 CSS 只有变量、没有任何工具类（约 3KB 对 18KB），属于静默失效。
   改动样式构建链路后请用 `grep -o 'bg-primary' .next/static/chunks/*.css` 复核。
-- 迁移不在构建期执行，是有意为之（§4）。换成自动迁移前请先想清楚并发构建的问题。
+- Production builds now serialize migrations through a direct connection and session advisory lock (§4). Preview and local builds do not run this gate.
 - 线上验收材料见 `docs/ACCEPTANCE.md`（§2.3 三步已完成，截图与实测输出已对线上重拍）。
 
 ---
