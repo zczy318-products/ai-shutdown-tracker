@@ -4,6 +4,14 @@ Ingestion uses the existing database. The repository includes a daily retry
 route and Vercel cron schedule. Discovery, email delivery, and third-party
 provider configuration are separate capabilities.
 
+## Shutdown archive boundary
+
+The default homepage and `/shutdown/[slug]` render the explicitly approved
+repository evidence snapshot through `src/lib/shutdowns.ts`. They do not read
+`ai_impact` or this queue. Existing impact records now appear at `/impact`;
+`/stats` and paid CSV/API exports continue to use that impact-event dataset.
+A successful daily retry does not update the shutdown archive.
+
 ## Migration gate
 
 `drizzle/0005_ingestion.sql` only adds the candidate queue, attempt audit, and daily-run lease tables.

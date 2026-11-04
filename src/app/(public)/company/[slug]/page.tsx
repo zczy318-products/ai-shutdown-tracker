@@ -87,7 +87,7 @@ export default async function CompanyPage({ params }: { params: Promise<{ slug: 
     <article className="space-y-10">
       <nav className="text-muted-foreground text-xs">
         <Link
-          href="/"
+          href="/impact"
           className="hover:text-foreground -my-1.5 inline-flex items-center py-1.5 underline"
         >
           记录榜单

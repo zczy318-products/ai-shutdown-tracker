@@ -89,7 +89,7 @@ export default async function PricingPage({ searchParams }: { searchParams: Sear
           <strong>浏览全部内容不需要账号。</strong>
           榜单、筛选、每条记录的全部来源与原文引述、统计仪表盘 —— 匿名访客就能完整看到，
           没有试读截断，没有模糊遮挡，也不会弹登录框。
-          付费买的是「把整个数据集拿走」和「接进自己的系统」，不是阅读权限。
+          付费功能用于批量获取影响事件数据或接入自己的系统。CSV 与 API 暂不包含首页的停运公司档案。
         </p>
         <p className="text-muted-foreground text-sm">
           全站只有一个付费档：<strong>{PLAN.pro.zh} {PLAN.pro.priceLabel}</strong>

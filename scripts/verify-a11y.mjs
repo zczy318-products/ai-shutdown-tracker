@@ -24,7 +24,7 @@
 import { chromium } from "playwright";
 
 const BASE = (process.env.BASE_URL ?? "http://localhost:3000").replace(/\/$/, "");
-const PAGES = ["/", "/stats", "/pricing", "/company/chegg"];
+const PAGES = ["/", "/shutdown/nintee", "/shutdown/kite", "/impact", "/stats", "/pricing", "/company/chegg"];
 const VIEWPORTS = [
   { name: "mobile", width: 390, height: 844 },
   { name: "desktop", width: 1280, height: 900 },

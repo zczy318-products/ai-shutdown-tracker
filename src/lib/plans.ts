@@ -39,7 +39,7 @@ export const PLAN = {
     zh: "专业版",
     en: "Pro",
     priceLabel: "US$9.90 / 月",
-    taglineZh: "给需要把整个数据集拿走、或接进自己系统的人。",
+    taglineZh: "批量获取影响事件数据，或接进自己的系统。",
   },
 } as const;
 
@@ -135,12 +135,12 @@ export const TIER_MATRIX: {
   },
   {
     featureZh: "全量 CSV 导出",
-    detailZh: "一行一条来源，含来源 URL、媒体、发布日期与原文引述。",
+    detailZh: "仅影响事件档案，一行一条来源；不含首页停运名单。",
     values: { anonymous: false, subscriber: false, free: false, pro: true },
   },
   {
     featureZh: "API key 与只读查询接口",
-    detailZh: "可生成、可吊销；吊销后立即失效。",
+    detailZh: "只读影响事件档案；不含首页停运名单。密钥可生成、可吊销。",
     values: { anonymous: false, subscriber: false, free: false, pro: true },
   },
 ];

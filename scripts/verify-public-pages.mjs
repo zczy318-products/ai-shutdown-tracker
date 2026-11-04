@@ -284,14 +284,16 @@ await run("npx", ["tsx", "src/db/migrate.ts"], { PGLITE_DATA_DIR: EMPTY_DIR, DAT
       console.error(`server did not start on ${BASE}\n${empty.log}`);
       process.exit(1);
     }
-    const home = await get("/");
-    eq("空库 GET / is 200", home.status, 200);
+    const shutdownHome = await get("/");
+    eq("空库仍可展示8家停运档案", num(shutdownHome.html, "result-total"), 8);
+    const home = await get("/impact");
+    eq("空库 GET /impact is 200", home.status, 200);
     eq("空库榜单条数", num(home.html, "result-total"), 0);
     check("空库榜单给出空状态而不是报错", home.html.includes("还没有已发布的记录"));
     const stats = await get("/stats");
     eq("空库 GET /stats is 200", stats.status, 200);
     check("空库仪表盘给出空状态而不是报错", stats.html.includes("暂无可统计数据"));
-    const filtered = await get("/?confidence=high&year=2025");
+    const filtered = await get("/impact?confidence=high&year=2025");
     eq("空库带筛选参数仍是 200", filtered.status, 200);
     const missing = await get("/company/anything");
     eq("空库公司页 404", missing.status, 404);
@@ -312,13 +314,28 @@ try {
   // -------------------------------------------------------------------------
   // 1. Listing: visibility, counts, pagination, sorting
   // -------------------------------------------------------------------------
-  console.log("\n--- 榜单页 / ---");
-  const home = await get("/");
-  eq("GET / is 200", home.status, 200);
-  eq("首页默认展示语义表格", (home.html.match(/<table\b/g) ?? []).length, 1);
+  console.log("\n--- 影响事件榜单 /impact ---");
+  const shutdownData = JSON.parse(await readFile("research/2026-11-04-confirmed-shutdowns/companies.json", "utf8"));
+  const shutdownHome = await get("/");
+  eq("停运首页200", shutdownHome.status, 200);
+  eq("停运首页仅8家", attrs(shutdownHome.html, "shutdown-id").length, shutdownData.companies.length);
+  check("停运首页不混入影响事件", !shutdownHome.html.includes('data-record-id='));
+  check("首页明确因果未确立", shutdownHome.html.includes("因果关系未确立"));
+  for (const company of shutdownData.companies) {
+    const detail = await get(`/shutdown/${company.id}`);
+    eq(`停运详情 ${company.id}`, detail.status, 200);
+    for (const source of company.sources) {
+      check(`${company.id} 来源 ${source.id}`, unescapeHtml(detail.html).includes(source.url));
+      for (const quote of source.quotes) check(`${company.id} 引述 ${source.id}`, unescapeHtml(detail.html).includes(quote));
+    }
+  }
+  eq("未知停运档案404", (await get("/shutdown/does-not-exist")).status, 404);
+  const home = await get("/impact");
+  eq("GET /impact is 200", home.status, 200);
+  eq("影响事件页展示语义表格", (home.html.match(/<table\b/g) ?? []).length, 1);
   eq("事件表有六个列标题", (home.html.match(/scope="col"/g) ?? []).length, 6);
   check("表格滚动区域有可访问名称并可键盘聚焦", /class="archive-table-scroll"[^>]*role="region"[^>]*aria-label="[^"]+"[^>]*tabindex="0"/.test(home.html));
-  check("首页保留来源与反证入口", home.html.includes("#sources-") && home.html.includes("有反方证据"));
+  check("影响事件页保留来源与反证入口", home.html.includes("#sources-") && home.html.includes("有反方证据"));
   check("不将自动发布描述为人工核验", !home.html.includes("公开报道的人工标注") && !home.html.includes("人工评出置信度"));
   eq("已发布记录总数", num(home.html, "result-total"), live.length);
   eq("第 1 页事件行数", attrs(home.html, "record-id").length, PAGE_SIZE);
@@ -332,7 +349,7 @@ try {
   const seen = new Set();
   const pageCount = Math.ceil(live.length / PAGE_SIZE);
   for (let page = 1; page <= pageCount; page++) {
-    const { html } = await get(`/?page=${page}`);
+    const { html } = await get(`/impact?page=${page}`);
     const ids = attrs(html, "record-id");
     const expected = Math.min(PAGE_SIZE, live.length - (page - 1) * PAGE_SIZE);
     eq(`第 ${page} 页事件行数`, ids.length, expected);
@@ -340,7 +357,7 @@ try {
   }
   eq("三页合计去重后条数", seen.size, live.length);
 
-  const clamped = await get("/?page=99");
+  const clamped = await get("/impact?page=99");
   eq("page=99 收敛到最后一页", num(clamped.html, "result-page"), pageCount);
 
   // -------------------------------------------------------------------------
@@ -401,7 +418,7 @@ try {
   ];
 
   for (const [label, query, filters] of combos) {
-    const { status, html } = await get(`/${query}`);
+    const { status, html } = await get(`/impact${query}`);
     const expected = matches(filters);
     const actual = num(html, "result-total");
     const cards = attrs(html, "record-id").length;
@@ -412,7 +429,7 @@ try {
     );
   }
 
-  const bogus = await get("/?industry=bogus&confidence=nope&year=abcd&country=qq&sort=hack&page=-1");
+  const bogus = await get("/impact?industry=bogus&confidence=nope&year=abcd&country=qq&sort=hack&page=-1");
   check(
     "无法识别的筛选参数被忽略而不是报错",
     bogus.status === 200 && num(bogus.html, "result-total") === live.length,
@@ -428,22 +445,22 @@ try {
 
   eq(
     "sort=date_desc 首条是最新事件",
-    await firstDate("/?sort=date_desc"),
+    await firstDate("/impact?sort=date_desc"),
     [...live].sort((a, b) => b.eventDate.localeCompare(a.eventDate))[0].eventDate,
   );
   eq(
     "sort=date_asc 首条是最早事件",
-    await firstDate("/?sort=date_asc"),
+    await firstDate("/impact?sort=date_asc"),
     [...live].sort((a, b) => a.eventDate.localeCompare(b.eventDate))[0].eventDate,
   );
   eq(
     "sort=name_asc 首条是公司名最小者",
-    await firstSlug("/?sort=name_asc"),
+    await firstSlug("/impact?sort=name_asc"),
     [...live].sort((a, b) => a.name.toLowerCase().localeCompare(b.name.toLowerCase()))[0].slug,
   );
   eq(
     "sort=name_desc 首条是公司名最大者",
-    await firstSlug("/?sort=name_desc"),
+    await firstSlug("/impact?sort=name_desc"),
     [...live].sort((a, b) => b.name.toLowerCase().localeCompare(a.name.toLowerCase()))[0].slug,
   );
 
@@ -453,7 +470,7 @@ try {
     .sort((a, b) => b[1] - a[1])
     .find(([, value]) => value > PAGE_SIZE)?.[0];
   if (bigCountry) {
-    const paged = await get(`/?country=${bigCountry}&sort=name_asc`);
+    const paged = await get(`/impact?country=${bigCountry}&sort=name_asc`);
     check(
       "分页链接保留筛选与排序条件",
       paged.html.includes(`country=${bigCountry}&amp;sort=name_asc&amp;page=2`),
@@ -468,7 +485,7 @@ try {
   // -------------------------------------------------------------------------
   console.log("\n--- 可见性（published 之外一律不可见）---");
   const everyPage = await Promise.all(
-    Array.from({ length: pageCount }, (_, i) => get(`/?page=${i + 1}`)),
+    Array.from({ length: pageCount }, (_, i) => get(`/impact?page=${i + 1}`)),
   );
   const slugsOnSite = new Set(everyPage.flatMap(({ html }) => attrs(html, "company-slug")));
   check(

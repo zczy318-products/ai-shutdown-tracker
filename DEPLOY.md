@@ -18,6 +18,10 @@ Daily retries require production `CRON_SECRET` and the ingestion migration.
 Neither successful deployment nor daily execution has been verified for this
 change. New-company discovery is not configured. See [ingestion operations](docs/INGESTION.md)
 and [local acceptance evidence](docs/acceptance/2026-11-04/README.md).
+The default homepage and `/shutdown/[slug]` now read the repository shutdown
+archive without database queries. `/impact`, `/stats`, authentication and other
+existing database features still need the configured runtime database.
+
 Paid services remain unauthorized; the daily schedule does not authorize paid
 capacity or upgrades.
 

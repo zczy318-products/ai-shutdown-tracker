@@ -29,9 +29,9 @@ export default async function PublicLayout({ children }: { children: React.React
       <div className="public-container public-subscribe" id="public-subscribe"><SubscribeForm /></div>
       <footer className="public-footer">
         <div className="public-container">
-          <div className="public-footer-heading"><Link href="/" className="public-brand"><FileText aria-hidden="true" />Rest In Prompts</Link><Link href="/stats">查看统计仪表盘 →</Link></div>
-          <p>本站数据来自公开报道的收集与整理，记录可能由自动化流程生成，并非每条均经人工核验。每条记录附可核查的原文链接、逐字引述与归因置信度；页面只转述来源说过的话，不构成对任何公司的结论，也不做模型推断的因果归因。</p>
-          <p>置信度衡量的是证据强度，不是对公司的评价；标为「已撤回 / 回退」的记录表示事件后来出现更正，请以来源原文为准。</p>
+          <div className="public-footer-heading"><Link href="/" className="public-brand"><FileText aria-hidden="true" />Rest In Prompts</Link><Link href="/stats">查看影响事件统计 →</Link></div>
+          <p>首页收录有公司整体停运证据的历史案例，并附公开来源与引述。公司关闭、法律注销和由 AI 导致关闭是不同事实；部分资产或产品可能在其他公司继续运营。</p>
+          <p>影响事件与其统计单独呈现，包含裁员、转型等，不计入停运公司名单。资料由自动化工具辅助整理，不代表逐条人工核验；请以原文及后续公告为准。</p>
         </div>
       </footer>
     </div>

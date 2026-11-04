@@ -241,3 +241,31 @@
 @media (prefers-reduced-motion: reduce) {
   .public-site *, .public-site *::before, .public-site *::after { transition: none !important; scroll-behavior: auto !important; }
 }
+
+.shutdown-filters { padding-bottom: 16px; }
+.shutdown-table .col-date { width: 190px; }
+.shutdown-date { display: block; max-width: 180px; line-height: 1.7; }
+.shutdown-muted { color: var(--muted-foreground); font-size: 12px; line-height: 1.8; }
+.shutdown-status { display: inline-flex; border: 1px solid var(--archive-accent-border); background: var(--archive-accent); color: var(--archive-accent-text); border-radius: 5px; padding: 3px 7px; font-size: 12px; white-space: nowrap; }
+.archive-metric .shutdown-check-date { font-size: 18px; white-space: nowrap; }
+.shutdown-detail { max-width: 980px; margin-inline: auto; }
+.shutdown-detail nav a { display: inline-flex; align-items: center; min-height: 36px; font-size: 13px; color: var(--primary); }
+.shutdown-detail header { margin-block: 24px 30px; }
+.shutdown-detail h1 { font-size: clamp(26px, 4vw, 38px); font-weight: 650; line-height: 1.35; margin-block: 8px; overflow-wrap: anywhere; }
+.shutdown-detail header > p { margin-block: 10px; }
+.shutdown-detail h2 { font-size: 20px; font-weight: 600; margin-bottom: 12px; }
+.shutdown-detail h3 { font-size: 15px; font-weight: 600; }
+.shutdown-detail section { margin-block: 30px; scroll-margin-top: 140px; }
+.shutdown-detail section > p { margin-bottom: 12px; line-height: 1.9; }
+.shutdown-facts { display: grid; grid-template-columns: 1fr 1fr; border: 1px solid var(--border); border-radius: 8px; background: var(--card); padding: 20px; gap: 24px; }
+.shutdown-facts dt { color: var(--muted-foreground); font-size: 12px; margin-bottom: 6px; }
+.shutdown-facts dd { font-size: 14px; line-height: 1.8; }
+.shutdown-sources { display: grid; gap: 16px; }
+.shutdown-sources li { min-width: 0; padding: 20px; border: 1px solid var(--border); background: var(--card); border-radius: 8px; }
+.shutdown-sources a { display: block; padding-block: 6px; color: var(--primary); overflow-wrap: anywhere; font-size: 12px; }
+.shutdown-sources blockquote { margin-top: 14px; padding-left: 14px; border-left: 2px solid var(--primary); line-height: 1.8; overflow-wrap: anywhere; }
+@media (max-width: 640px) {
+  .shutdown-facts { grid-template-columns: 1fr; gap: 16px; padding: 16px; }
+  .shutdown-sources li { padding: 16px; }
+  .archive-metric .shutdown-check-date { font-size: 15px; }
+}

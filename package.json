@@ -24,7 +24,8 @@
     "import:research": "node --import tsx scripts/import-research.mts",
     "verify:ingestion": "node --import tsx scripts/verify-ingestion.mts",
     "verify:table": "node scripts/verify-table-ui.mjs",
-    "verify:build-gate": "node scripts/verify-build-gate.mjs"
+    "verify:build-gate": "node scripts/verify-build-gate.mjs",
+    "verify:shutdowns": "node --import tsx scripts/verify-shutdown-data.mts"
   },
   "dependencies": {
     "@radix-ui/react-label": "^2.1.17",

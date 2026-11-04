@@ -1,12 +1,16 @@
 # Rest In Prompts
 
-> RIP — 收录被 AI 浪潮冲击而倒闭、裁员或转型的公司，每条记录都附公开来源与归因置信度。
+The default homepage presents eight AI-related companies with evidence of
+whole-company operational cessation. Closure facts and AI causation are separate:
+this batch does not establish that AI competition caused those closures.
 
-追踪 AI 产品与项目的关停记录。每条记录都必须附带可核查的来源（链接 + 原文引用）与归因置信度评级。
-
-当前进度：**T3 数据模型 + 管理后台**。应用骨架、Drizzle 迁移流程、邮箱密码认证（T2）之上，
-已按 ZCZ-2 数据字典落地 `company` / `ai_impact` / `source` 三张表，以及 `/admin` 下的录入、
-审核与发布流程。公开前台（列表、筛选、公司详情、仪表盘）在 T5；种子数据在 T4。
+The curated archive reads `research/2026-11-04-confirmed-shutdowns/companies.json`
+through `src/lib/shutdowns.ts`. Git updates publish this dataset with the app;
+there is no database import or fabricated AI-impact record. The existing
+published impact-event database remains available at `/impact` and `/stats`.
+CSV/API entitlements and the daily ingestion queue still apply to that separate
+impact-event dataset, not the new shutdown archive. Daily new-company discovery
+remains unconfigured. See [shutdown criteria](docs/SHUTDOWN_CRITERIA.md).
 
 ## 技术栈
 
@@ -38,7 +42,10 @@ npm run dev          # http://localhost:3000
 
 | 路由 | 说明 |
 | --- | --- |
-| `/` | 首页。只显示 `record_status = 'published'` 的记录；完整前台在 T5 实现 |
+| `/` | Curated whole-company shutdown table with search and name sorting. |
+| `/shutdown/[slug]` | Shutdown evidence, original quotations, date precision, causes and asset disposition. |
+| `/impact` | Existing published impact events with filters and pagination. |
+| `/stats` | Impact-event statistics; excludes the shutdown archive. |
 | `/pricing` | 定价页。**公开**，匿名可读；说明四种身份的差异 |
 | `/account` | 账户：当前套餐、全量 CSV 导出、API key 管理。需登录 |
 | `/api/export/records` | 全量 CSV（pro）。免费 / 匿名会被引导到定价页，不是 403 |
@@ -59,6 +66,7 @@ npm run dev          # http://localhost:3000
 | `npm run dev` | 启动开发服务器（Turbopack） |
 | `npm run build` | 生产构建（构建时会跑类型检查） |
 | `npm start` | 运行生产构建 |
+| `npm run verify:shutdowns` | Validate archive presentation and evidence fidelity. |
 | `npm run typecheck` | `tsc --noEmit` |
 | `npm run db:generate` | 改完 `src/db/schema.ts` 后生成迁移 SQL 到 `drizzle/` |
 | `npm run db:migrate` | 把 `drizzle/` 里的迁移应用到当前数据库 |

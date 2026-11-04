@@ -146,7 +146,7 @@ export default async function AccountPage({ searchParams }: { searchParams: Sear
         <CardHeader>
           <CardTitle>全量 CSV 导出</CardTitle>
           <CardDescription>
-            已发布的全部记录，一行一条来源，含来源 URL、媒体、发布日期、原文引述与归因置信度。
+            已发布的全部影响事件，一行一条来源，含来源 URL、媒体、发布日期、原文引述与归因置信度。CSV 与 API 暂不包含首页的停运公司档案。
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-3 text-sm">

@@ -9,9 +9,9 @@ try {
     const page = await browser.newPage({ viewport: { width, height: 960 } });
     await page.goto(base, { waitUntil: "networkidle" });
     assert.equal(await page.locator("table thead th").count(), 6);
-    assert.ok(await page.locator("tr[data-record-id]").count() > 0, "seeded local database required");
+    assert.ok(await page.locator("tr[data-shutdown-id]").count() > 0, "shutdown dataset required");
     assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), "no page-level horizontal overflow");
-    const region = page.getByRole("region", { name: "公司影响事件表，可横向滚动" });
+    const region = page.getByRole("region", { name: "已停止运营公司表，可横向滚动" });
     if (width === 390) {
       await region.focus();
       await page.keyboard.press("ArrowRight");
@@ -22,7 +22,7 @@ try {
       const box = await source.boundingBox();
       assert.ok(box && box.x >= 0 && box.x + box.width <= width, "source link is reachable after scrolling");
       await source.click();
-      await page.waitForURL(/\/company\/.*#sources-/);
+      await page.waitForURL(/\/shutdown\/.*#sources/);
       const anchor = new URL(page.url()).hash;
       assert.equal(await page.locator(anchor).count(), 1, "source anchor resolves");
       await page.goto(base, { waitUntil: "networkidle" });
@@ -31,20 +31,20 @@ try {
       await mkdir(process.env.CAPTURE_DIR, { recursive: true });
       await page.screenshot({ path: `${process.env.CAPTURE_DIR}/table-${width}.png`, fullPage: true });
     }
-    await page.getByLabel("搜索公司", { exact: true }).fill("Chegg");
-    await page.getByLabel("排序", { exact: true }).selectOption("date_asc");
+    await page.getByLabel("搜索公司", { exact: true }).fill("Kite");
+    await page.getByLabel("排序", { exact: true }).selectOption("name_asc");
     await page.getByRole("button", { name: "应用筛选", exact: true }).click();
-    await page.waitForURL((url) => url.searchParams.get("q") === "Chegg");
-    assert.equal(new URL(page.url()).searchParams.get("sort"), "date_asc");
+    await page.waitForURL((url) => url.searchParams.get("q") === "Kite");
+    assert.equal(new URL(page.url()).searchParams.get("sort"), "name_asc");
     await page.reload({ waitUntil: "networkidle" });
-    assert.equal(await page.getByLabel("搜索公司", { exact: true }).inputValue(), "Chegg");
-    assert.equal(await page.getByLabel("排序", { exact: true }).inputValue(), "date_asc");
-    const slugs = await page.locator("tr[data-record-id]").evaluateAll((rows) => rows.map((row) => row.dataset.companySlug));
-    assert.ok(slugs.length > 0 && slugs.every((slug) => slug === "chegg"));
+    assert.equal(await page.getByLabel("搜索公司", { exact: true }).inputValue(), "Kite");
+    assert.equal(await page.getByLabel("排序", { exact: true }).inputValue(), "name_asc");
+    const slugs = await page.locator("tr[data-shutdown-id]").evaluateAll((rows) => rows.map((row) => row.dataset.shutdownId));
+    assert.ok(slugs.length > 0 && slugs.every((slug) => slug === "kite"));
     await page.getByLabel("搜索公司", { exact: true }).fill("no-such-company-ui-check");
     await page.getByRole("button", { name: "应用筛选", exact: true }).click();
     await page.waitForURL((url) => url.searchParams.get("q") === "no-such-company-ui-check");
-    assert.equal(await page.locator("tr[data-record-id]").count(), 0);
+    assert.equal(await page.locator("tr[data-shutdown-id]").count(), 0);
     assert.ok(await page.getByText("没有符合这些筛选条件的记录。", { exact: true }).isVisible());
     console.log(`PASS table UI ${width}px: layout, source access, URL filters, sort, refresh, empty state`);
     await page.close();

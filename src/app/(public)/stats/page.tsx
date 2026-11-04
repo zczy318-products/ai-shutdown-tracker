@@ -60,9 +60,9 @@ export default async function StatsPage({
   return (
     <div className="space-y-8">
       <header className="max-w-3xl space-y-3">
-        <h1 className="text-3xl font-semibold tracking-tight">统计仪表盘</h1>
+        <h1 className="text-3xl font-semibold tracking-tight">影响事件统计</h1>
         <p className="text-muted-foreground text-sm leading-relaxed">
-          下面所有数字都<strong className="text-foreground font-medium">只统计已发布记录</strong>
+          本页统计裁员、转型等影响事件，不代表倒闭公司数量。下面所有数字都<strong className="text-foreground font-medium">只统计已发布记录</strong>
           ，按<strong className="text-foreground font-medium">事件</strong>
           计数（同一家公司的两次事件算两条）。数据来自公开报道的收集与整理，
           <strong className="text-foreground font-medium">不构成对任何公司的结论</strong>。
@@ -72,7 +72,7 @@ export default async function StatsPage({
       {stats.records === 0 ? (
         <div className="text-muted-foreground rounded-xl border border-dashed p-12 text-center text-sm">
           <p>还没有已发布的记录，暂无可统计数据。</p>
-          <Link href="/" className="mt-2 inline-flex items-center py-1.5 underline">
+          <Link href="/impact" className="mt-2 inline-flex items-center py-1.5 underline">
             返回记录榜单
           </Link>
         </div>
@@ -98,7 +98,7 @@ export default async function StatsPage({
             <ul className="list-disc space-y-1 pl-5">
               <li>
                 只统计 <code className="font-mono">record_status = published</code> 的记录；草稿、
-                待审核、已拒收、已下架都不计入，所以这里的条数与榜单页一致。
+                待审核、已拒收、已下架都不计入，所以这里的条数与影响事件页一致。
               </li>
               <li>年度趋势按事件日期（<code className="font-mono">event_date</code>）的年份归档；中间没有记录的年份保留为空柱，不做压缩。</li>
               <li>

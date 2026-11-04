@@ -5,7 +5,7 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "Rest In Prompts",
   description:
-    "收录被 AI 浪潮冲击而倒闭、裁员或转型的公司，每条记录都附公开来源与归因置信度。",
+    "收录有整体停止运营证据的 AI 相关公司，分别呈现关闭事实、公开来源与 AI 因果关系。",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

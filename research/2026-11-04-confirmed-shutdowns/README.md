@@ -42,9 +42,12 @@ retained in JSON rather than counted among the eight.
 
 This is a historical starter batch, not an exhaustive or recent-only census.
 Ghost was already a research candidate; the eight are not eight newly discovered
-unique companies across all prior work. No database or public leaderboard was
-changed. The existing daily bootstrap does not consume this batch. Publication
-requires a correctly scoped record contract and fresh importer verification.
+unique companies across all prior work. The application now presents this evidence snapshot at `/` and `/shutdown/[slug]`
+following the user's explicit integration request. The JSON retains its research
+snapshot flags; it is not a machine-ingested `RecordInput`. No database records
+were written. The existing daily bootstrap, impact-event CSV/API, and admin
+editor do not consume this batch. Future machine ingestion requires a correctly
+scoped record contract and fresh importer verification.
 
 Sources were read on 2026-11-04 using Firecrawl deep research. Reported tool usage:
 87 credits across root and researcher; monetary cost was not returned. No new

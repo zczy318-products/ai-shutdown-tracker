@@ -131,7 +131,7 @@ export function publicListingHref(
   overrides: Partial<PublicFilters> = {},
 ): string {
   const query = publicFiltersToQuery(filters, overrides);
-  return query ? `/?${query}` : "/";
+  return query ? `/impact?${query}` : "/impact";
 }
 
 // ---------------------------------------------------------------------------
