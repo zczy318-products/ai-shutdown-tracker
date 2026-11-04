@@ -64,7 +64,7 @@ export default async function StatsPage({
         <p className="text-muted-foreground text-sm leading-relaxed">
           下面所有数字都<strong className="text-foreground font-medium">只统计已发布记录</strong>
           ，按<strong className="text-foreground font-medium">事件</strong>
-          计数（同一家公司的两次事件算两条）。数据来自公开报道的人工标注，
+          计数（同一家公司的两次事件算两条）。数据来自公开报道的收集与整理，
           <strong className="text-foreground font-medium">不构成对任何公司的结论</strong>。
         </p>
       </header>
@@ -110,8 +110,8 @@ export default async function StatsPage({
                 单个国家的条数见榜单页的国家筛选。
               </li>
               <li>
-                归因置信度是按 ZCZ-2 归因标准<strong className="font-medium">人工评级</strong>
-                的证据强度，不是模型推断，也不是对公司的评价。
+                归因置信度呈现记录所列的<strong className="font-medium">归因评估</strong>
+                与证据强度，不构成独立因果认定，也不是对公司的评价。自动化整理不等同于人工核验。
               </li>
             </ul>
           </section>

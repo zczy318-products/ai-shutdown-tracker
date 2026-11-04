@@ -6,6 +6,7 @@ import {
   date,
   index,
   integer,
+  jsonb,
   numeric,
   pgEnum,
   pgTable,
@@ -525,3 +526,43 @@ export type NewSource = typeof source.$inferInsert;
 
 export type Subscriber = typeof subscriber.$inferSelect;
 export type NewSubscriber = typeof subscriber.$inferInsert;
+
+// Machine ingestion is separate from editorial review and public records.
+export const ingestionCandidate = pgTable("ingestion_candidate", {
+  id: text("id").primaryKey(),
+  payload: jsonb("payload").$type<Record<string, unknown>>().notNull(),
+  status: text("status").notNull().default("pending"),
+  lastError: text("last_error"),
+  lastAttemptAt: timestamp("last_attempt_at", { withTimezone: true }),
+  nextAttemptAt: timestamp("next_attempt_at", { withTimezone: true }),
+  ...timestamps,
+}, (t) => [
+  index("ingestion_candidate_retry_idx").on(t.status, t.nextAttemptAt),
+  check("ingestion_candidate_status_check", sql`${t.status} in ('pending', 'retry', 'published')`),
+]);
+
+export const ingestionAttempt = pgTable("ingestion_attempt", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  candidateId: text("candidate_id").notNull().references(() => ingestionCandidate.id),
+  batchId: text("batch_id").notNull(),
+  inputHash: text("input_hash").notNull(),
+  decision: text("decision").notNull(),
+  reasons: jsonb("reasons").$type<string[]>().notNull(),
+  evidence: jsonb("evidence").$type<Record<string, unknown>>().notNull(),
+  impactId: uuid("impact_id").references(() => aiImpact.id, { onDelete: "set null" }),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+}, (t) => [
+  index("ingestion_attempt_candidate_idx").on(t.candidateId, t.createdAt),
+  uniqueIndex("ingestion_attempt_success_unique").on(t.candidateId, t.inputHash)
+    .where(sql`${t.decision} = 'published'`),
+  check("ingestion_attempt_decision_check", sql`${t.decision} in ('deferred', 'published')`),
+]);
+
+export const ingestionRun = pgTable("ingestion_run", {
+  day: text("day").primaryKey(),
+  owner: text("owner").notNull(),
+  status: text("status").notNull(),
+  leaseUntil: timestamp("lease_until", { withTimezone: true }).notNull(),
+  counts: jsonb("counts").$type<{ processed: number; published: number; deferred: number; unchanged: number }>().notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+}, (t) => [check("ingestion_run_status_check", sql`${t.status} in ('running', 'completed', 'retry')`)]);

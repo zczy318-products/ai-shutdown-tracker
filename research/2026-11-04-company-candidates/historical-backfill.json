@@ -1,0 +1,474 @@
+{
+  "schema_version": 1,
+  "batch_id": "historical-backfill-2026-11-04-v1",
+  "research_date": "2026-11-04",
+  "scope": "Bounded local backfill; machine assessment is not human verification. Importer must fetch source and apply current gates.",
+  "candidates": [
+    {
+      "id": "agora:2025-12-30",
+      "research_candidate_id": "agora",
+      "deferred_reason": "Full ingestion fields or attribution review not completed in this bounded backfill; retain research-only status.",
+      "research_status": "AI_causality_unresolved"
+    },
+    {
+      "id": "allianz:2025-11-26",
+      "research_candidate_id": "allianz",
+      "deferred_reason": "Full ingestion fields or attribution review not completed in this bounded backfill; retain research-only status.",
+      "research_status": "source_backed_research"
+    },
+    {
+      "id": "atlassian:2026-03-11",
+      "research_candidate_id": "atlassian",
+      "deferred_reason": "Full ingestion fields or attribution review not completed in this bounded backfill; retain research-only status.",
+      "research_status": "source_backed_research"
+    },
+    {
+      "id": "autodesk:2026-01-22",
+      "research_candidate_id": "autodesk",
+      "deferred_reason": "Full ingestion fields or attribution review not completed in this bounded backfill; retain research-only status.",
+      "research_status": "source_backed_research"
+    },
+    {
+      "id": "barclays:2026-10-22",
+      "research_candidate_id": "barclays",
+      "deferred_reason": "Full ingestion fields or attribution review not completed in this bounded backfill; retain research-only status.",
+      "research_status": "source_backed_research"
+    },
+    {
+      "id": "british-american-tobacco:2026-06-29",
+      "research_candidate_id": "british-american-tobacco",
+      "deferred_reason": "Full ingestion fields or attribution review not completed in this bounded backfill; retain research-only status.",
+      "research_status": "source_backed_research"
+    },
+    {
+      "id": "cisco:2026-05-13",
+      "research_candidate_id": "cisco",
+      "deferred_reason": "Full ingestion fields or attribution review not completed in this bounded backfill; retain research-only status.",
+      "research_status": "source_backed_research"
+    },
+    {
+      "id": "cloudflare:2026-05-07",
+      "research_candidate_id": "cloudflare",
+      "deferred_reason": "Full ingestion fields or attribution review not completed in this bounded backfill; retain research-only status.",
+      "research_status": "source_backed_research"
+    },
+    {
+      "id": "dnb:2026-10-06",
+      "research_candidate_id": "dnb",
+      "record": {
+        "company": {
+          "slug": "dnb",
+          "name": "DNB Bank ASA",
+          "nameZh": null,
+          "aliases": [],
+          "countryCode": "NO",
+          "industry": "finance_insurance",
+          "companySize": "unknown",
+          "foundedYear": null,
+          "websiteUrl": null,
+          "description": null,
+          "logoUrl": null
+        },
+        "impact": {
+          "impactType": "ai_cost_cutting_layoff",
+          "attributionConfidence": "medium",
+          "outcome": "downsizing_announced",
+          "eventDate": "2026-10-06",
+          "eventDatePrecision": "day",
+          "summary": "On October 6, 2026, DNB announced an approximately 400-FTE reduction in Technology & Services, planned for Q4 2026. The bank links the restructuring to agentic AI taking over manual tasks, process simplification and a changed skills mix. This records the announced plan, not independently verified completed dismissals.",
+          "summaryEn": "On October 6, 2026, DNB announced an approximately 400-FTE reduction in Technology & Services, planned for Q4 2026. The bank links the restructuring to agentic AI taking over manual tasks, process simplification and a changed skills mix. This records the announced plan, not independently verified completed dismissals.",
+          "employeesAffected": 400,
+          "employeesAffectedPct": null,
+          "revenueImpactNote": null,
+          "isPrimary": true,
+          "counterEvidence": "About 400 full-time equivalents in Technology & Services, targeted Q4 2026. Also process simplification and skills mix changes. Norwegian bank, not Dutch central bank. Single company-origin account; independently demonstrated causal allocation to AI and completed reductions are not established.",
+          "reviewNote": "Machine assessment only. Event date denotes plan commitment or announcement, never verified completion."
+        },
+        "sources": [
+          {
+            "url": "https://ir.dnb.no/press-and-reports/press-releases/dnb-making-organisational-changes-technology-services-2485833",
+            "mediaName": "DNB",
+            "sourceType": "primary_company",
+            "publishedAt": "2026-10-06",
+            "title": "DNB is making organisational changes in Technology & Services",
+            "author": null,
+            "quote": "This technology replaces tasks that were previously handled manually",
+            "quoteLang": "en",
+            "quoteTranslationZh": null,
+            "archiveUrl": null,
+            "linkHealth": "ok",
+            "manuallyVerified": false
+          }
+        ],
+        "status": "draft"
+      },
+      "assessment": {
+        "method": "machine",
+        "model": "GPT-6 (Codex research agent)",
+        "policyVersion": "historical-backfill-v1",
+        "rationale": "The company-origin document explicitly connects a quantified workforce plan with AI-related operational or development changes. Medium attribution preserves the single-origin evidence limit and multiple stated drivers; no human review is claimed.",
+        "evidenceUrls": [
+          "https://ir.dnb.no/press-and-reports/press-releases/dnb-making-organisational-changes-technology-services-2485833"
+        ],
+        "independenceGroups": {
+          "https://ir.dnb.no/press-and-reports/press-releases/dnb-making-organisational-changes-technology-services-2485833": "dnb-company-origin"
+        }
+      },
+      "field_evidence": {
+        "countryCode": {
+          "url": "https://ir.dnb.no/about-dnb/dnb-brief",
+          "notes": "Official DNB in brief identifies a Norwegian financial services group; the event release footer identifies DNB Bank ASA and Oslo."
+        },
+        "eventDate": {
+          "url": "https://ir.dnb.no/press-and-reports/press-releases/dnb-making-organisational-changes-technology-services-2485833",
+          "meaning": "announcement date"
+        },
+        "industry": {
+          "notes": "Official DNB in brief identifies a Norwegian financial services group; the event release footer identifies DNB Bank ASA and Oslo."
+        },
+        "source_publication_date": {
+          "url": "https://ir.dnb.no/press-and-reports/press-releases/dnb-making-organisational-changes-technology-services-2485833",
+          "value": "2026-10-06"
+        }
+      },
+      "retrieval_evidence": "Not fabricated; importer must generate it by live retrieval."
+    },
+    {
+      "id": "danske-bank:2026-02-26",
+      "research_candidate_id": "danske-bank",
+      "deferred_reason": "Full ingestion fields or attribution review not completed in this bounded backfill; retain research-only status.",
+      "research_status": "AI_causality_unresolved"
+    },
+    {
+      "id": "dow:2026-01-29",
+      "research_candidate_id": "dow",
+      "deferred_reason": "Full ingestion fields or attribution review not completed in this bounded backfill; retain research-only status.",
+      "research_status": "source_backed_research"
+    },
+    {
+      "id": "fico:2026-10-01",
+      "research_candidate_id": "fico",
+      "record": {
+        "company": {
+          "slug": "fico",
+          "name": "Fair Isaac Corporation",
+          "nameZh": null,
+          "aliases": [
+            "Fair Isaac",
+            "Fair Isaac Corporation"
+          ],
+          "countryCode": "US",
+          "industry": "finance_insurance",
+          "companySize": "unknown",
+          "foundedYear": null,
+          "websiteUrl": null,
+          "description": null,
+          "logoUrl": null
+        },
+        "impact": {
+          "impactType": "ai_cost_cutting_layoff",
+          "attributionConfidence": "medium",
+          "outcome": "downsizing_announced",
+          "eventDate": "2026-10-01",
+          "eventDatePrecision": "day",
+          "summary": "Fair Isaac committed on October 1, 2026 to eliminate approximately 15% of positions, with notifications beginning the week of October 5. Its October 6 filing cites fewer organizational layers, process and tool optimization, and AI-driven product development. Completion was expected by fiscal Q3 2027; the filing gives no absolute job count.",
+          "summaryEn": "Fair Isaac committed on October 1, 2026 to eliminate approximately 15% of positions, with notifications beginning the week of October 5. Its October 6 filing cites fewer organizational layers, process and tool optimization, and AI-driven product development. Completion was expected by fiscal Q3 2027; the filing gives no absolute job count.",
+          "employeesAffected": null,
+          "employeesAffectedPct": 15,
+          "revenueImpactNote": null,
+          "isPrimary": true,
+          "counterEvidence": "Committed October 1, filed October 6; notifications week of October 5. Filing gives 15%, not 570 people. Reuters estimated 570 from older headcount; do not store that as a company-confirmed count. Single company-origin account; independently demonstrated causal allocation to AI and completed reductions are not established.",
+          "reviewNote": "Machine assessment only. Event date denotes plan commitment or announcement, never verified completion."
+        },
+        "sources": [
+          {
+            "url": "https://investors.fico.com/node/30041/html",
+            "mediaName": "FICO Investor Relations",
+            "sourceType": "primary_company",
+            "publishedAt": "2026-10-06",
+            "title": "Fair Isaac Corporation Form 8-K, filed October 6, 2026",
+            "author": null,
+            "quote": "integrating AI-driven product development",
+            "quoteLang": "en",
+            "quoteTranslationZh": null,
+            "archiveUrl": null,
+            "linkHealth": "ok",
+            "manuallyVerified": false
+          }
+        ],
+        "status": "draft"
+      },
+      "assessment": {
+        "method": "machine",
+        "model": "GPT-6 (Codex research agent)",
+        "policyVersion": "historical-backfill-v1",
+        "rationale": "The company-origin document explicitly connects a quantified workforce plan with AI-related operational or development changes. Medium attribution preserves the single-origin evidence limit and multiple stated drivers; no human review is claimed.",
+        "evidenceUrls": [
+          "https://investors.fico.com/node/30041/html"
+        ],
+        "independenceGroups": {
+          "https://investors.fico.com/node/30041/html": "fico-company-origin"
+        }
+      },
+      "field_evidence": {
+        "countryCode": {
+          "url": "https://investors.fico.com/node/30041/html",
+          "notes": "Original 8-K identifies Delaware incorporation and Bozeman, Montana executive offices. Credit-scoring company is classified in finance/insurance; no unsupported exact employment estimate is used."
+        },
+        "eventDate": {
+          "url": "https://investors.fico.com/node/30041/html",
+          "meaning": "plan commitment date"
+        },
+        "industry": {
+          "notes": "Original 8-K identifies Delaware incorporation and Bozeman, Montana executive offices. Credit-scoring company is classified in finance/insurance; no unsupported exact employment estimate is used."
+        },
+        "source_publication_date": {
+          "url": "https://investors.fico.com/node/30041/html",
+          "value": "2026-10-06"
+        }
+      },
+      "retrieval_evidence": "Not fabricated; importer must generate it by live retrieval."
+    },
+    {
+      "id": "freshworks:2026-05-05",
+      "research_candidate_id": "freshworks",
+      "record": {
+        "company": {
+          "slug": "freshworks",
+          "name": "Freshworks Inc.",
+          "nameZh": null,
+          "aliases": [],
+          "countryCode": "US",
+          "industry": "software_saas",
+          "companySize": "unknown",
+          "foundedYear": null,
+          "websiteUrl": null,
+          "description": null,
+          "logoUrl": null
+        },
+        "impact": {
+          "impactType": "ai_cost_cutting_layoff",
+          "attributionConfidence": "medium",
+          "outcome": "downsizing_announced",
+          "eventDate": "2026-05-05",
+          "eventDatePrecision": "day",
+          "summary": "On May 5, 2026, Freshworks announced a restructuring plan expected to affect approximately 500 employees, or 11% of its global workforce. Its 8-K links the plan to organizational and product-development streamlining and increased use of AI and automation. Substantial completion was expected by June 30; completion is not independently verified here.",
+          "summaryEn": "On May 5, 2026, Freshworks announced a restructuring plan expected to affect approximately 500 employees, or 11% of its global workforce. Its 8-K links the plan to organizational and product-development streamlining and increased use of AI and automation. Substantial completion was expected by June 30; completion is not independently verified here.",
+          "employeesAffected": 500,
+          "employeesAffectedPct": 11,
+          "revenueImpactNote": null,
+          "isPrimary": true,
+          "counterEvidence": "Approximately 11% globally, expected substantial completion June 30; organizational and product development streamlining also stated. Single company-origin account; independently demonstrated causal allocation to AI and completed reductions are not established.",
+          "reviewNote": "Machine assessment only. Event date denotes plan commitment or announcement, never verified completion."
+        },
+        "sources": [
+          {
+            "url": "https://www.sec.gov/Archives/edgar/data/1544522/000154452226000088/frsh-20260505.htm",
+            "mediaName": "Freshworks via SEC EDGAR",
+            "sourceType": "primary_company",
+            "publishedAt": "2026-05-05",
+            "title": "Freshworks Inc. Form 8-K, May 5, 2026",
+            "author": null,
+            "quote": "increase leverage of AI and automation across the business",
+            "quoteLang": "en",
+            "quoteTranslationZh": null,
+            "archiveUrl": null,
+            "linkHealth": "ok",
+            "manuallyVerified": false
+          }
+        ],
+        "status": "draft"
+      },
+      "assessment": {
+        "method": "machine",
+        "model": "GPT-6 (Codex research agent)",
+        "policyVersion": "historical-backfill-v1",
+        "rationale": "The company-origin document explicitly connects a quantified workforce plan with AI-related operational or development changes. Medium attribution preserves the single-origin evidence limit and multiple stated drivers; no human review is claimed.",
+        "evidenceUrls": [
+          "https://www.sec.gov/Archives/edgar/data/1544522/000154452226000088/frsh-20260505.htm"
+        ],
+        "independenceGroups": {
+          "https://www.sec.gov/Archives/edgar/data/1544522/000154452226000088/frsh-20260505.htm": "freshworks-company-origin"
+        }
+      },
+      "field_evidence": {
+        "countryCode": {
+          "url": "https://www.sec.gov/Archives/edgar/data/1544522/000154452226000088/frsh-20260505.htm",
+          "notes": "Original 8-K identifies Delaware incorporation and San Mateo, California executive offices. CEO company message describes Freshworks software products and customer/employee experience business."
+        },
+        "eventDate": {
+          "url": "https://www.sec.gov/Archives/edgar/data/1544522/000154452226000088/frsh-20260505.htm",
+          "meaning": "announcement date"
+        },
+        "industry": {
+          "notes": "Original 8-K identifies Delaware incorporation and San Mateo, California executive offices. CEO company message describes Freshworks software products and customer/employee experience business."
+        },
+        "source_publication_date": {
+          "url": "https://www.sec.gov/Archives/edgar/data/1544522/000154452226000088/frsh-20260505.htm",
+          "value": "2026-05-05"
+        }
+      },
+      "retrieval_evidence": "Not fabricated; importer must generate it by live retrieval."
+    },
+    {
+      "id": "hsbc:date-unresolved",
+      "research_candidate_id": "hsbc",
+      "deferred_reason": "Full ingestion fields or attribution review not completed in this bounded backfill; retain research-only status.",
+      "research_status": "unconfirmed_plan_report"
+    },
+    {
+      "id": "kroger:2026-10-12",
+      "research_candidate_id": "kroger",
+      "deferred_reason": "Full ingestion fields or attribution review not completed in this bounded backfill; retain research-only status.",
+      "research_status": "source_backed_research"
+    },
+    {
+      "id": "mercadolibre:date-unresolved",
+      "research_candidate_id": "mercadolibre",
+      "deferred_reason": "Full ingestion fields or attribution review not completed in this bounded backfill; retain research-only status.",
+      "research_status": "source_backed_research"
+    },
+    {
+      "id": "meta:2026-01-13",
+      "research_candidate_id": "meta",
+      "deferred_reason": "Full ingestion fields or attribution review not completed in this bounded backfill; retain research-only status.",
+      "research_status": "source_backed_research"
+    },
+    {
+      "id": "mizuho:2026-02-27",
+      "research_candidate_id": "mizuho",
+      "deferred_reason": "Full ingestion fields or attribution review not completed in this bounded backfill; retain research-only status.",
+      "research_status": "redeployment_not_layoff"
+    },
+    {
+      "id": "nike:2026-01-26",
+      "research_candidate_id": "nike",
+      "deferred_reason": "Full ingestion fields or attribution review not completed in this bounded backfill; retain research-only status.",
+      "research_status": "AI_causality_unresolved"
+    },
+    {
+      "id": "pinterest:2026-01-26",
+      "research_candidate_id": "pinterest",
+      "deferred_reason": "Full ingestion fields or attribution review not completed in this bounded backfill; retain research-only status.",
+      "research_status": "source_backed_research"
+    },
+    {
+      "id": "proximus:2026-02-27",
+      "research_candidate_id": "proximus",
+      "deferred_reason": "Full ingestion fields or attribution review not completed in this bounded backfill; retain research-only status.",
+      "research_status": "source_backed_research"
+    },
+    {
+      "id": "seb:2026-02-25",
+      "research_candidate_id": "seb",
+      "deferred_reason": "Full ingestion fields or attribution review not completed in this bounded backfill; retain research-only status.",
+      "research_status": "AI_causality_unresolved"
+    },
+    {
+      "id": "snap:2026-04-15",
+      "research_candidate_id": "snap",
+      "record": {
+        "company": {
+          "slug": "snap",
+          "name": "Snap Inc.",
+          "nameZh": null,
+          "aliases": [],
+          "countryCode": "US",
+          "industry": "other",
+          "companySize": "unknown",
+          "foundedYear": null,
+          "websiteUrl": null,
+          "description": null,
+          "logoUrl": null
+        },
+        "impact": {
+          "impactType": "ai_cost_cutting_layoff",
+          "attributionConfidence": "medium",
+          "outcome": "downsizing_announced",
+          "eventDate": "2026-04-15",
+          "eventDatePrecision": "day",
+          "summary": "On April 15, 2026, Snap announced changes affecting approximately 1,000 team members, including 16% of full-time employees, and separately closed over 300 vacancies. Its CEO cited AI-enabled reductions in repetitive work alongside investment prioritization and a path to profitability. The stated cuts are announced changes, not a verified completed total.",
+          "summaryEn": "On April 15, 2026, Snap announced changes affecting approximately 1,000 team members, including 16% of full-time employees, and separately closed over 300 vacancies. Its CEO cited AI-enabled reductions in repetitive work alongside investment prioritization and a path to profitability. The stated cuts are announced changes, not a verified completed total.",
+          "employeesAffected": 1000,
+          "employeesAffectedPct": 16,
+          "revenueImpactNote": null,
+          "isPrimary": true,
+          "counterEvidence": "About 1,000 team members, including 16% full-time staff; separately more than 300 open roles closed. Profitability and prioritization also cited; unfilled openings are not additional layoffs. Single company-origin account; independently demonstrated causal allocation to AI and completed reductions are not established.",
+          "reviewNote": "Machine assessment only. Event date denotes plan commitment or announcement, never verified completion."
+        },
+        "sources": [
+          {
+            "url": "https://newsroom.snap.com/organizational-changes-at-snap",
+            "mediaName": "Snap Newsroom",
+            "sourceType": "primary_company",
+            "publishedAt": "2026-04-15",
+            "title": "Organizational Changes at Snap",
+            "author": null,
+            "quote": "rapid advancements in artificial intelligence enable our teams to reduce repetitive work",
+            "quoteLang": "en",
+            "quoteTranslationZh": null,
+            "archiveUrl": null,
+            "linkHealth": "ok",
+            "manuallyVerified": false
+          }
+        ],
+        "status": "draft"
+      },
+      "assessment": {
+        "method": "machine",
+        "model": "GPT-6 (Codex research agent)",
+        "policyVersion": "historical-backfill-v1",
+        "rationale": "The company-origin document explicitly connects a quantified workforce plan with AI-related operational or development changes. Medium attribution preserves the single-origin evidence limit and multiple stated drivers; no human review is claimed.",
+        "evidenceUrls": [
+          "https://newsroom.snap.com/organizational-changes-at-snap"
+        ],
+        "independenceGroups": {
+          "https://newsroom.snap.com/organizational-changes-at-snap": "snap-company-origin"
+        }
+      },
+      "field_evidence": {
+        "countryCode": {
+          "url": "https://www.sec.gov/Archives/edgar/data/1564408/000119312526155861/d36756d8k.htm",
+          "notes": "Original 8-K gives Delaware incorporation and Santa Monica, California executive offices. Industry other avoids inventing a social-media category absent from the enum."
+        },
+        "eventDate": {
+          "url": "https://newsroom.snap.com/organizational-changes-at-snap",
+          "meaning": "announcement date"
+        },
+        "industry": {
+          "notes": "Original 8-K gives Delaware incorporation and Santa Monica, California executive offices. Industry other avoids inventing a social-media category absent from the enum."
+        },
+        "source_publication_date": {
+          "url": "https://newsroom.snap.com/organizational-changes-at-snap",
+          "value": "2026-04-15"
+        }
+      },
+      "retrieval_evidence": "Not fabricated; importer must generate it by live retrieval."
+    },
+    {
+      "id": "standard-chartered:2026-05-19",
+      "research_candidate_id": "standard-chartered",
+      "deferred_reason": "Full ingestion fields or attribution review not completed in this bounded backfill; retain research-only status.",
+      "research_status": "source_backed_research"
+    },
+    {
+      "id": "telstra:2026-02-11",
+      "research_candidate_id": "telstra",
+      "deferred_reason": "Full ingestion fields or attribution review not completed in this bounded backfill; retain research-only status.",
+      "research_status": "source_backed_research"
+    },
+    {
+      "id": "wisetech:2026-02-25",
+      "research_candidate_id": "wisetech",
+      "deferred_reason": "Full ingestion fields or attribution review not completed in this bounded backfill; retain research-only status.",
+      "research_status": "source_backed_research"
+    }
+  ],
+  "counts": {
+    "candidates": 26,
+    "complete_records": 4,
+    "deferred_without_record": 22,
+    "human_verified": 0,
+    "completed_outcomes_verified": 0
+  }
+}

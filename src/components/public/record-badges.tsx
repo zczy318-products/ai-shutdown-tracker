@@ -61,7 +61,7 @@ export function AttributionBadge({
         "text-muted-foreground inline-flex items-center gap-1.5 rounded-md border px-2 py-0.5 text-xs whitespace-nowrap",
         className,
       )}
-      title="归因置信度：按 ZCZ-2 归因标准人工评级，衡量证据强度，不代表对公司的评价"
+      title="归因置信度衡量记录所列来源的证据强度，不代表人工核验或对公司的评价"
     >
       <span className={cn("size-2 shrink-0 rounded-full", CONFIDENCE_BAR[confidence])} aria-hidden />
       归因置信度：{labelOf(ATTRIBUTION_CONFIDENCE, confidence)}

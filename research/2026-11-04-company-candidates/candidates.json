@@ -1,0 +1,1539 @@
+{
+  "schema_version": 1,
+  "research_date": "2026-11-04",
+  "publication_status": "research_only",
+  "discovery_source": {
+    "url": "https://www.investing.com/news/stock-market-news/factboxcompanies-cutting-jobs-as-investments-shift-toward-ai-4965744",
+    "publisher": "Reuters via Investing.com",
+    "published_at": "2026-10-22",
+    "access_status": "full_text_retrieved",
+    "verified_at": "2026-11-04",
+    "candidate_presence": "All 26 names found; Agora identity is ambiguous and must not be inferred from the stock widget.",
+    "corrections": [
+      "Agora stock widget links to API ticker but underlying 166-role event is Polish Agora S.A.",
+      "SEB stock widget links to Swedish bank ticker but underlying 2,100-role event is French Groupe SEB.",
+      "Mizuho event-specific reporting describes redeployment without dismissals."
+    ]
+  },
+  "seed_baseline": {
+    "companies": 29,
+    "events": 30
+  },
+  "candidates": [
+    {
+      "id": "agora",
+      "name": "Agora",
+      "aliases": [
+        "Agora SA",
+        "Agora S.A."
+      ],
+      "domain": "agora.pl",
+      "discovery_status": "roundup_presence_verified",
+      "status": "AI_causality_unresolved",
+      "seed_match": null,
+      "confirmed": {
+        "event_type": "layoff_plan",
+        "event_date": "2025-12-30",
+        "event_date_precision": "day",
+        "reported_job_count": 166,
+        "count_qualifier": "maximum",
+        "AI_attribution": "AI_not_established",
+        "outcome_completion_verified": false,
+        "evidence_ids": [
+          "agora-source-1"
+        ],
+        "AI_causality_independently_proven": false,
+        "event_date_semantics": "initial_restructuring_announcement_date"
+      },
+      "unknown": [
+        "actual_completed_reductions",
+        "independent_AI_causal_allocation"
+      ],
+      "evidence": [
+        {
+          "id": "agora-source-1",
+          "url": "https://www.agora.pl/zawarto-porozumienie-w-sprawie-zwolnien-grupowych-w-agorze",
+          "source_type": "company",
+          "published_at": null,
+          "access_status": "full_text_retrieved",
+          "verified_at": "2026-11-04",
+          "short_quote": "Zwolnienia mają ostatecznie objąć maksymalnie 166 osób",
+          "quote_language": "pl",
+          "supports": [
+            "event_scope",
+            "attribution_assessment"
+          ],
+          "human_review_status": "not_performed",
+          "publisher": "Agora S.A.",
+          "title": "Zawarto porozumienie w sprawie zwolnień grupowych w Agorze",
+          "quote_verification": "agent_read_source_excerpt_no_archived_text_or_human_check"
+        }
+      ],
+      "notes": [
+        "Company-hosted union/company account confirms agreement on January 19 and layoffs ending February 28; no AI causal claim in this account. Polish media group, not Agora Inc. (API).",
+        "Chronology: initial stock-exchange announcement December 30, 2025; agreement January 19, 2026; planned completion February 28, 2026. The event_date is the first announcement, not the agreement or verified completion."
+      ],
+      "legal_identity": "Agora S.A.",
+      "seed_dedup_status": "no_name_or_alias_match_domain_comparison_unavailable",
+      "publication_approved": false,
+      "scope": "One bounded event per company; not an exhaustive company history."
+    },
+    {
+      "id": "allianz",
+      "name": "Allianz",
+      "aliases": [
+        "Allianz Partners"
+      ],
+      "domain": null,
+      "discovery_status": "roundup_presence_verified",
+      "status": "source_backed_research",
+      "seed_match": null,
+      "confirmed": {
+        "event_type": "layoff_plan",
+        "event_date": "2025-11-26",
+        "event_date_precision": "day",
+        "reported_job_count": 1800,
+        "count_qualifier": "maximum_of_1500_to_1800_range",
+        "AI_attribution": "reported_AI_task_automation",
+        "outcome_completion_verified": false,
+        "evidence_ids": [
+          "allianz-source-1"
+        ],
+        "AI_causality_independently_proven": false,
+        "event_date_semantics": "reported_event_date_not_completed_reduction_date"
+      },
+      "unknown": [
+        "actual_completed_reductions",
+        "independent_AI_causal_allocation",
+        "original_company_document_not_located",
+        "canonical_company_domain_not_independently_verified"
+      ],
+      "evidence": [
+        {
+          "id": "allianz-source-1",
+          "url": "https://restructuringeventsprod.azurewebsites.net/restructuring-events/detail/204064",
+          "source_type": "institutional_secondary",
+          "published_at": null,
+          "access_status": "full_text_retrieved",
+          "verified_at": "2026-11-04",
+          "short_quote": "The job losses will affect call centre roles.",
+          "quote_language": "en",
+          "supports": [
+            "event_scope",
+            "attribution_assessment"
+          ],
+          "human_review_status": "not_performed",
+          "publisher": "Eurofound European Restructuring Monitor",
+          "title": "Allianz Partners | Internal restructuring | Factsheet 204064",
+          "quote_verification": "agent_read_source_excerpt_no_archived_text_or_human_check"
+        }
+      ],
+      "notes": [
+        "Eurofound records 1,500-1,800 proposed global cuts over 12-18 months linked to AI answering simple queries; original company release not located. Parent and subsidiary must remain distinct."
+      ],
+      "legal_identity": "Allianz Partners",
+      "seed_dedup_status": "no_name_or_alias_match_domain_comparison_unavailable",
+      "publication_approved": false,
+      "scope": "One bounded event per company; not an exhaustive company history."
+    },
+    {
+      "id": "atlassian",
+      "name": "Atlassian",
+      "aliases": [],
+      "domain": "atlassian.com",
+      "discovery_status": "roundup_presence_verified",
+      "status": "source_backed_research",
+      "seed_match": null,
+      "confirmed": {
+        "event_type": "layoff_plan",
+        "event_date": "2026-03-11",
+        "event_date_precision": "day",
+        "reported_job_count": 1600,
+        "count_qualifier": "approximately",
+        "AI_attribution": "AI_investment_and_skill_mix",
+        "outcome_completion_verified": false,
+        "evidence_ids": [
+          "atlassian-source-1"
+        ],
+        "AI_causality_independently_proven": false,
+        "event_date_semantics": "reported_event_date_not_completed_reduction_date"
+      },
+      "unknown": [
+        "actual_completed_reductions",
+        "independent_AI_causal_allocation"
+      ],
+      "evidence": [
+        {
+          "id": "atlassian-source-1",
+          "url": "https://www.atlassian.com/blog/announcements/atlassian-team-update-march-2026?trk=article-ssr-frontend-pulse_little-text-block",
+          "source_type": "company",
+          "published_at": "2026-03-11",
+          "access_status": "full_text_retrieved",
+          "verified_at": "2026-11-04",
+          "short_quote": "We are doing this to self-fund further investment in AI and enterprise sales",
+          "quote_language": "en",
+          "supports": [
+            "event_scope",
+            "attribution_assessment"
+          ],
+          "human_review_status": "not_performed",
+          "publisher": "Atlassian",
+          "title": "An important update on our team",
+          "quote_verification": "agent_read_source_excerpt_no_archived_text_or_human_check"
+        }
+      ],
+      "notes": [
+        "Company also targets GAAP profitability and reorganization; explicitly rejects a simple AI-replaces-people framing while saying AI changes needed skills and role numbers."
+      ],
+      "legal_identity": "Atlassian",
+      "seed_dedup_status": "no_name_or_alias_match_domain_comparison_unavailable",
+      "publication_approved": false,
+      "scope": "One bounded event per company; not an exhaustive company history."
+    },
+    {
+      "id": "autodesk",
+      "name": "Autodesk",
+      "aliases": [],
+      "domain": null,
+      "discovery_status": "roundup_presence_verified",
+      "status": "source_backed_research",
+      "seed_match": null,
+      "confirmed": {
+        "event_type": "layoff_plan",
+        "event_date": "2026-01-22",
+        "event_date_precision": "day",
+        "reported_job_count": 1000,
+        "count_qualifier": "approximately",
+        "AI_attribution": "AI_investment_with_explicit_replacement_denial",
+        "outcome_completion_verified": false,
+        "evidence_ids": [
+          "autodesk-source-1"
+        ],
+        "AI_causality_independently_proven": false,
+        "event_date_semantics": "reported_event_date_not_completed_reduction_date"
+      },
+      "unknown": [
+        "actual_completed_reductions",
+        "independent_AI_causal_allocation",
+        "canonical_company_domain_not_independently_verified"
+      ],
+      "evidence": [
+        {
+          "id": "autodesk-source-1",
+          "url": "https://www.sec.gov/Archives/edgar/data/769397/000076939726000006/ceoemlfinal.htm",
+          "source_type": "filing",
+          "published_at": "2026-01-22",
+          "access_status": "full_text_retrieved",
+          "verified_at": "2026-11-04",
+          "short_quote": "The primary driver of today’s action is the completion of our multi-year go-to-market (GTM) transformation.",
+          "quote_language": "en",
+          "supports": [
+            "event_scope",
+            "attribution_assessment"
+          ],
+          "human_review_status": "not_performed",
+          "publisher": "Autodesk via SEC EDGAR",
+          "title": "Organizational update to our employees: Our path forward and workforce changes",
+          "quote_verification": "agent_read_source_excerpt_no_archived_text_or_human_check"
+        }
+      ],
+      "notes": [
+        "CEO says changes are not an effort to replace people with AI; AI/cloud reinvestment is one secondary strategic shift. Most cuts in customer-facing sales."
+      ],
+      "legal_identity": "Autodesk, Inc.",
+      "seed_dedup_status": "no_name_or_alias_match_domain_comparison_unavailable",
+      "publication_approved": false,
+      "scope": "One bounded event per company; not an exhaustive company history."
+    },
+    {
+      "id": "barclays",
+      "name": "Barclays",
+      "aliases": [],
+      "domain": null,
+      "discovery_status": "roundup_presence_verified",
+      "status": "source_backed_research",
+      "seed_match": null,
+      "confirmed": {
+        "event_type": "layoff_plan",
+        "event_date": "2026-10-22",
+        "event_date_precision": "day",
+        "reported_job_count": 5000,
+        "count_qualifier": "approximately",
+        "AI_attribution": "reported_AI_and_cost_efficiency",
+        "outcome_completion_verified": false,
+        "evidence_ids": [
+          "barclays-source-1"
+        ],
+        "AI_causality_independently_proven": false,
+        "event_date_semantics": "reported_event_date_not_completed_reduction_date"
+      },
+      "unknown": [
+        "actual_completed_reductions",
+        "independent_AI_causal_allocation",
+        "original_company_document_not_located",
+        "canonical_company_domain_not_independently_verified"
+      ],
+      "evidence": [
+        {
+          "id": "barclays-source-1",
+          "url": "https://www.investing.com/news/economy-news/barclays-to-slash-5000-jobs-in-aipowered-costcutting-drive-4965189",
+          "source_type": "reporting",
+          "published_at": "2026-10-22",
+          "access_status": "full_text_retrieved",
+          "verified_at": "2026-11-04",
+          "short_quote": "Cross said 1,000 roles have already gone",
+          "quote_language": "en",
+          "supports": [
+            "event_scope",
+            "attribution_assessment"
+          ],
+          "human_review_status": "not_performed",
+          "publisher": "Reuters via Investing.com",
+          "title": "Barclays to slash 5,000 jobs in AI-powered cost-cutting drive",
+          "quote_verification": "agent_read_source_excerpt_no_archived_text_or_human_check"
+        }
+      ],
+      "notes": [
+        "Reuters reports CFO expects remaining cuts by year end, with 60% in support. Wider structural costs and returns strategy; does not establish that every job is replaced by AI."
+      ],
+      "legal_identity": "Barclays",
+      "seed_dedup_status": "no_name_or_alias_match_domain_comparison_unavailable",
+      "publication_approved": false,
+      "scope": "One bounded event per company; not an exhaustive company history."
+    },
+    {
+      "id": "british-american-tobacco",
+      "name": "British American Tobacco",
+      "aliases": [],
+      "domain": null,
+      "discovery_status": "roundup_presence_verified",
+      "status": "source_backed_research",
+      "seed_match": null,
+      "confirmed": {
+        "event_type": "layoff_and_outsourcing_plan",
+        "event_date": "2026-06-29",
+        "event_date_precision": "day",
+        "reported_job_count": 5500,
+        "count_qualifier": "approximately",
+        "AI_attribution": "reported_AI_and_cost_efficiency",
+        "outcome_completion_verified": false,
+        "evidence_ids": [
+          "british-american-tobacco-source-1"
+        ],
+        "AI_causality_independently_proven": false,
+        "event_date_semantics": "reported_event_date_not_completed_reduction_date"
+      },
+      "unknown": [
+        "actual_completed_reductions",
+        "independent_AI_causal_allocation",
+        "original_company_document_not_located",
+        "canonical_company_domain_not_independently_verified"
+      ],
+      "evidence": [
+        {
+          "id": "british-american-tobacco-source-1",
+          "url": "https://www.investing.com/news/stock-market-news/british-american-tobacco-to-cut-5500-jobs-globally-in-restructuring-push-4764357",
+          "source_type": "reporting",
+          "published_at": "2026-06-29",
+          "access_status": "full_text_retrieved",
+          "verified_at": "2026-11-04",
+          "short_quote": "cut around 5,500 jobs and move roughly 3,500 roles to third-party firms",
+          "quote_language": "en",
+          "supports": [
+            "event_scope",
+            "attribution_assessment"
+          ],
+          "human_review_status": "not_performed",
+          "publisher": "Reuters via Investing.com",
+          "title": "British American Tobacco cost-cutting hits 9,000 roles",
+          "quote_verification": "agent_read_source_excerpt_no_archived_text_or_human_check"
+        }
+      ],
+      "notes": [
+        "Keep 3,500 outsourced roles separate from 5,500 cuts; 9,000 affected is not 9,000 layoffs. Tobacco decline, regulation, delayed launches and less labor-intensive alternatives also cited."
+      ],
+      "legal_identity": "British American Tobacco",
+      "seed_dedup_status": "no_name_or_alias_match_domain_comparison_unavailable",
+      "publication_approved": false,
+      "scope": "One bounded event per company; not an exhaustive company history."
+    },
+    {
+      "id": "cisco",
+      "name": "Cisco",
+      "aliases": [],
+      "domain": "cisco.com",
+      "discovery_status": "roundup_presence_verified",
+      "status": "source_backed_research",
+      "seed_match": null,
+      "confirmed": {
+        "event_type": "layoff_plan",
+        "event_date": "2026-05-13",
+        "event_date_precision": "day",
+        "reported_job_count": 4000,
+        "count_qualifier": "fewer_than",
+        "AI_attribution": "AI_investment_reallocation",
+        "outcome_completion_verified": false,
+        "evidence_ids": [
+          "cisco-source-1"
+        ],
+        "AI_causality_independently_proven": false,
+        "event_date_semantics": "reported_event_date_not_completed_reduction_date"
+      },
+      "unknown": [
+        "actual_completed_reductions",
+        "independent_AI_causal_allocation"
+      ],
+      "evidence": [
+        {
+          "id": "cisco-source-1",
+          "url": "https://blogs.cisco.com/news/our-path-forward",
+          "source_type": "company",
+          "published_at": "2026-05-13",
+          "access_status": "full_text_retrieved",
+          "verified_at": "2026-11-04",
+          "short_quote": "reduction of our overall workforce in Q4 by fewer than 4,000 jobs",
+          "quote_language": "en",
+          "supports": [
+            "event_scope",
+            "attribution_assessment"
+          ],
+          "human_review_status": "not_performed",
+          "publisher": "Cisco",
+          "title": "Our Path Forward",
+          "quote_verification": "agent_read_source_excerpt_no_archived_text_or_human_check"
+        }
+      ],
+      "notes": [
+        "Investments include silicon, optics, security and employee AI use; not an assertion of one-for-one automation replacement."
+      ],
+      "legal_identity": "Cisco Systems, Inc.",
+      "seed_dedup_status": "no_name_or_alias_match_domain_comparison_unavailable",
+      "publication_approved": false,
+      "scope": "One bounded event per company; not an exhaustive company history."
+    },
+    {
+      "id": "cloudflare",
+      "name": "Cloudflare",
+      "aliases": [],
+      "domain": "cloudflare.com",
+      "discovery_status": "roundup_presence_verified",
+      "status": "source_backed_research",
+      "seed_match": null,
+      "confirmed": {
+        "event_type": "layoff_announcement",
+        "event_date": "2026-05-07",
+        "event_date_precision": "day",
+        "reported_job_count": 1100,
+        "count_qualifier": "more_than",
+        "AI_attribution": "company_claim_AI_operating_model",
+        "outcome_completion_verified": false,
+        "evidence_ids": [
+          "cloudflare-source-1"
+        ],
+        "AI_causality_independently_proven": false,
+        "event_date_semantics": "reported_event_date_not_completed_reduction_date"
+      },
+      "unknown": [
+        "actual_completed_reductions",
+        "independent_AI_causal_allocation"
+      ],
+      "evidence": [
+        {
+          "id": "cloudflare-source-1",
+          "url": "https://blog.cloudflare.com/building-for-the-future",
+          "source_type": "company",
+          "published_at": "2026-05-07",
+          "access_status": "full_text_retrieved",
+          "verified_at": "2026-11-04",
+          "short_quote": "reduce Cloudflare’s workforce by more than 1,100 employees globally",
+          "quote_language": "en",
+          "supports": [
+            "event_scope",
+            "attribution_assessment"
+          ],
+          "human_review_status": "not_performed",
+          "publisher": "Cloudflare",
+          "title": "Building For The Future",
+          "quote_verification": "agent_read_source_excerpt_no_archived_text_or_human_check"
+        }
+      ],
+      "notes": [
+        "Founders link changes to agentic AI and increased internal usage; say this is not a cost-cutting exercise. This is the company claim, not independent proof of productivity causation."
+      ],
+      "legal_identity": "Cloudflare",
+      "seed_dedup_status": "no_name_or_alias_match_domain_comparison_unavailable",
+      "publication_approved": false,
+      "scope": "One bounded event per company; not an exhaustive company history."
+    },
+    {
+      "id": "dnb",
+      "name": "DNB",
+      "aliases": [],
+      "domain": "dnb.no",
+      "discovery_status": "roundup_presence_verified",
+      "status": "source_backed_research",
+      "seed_match": null,
+      "confirmed": {
+        "event_type": "workforce_reduction_plan",
+        "event_date": "2026-10-06",
+        "event_date_precision": "day",
+        "reported_job_count": 400,
+        "count_qualifier": "approximately_FTE",
+        "AI_attribution": "company_claim_AI_task_automation",
+        "outcome_completion_verified": false,
+        "evidence_ids": [
+          "dnb-source-1"
+        ],
+        "AI_causality_independently_proven": false,
+        "event_date_semantics": "reported_event_date_not_completed_reduction_date"
+      },
+      "unknown": [
+        "actual_completed_reductions",
+        "independent_AI_causal_allocation"
+      ],
+      "evidence": [
+        {
+          "id": "dnb-source-1",
+          "url": "https://ir.dnb.no/press-and-reports/press-releases/dnb-making-organisational-changes-technology-services-2485833",
+          "source_type": "company",
+          "published_at": "2026-10-06",
+          "access_status": "full_text_retrieved",
+          "verified_at": "2026-11-04",
+          "short_quote": "This technology replaces tasks that were previously handled manually",
+          "quote_language": "en",
+          "supports": [
+            "event_scope",
+            "attribution_assessment"
+          ],
+          "human_review_status": "not_performed",
+          "publisher": "DNB",
+          "title": "DNB is making organisational changes in Technology & Services",
+          "quote_verification": "agent_read_source_excerpt_no_archived_text_or_human_check"
+        }
+      ],
+      "notes": [
+        "About 400 full-time equivalents in Technology & Services, targeted Q4 2026. Also process simplification and skills mix changes. Norwegian bank, not Dutch central bank."
+      ],
+      "legal_identity": "DNB Bank ASA",
+      "seed_dedup_status": "no_name_or_alias_match_domain_comparison_unavailable",
+      "publication_approved": false,
+      "scope": "One bounded event per company; not an exhaustive company history.",
+      "backfill_record_id": "dnb:2026-10-06"
+    },
+    {
+      "id": "danske-bank",
+      "name": "Danske Bank",
+      "aliases": [],
+      "domain": "danskebank.com",
+      "discovery_status": "roundup_presence_verified",
+      "status": "AI_causality_unresolved",
+      "seed_match": null,
+      "confirmed": {
+        "event_type": "layoff_announcement",
+        "event_date": "2026-02-26",
+        "event_date_precision": "day",
+        "reported_job_count": 420,
+        "count_qualifier": "reported_positions",
+        "AI_attribution": "automation_only_AI_not_explicit",
+        "outcome_completion_verified": false,
+        "evidence_ids": [
+          "danske-bank-source-1"
+        ],
+        "AI_causality_independently_proven": false,
+        "event_date_semantics": "reported_event_date_not_completed_reduction_date"
+      },
+      "unknown": [
+        "actual_completed_reductions",
+        "independent_AI_causal_allocation"
+      ],
+      "evidence": [
+        {
+          "id": "danske-bank-source-1",
+          "url": "https://danskebank.com/da/news-og-insights/nyhedsarkiv/press-releases/2026/pm26022026",
+          "source_type": "company",
+          "published_at": "2026-02-26",
+          "access_status": "full_text_retrieved",
+          "verified_at": "2026-11-04",
+          "short_quote": "nedlæggelse af i alt 420 stillinger",
+          "quote_language": "da",
+          "supports": [
+            "event_scope",
+            "attribution_assessment"
+          ],
+          "human_review_status": "not_performed",
+          "publisher": "Danske Bank",
+          "title": "Danske Bank tilpasser organisationen med nedlæggelse af stillinger",
+          "quote_verification": "agent_read_source_excerpt_no_archived_text_or_human_check"
+        }
+      ],
+      "notes": [
+        "February release cites automation, simplification and completion of projects; it does not explicitly identify AI. Do not transfer AI wording from the separate May 262-role release to this event."
+      ],
+      "legal_identity": "Danske Bank",
+      "seed_dedup_status": "no_name_or_alias_match_domain_comparison_unavailable",
+      "publication_approved": false,
+      "scope": "One bounded event per company; not an exhaustive company history."
+    },
+    {
+      "id": "dow",
+      "name": "Dow",
+      "aliases": [],
+      "domain": "dow.com",
+      "discovery_status": "roundup_presence_verified",
+      "status": "source_backed_research",
+      "seed_match": null,
+      "confirmed": {
+        "event_type": "layoff_plan",
+        "event_date": "2026-01-29",
+        "event_date_precision": "day",
+        "reported_job_count": 4500,
+        "count_qualifier": "approximately",
+        "AI_attribution": "AI_and_automation_in_broader_restructuring",
+        "outcome_completion_verified": false,
+        "evidence_ids": [
+          "dow-source-1"
+        ],
+        "AI_causality_independently_proven": false,
+        "event_date_semantics": "reported_event_date_not_completed_reduction_date"
+      },
+      "unknown": [
+        "actual_completed_reductions",
+        "independent_AI_causal_allocation"
+      ],
+      "evidence": [
+        {
+          "id": "dow-source-1",
+          "url": "https://investors.dow.com/en/news/news-details/2026/Dow-launches-Transform-to-Outperform-to-raise-the-competitive-industry-benchmark-for-productivity-and-growth-to-enable-improved-returns/default.aspx",
+          "source_type": "company",
+          "published_at": "2026-01-29",
+          "access_status": "full_text_retrieved",
+          "verified_at": "2026-11-04",
+          "short_quote": "in part by utilizing AI and automation",
+          "quote_language": "en",
+          "supports": [
+            "event_scope",
+            "attribution_assessment"
+          ],
+          "human_review_status": "not_performed",
+          "publisher": "Dow Investor Relations",
+          "title": "Dow launches Transform to Outperform to raise the competitive industry benchmark for productivity and growth to enable improved returns",
+          "quote_verification": "agent_read_source_excerpt_no_archived_text_or_human_check"
+        }
+      ],
+      "notes": [
+        "4,500 roles in severance estimate; broader reset addresses structural industry challenges and prolonged trough. No allocation of cuts specifically to AI."
+      ],
+      "legal_identity": "Dow Inc.",
+      "seed_dedup_status": "no_name_or_alias_match_domain_comparison_unavailable",
+      "publication_approved": false,
+      "scope": "One bounded event per company; not an exhaustive company history."
+    },
+    {
+      "id": "fico",
+      "name": "FICO",
+      "aliases": [
+        "Fair Isaac",
+        "Fair Isaac Corporation"
+      ],
+      "domain": "fico.com",
+      "discovery_status": "roundup_presence_verified",
+      "status": "source_backed_research",
+      "seed_match": null,
+      "confirmed": {
+        "event_type": "layoff_plan",
+        "event_date": "2026-10-01",
+        "event_date_precision": "day",
+        "reported_job_count": null,
+        "count_qualifier": "approximately_15_percent",
+        "AI_attribution": "AI_product_development_and_restructuring",
+        "outcome_completion_verified": false,
+        "evidence_ids": [
+          "fico-source-1"
+        ],
+        "AI_causality_independently_proven": false,
+        "event_date_semantics": "plan_commitment_date_not_filing_or_completion_date"
+      },
+      "unknown": [
+        "actual_completed_reductions",
+        "independent_AI_causal_allocation"
+      ],
+      "evidence": [
+        {
+          "id": "fico-source-1",
+          "url": "https://investors.fico.com/node/30041/html",
+          "source_type": "filing",
+          "published_at": "2026-10-06",
+          "access_status": "full_text_retrieved",
+          "verified_at": "2026-11-04",
+          "short_quote": "integrating AI-driven product development",
+          "quote_language": "en",
+          "supports": [
+            "event_scope",
+            "attribution_assessment"
+          ],
+          "human_review_status": "not_performed",
+          "publisher": "FICO Investor Relations",
+          "title": "Fair Isaac Corporation Form 8-K, filed October 6, 2026",
+          "quote_verification": "agent_read_source_excerpt_no_archived_text_or_human_check"
+        }
+      ],
+      "notes": [
+        "Committed October 1, filed October 6; notifications week of October 5. Filing gives 15%, not 570 people. Reuters estimated 570 from older headcount; do not store that as a company-confirmed count."
+      ],
+      "legal_identity": "Fair Isaac Corporation",
+      "seed_dedup_status": "no_name_or_alias_match_domain_comparison_unavailable",
+      "publication_approved": false,
+      "scope": "One bounded event per company; not an exhaustive company history.",
+      "backfill_record_id": "fico:2026-10-01"
+    },
+    {
+      "id": "freshworks",
+      "name": "Freshworks",
+      "aliases": [],
+      "domain": null,
+      "discovery_status": "roundup_presence_verified",
+      "status": "source_backed_research",
+      "seed_match": null,
+      "confirmed": {
+        "event_type": "layoff_plan",
+        "event_date": "2026-05-05",
+        "event_date_precision": "day",
+        "reported_job_count": 500,
+        "count_qualifier": "approximately",
+        "AI_attribution": "AI_and_automation_in_broader_restructuring",
+        "outcome_completion_verified": false,
+        "evidence_ids": [
+          "freshworks-source-1"
+        ],
+        "AI_causality_independently_proven": false,
+        "event_date_semantics": "reported_event_date_not_completed_reduction_date"
+      },
+      "unknown": [
+        "actual_completed_reductions",
+        "independent_AI_causal_allocation",
+        "canonical_company_domain_not_independently_verified"
+      ],
+      "evidence": [
+        {
+          "id": "freshworks-source-1",
+          "url": "https://www.sec.gov/Archives/edgar/data/1544522/000154452226000088/frsh-20260505.htm",
+          "source_type": "filing",
+          "published_at": "2026-05-05",
+          "access_status": "full_text_retrieved",
+          "verified_at": "2026-11-04",
+          "short_quote": "increase leverage of AI and automation across the business",
+          "quote_language": "en",
+          "supports": [
+            "event_scope",
+            "attribution_assessment"
+          ],
+          "human_review_status": "not_performed",
+          "publisher": "Freshworks via SEC EDGAR",
+          "title": "Freshworks Inc. Form 8-K, May 5, 2026",
+          "quote_verification": "agent_read_source_excerpt_no_archived_text_or_human_check"
+        }
+      ],
+      "notes": [
+        "Approximately 11% globally, expected substantial completion June 30; organizational and product development streamlining also stated."
+      ],
+      "legal_identity": "Freshworks Inc.",
+      "seed_dedup_status": "no_name_or_alias_match_domain_comparison_unavailable",
+      "publication_approved": false,
+      "scope": "One bounded event per company; not an exhaustive company history.",
+      "backfill_record_id": "freshworks:2026-05-05"
+    },
+    {
+      "id": "hsbc",
+      "name": "HSBC",
+      "aliases": [
+        "HSBC Holdings"
+      ],
+      "domain": null,
+      "discovery_status": "roundup_presence_verified",
+      "status": "unconfirmed_plan_report",
+      "seed_match": null,
+      "confirmed": {
+        "event_type": "reported_option_under_consideration",
+        "event_date": null,
+        "event_date_precision": "unknown",
+        "count_qualifier": "potential_approximately",
+        "AI_attribution": "unconfirmed_AI_related_plan",
+        "outcome_completion_verified": false,
+        "evidence_ids": [
+          "hsbc-source-1"
+        ],
+        "AI_causality_independently_proven": false,
+        "reported_option_size": 20000,
+        "reported_job_count": null,
+        "event_date_semantics": "reported_event_date_not_completed_reduction_date"
+      },
+      "unknown": [
+        "actual_completed_reductions",
+        "independent_AI_causal_allocation",
+        "original_company_document_not_located",
+        "canonical_company_domain_not_independently_verified",
+        "precise_event_announcement_date"
+      ],
+      "evidence": [
+        {
+          "id": "hsbc-source-1",
+          "url": "https://www.investing.com/news/stock-market-news/hsbc-mulls-job-cuts-that-could-impact-around-20000-roles-bloomberg-news-reports-4569671?ampMode=1",
+          "source_type": "reporting",
+          "published_at": "2026-03-18",
+          "access_status": "full_text_retrieved",
+          "verified_at": "2026-11-04",
+          "short_quote": "no final decisions have been made",
+          "quote_language": "en",
+          "supports": [
+            "event_scope",
+            "attribution_assessment"
+          ],
+          "human_review_status": "not_performed",
+          "publisher": "Reuters via Investing.com",
+          "title": "HSBC weighs deep job cuts as AI overhaul unfolds, Bloomberg News reports",
+          "quote_verification": "agent_read_source_excerpt_no_archived_text_or_human_check"
+        }
+      ],
+      "notes": [
+        "Reuters March 19 dateline with March 18 site timestamp reports Bloomberg sources; spokesperson declines comment. Early-stage 3-5-year option could include attrition and business exits. Not an announced 20,000-person layoff."
+      ],
+      "legal_identity": "HSBC Holdings",
+      "seed_dedup_status": "no_name_or_alias_match_domain_comparison_unavailable",
+      "publication_approved": false,
+      "scope": "One bounded event per company; not an exhaustive company history."
+    },
+    {
+      "id": "kroger",
+      "name": "Kroger",
+      "aliases": [],
+      "domain": null,
+      "discovery_status": "roundup_presence_verified",
+      "status": "source_backed_research",
+      "seed_match": null,
+      "confirmed": {
+        "event_type": "layoff_plan",
+        "event_date": "2026-10-12",
+        "event_date_precision": "day",
+        "reported_job_count": 3000,
+        "count_qualifier": "approximately",
+        "AI_attribution": "reported_AI_and_operational_efficiency",
+        "outcome_completion_verified": false,
+        "evidence_ids": [
+          "kroger-source-1"
+        ],
+        "AI_causality_independently_proven": false,
+        "event_date_semantics": "reported_event_date_not_completed_reduction_date"
+      },
+      "unknown": [
+        "actual_completed_reductions",
+        "independent_AI_causal_allocation",
+        "original_company_document_not_located",
+        "canonical_company_domain_not_independently_verified"
+      ],
+      "evidence": [
+        {
+          "id": "kroger-source-1",
+          "url": "https://www.streetinsider.com/Reuters/Kroger%2Bplans%2Bto%2Beliminate%2B3%2C000%2Bcorporate%2Broles%2C%2Bmemo%2Bshows%2C%2Bas%2Bit%2Bexpands%2BAI%2Buse/27175429.html",
+          "source_type": "reporting",
+          "published_at": "2026-10-12",
+          "access_status": "full_text_retrieved",
+          "verified_at": "2026-11-04",
+          "short_quote": "reduce duplicative work",
+          "quote_language": "en",
+          "supports": [
+            "event_scope",
+            "attribution_assessment"
+          ],
+          "human_review_status": "not_performed",
+          "publisher": "Reuters via StreetInsider",
+          "title": "Kroger plans to eliminate 3,000 corporate roles, memo shows, as it expands AI use",
+          "quote_verification": "agent_read_source_excerpt_no_archived_text_or_human_check"
+        }
+      ],
+      "notes": [
+        "Reuters saw CEO memo; plan over three years also funds lower prices and store employees amid competitive pressure. AI adoption is context and part of workflow change, not sole cause."
+      ],
+      "legal_identity": "Kroger",
+      "seed_dedup_status": "no_name_or_alias_match_domain_comparison_unavailable",
+      "publication_approved": false,
+      "scope": "One bounded event per company; not an exhaustive company history."
+    },
+    {
+      "id": "mercadolibre",
+      "name": "MercadoLibre",
+      "aliases": [],
+      "domain": null,
+      "discovery_status": "roundup_presence_verified",
+      "status": "source_backed_research",
+      "seed_match": null,
+      "confirmed": {
+        "event_type": "reported_layoff",
+        "event_date": null,
+        "event_date_precision": "unknown",
+        "reported_job_count": 119,
+        "count_qualifier": "reported",
+        "AI_attribution": "employee_claim_AI_replacement_disputed",
+        "outcome_completion_verified": false,
+        "evidence_ids": [
+          "mercadolibre-source-1"
+        ],
+        "AI_causality_independently_proven": false,
+        "event_date_semantics": "reported_event_date_not_completed_reduction_date"
+      },
+      "unknown": [
+        "actual_completed_reductions",
+        "independent_AI_causal_allocation",
+        "original_company_document_not_located",
+        "canonical_company_domain_not_independently_verified",
+        "precise_event_announcement_date"
+      ],
+      "evidence": [
+        {
+          "id": "mercadolibre-source-1",
+          "url": "https://eleconomista.com.ar/economia/despidos-mercado-libre-entrenamos-ia-nos-reemplazo-n91871/amp",
+          "source_type": "reporting",
+          "published_at": "2026-01-12",
+          "access_status": "full_text_retrieved",
+          "verified_at": "2026-11-04",
+          "short_quote": "totalizando 119 personas",
+          "quote_language": "en",
+          "supports": [
+            "event_scope",
+            "attribution_assessment"
+          ],
+          "human_review_status": "not_performed",
+          "publisher": "El Economista (Argentina)",
+          "title": "Despidos en MERCADO LIBRE: Entrenamos a la IA que nos reemplazó",
+          "quote_verification": "agent_read_source_excerpt_no_archived_text_or_human_check"
+        }
+      ],
+      "notes": [
+        "Reports cuts beginning the prior Thursday/Friday; precise announcement date not established. Anonymous former employees allege replacement; company describes UX Design/Content integration and technology-enabled structures, and rejects initial 300-job figure."
+      ],
+      "legal_identity": "MercadoLibre",
+      "seed_dedup_status": "no_name_or_alias_match_domain_comparison_unavailable",
+      "publication_approved": false,
+      "scope": "One bounded event per company; not an exhaustive company history."
+    },
+    {
+      "id": "meta",
+      "name": "Meta",
+      "aliases": [
+        "Meta Platforms"
+      ],
+      "domain": null,
+      "discovery_status": "roundup_presence_verified",
+      "status": "source_backed_research",
+      "seed_match": null,
+      "confirmed": {
+        "event_type": "reported_layoff",
+        "event_date": "2026-01-13",
+        "event_date_precision": "day",
+        "reported_job_count": 1000,
+        "count_qualifier": "more_than",
+        "AI_attribution": "AI_investment_reallocation",
+        "outcome_completion_verified": false,
+        "evidence_ids": [
+          "meta-source-1"
+        ],
+        "AI_causality_independently_proven": false,
+        "event_date_semantics": "reported_event_date_not_completed_reduction_date"
+      },
+      "unknown": [
+        "actual_completed_reductions",
+        "independent_AI_causal_allocation",
+        "original_company_document_not_located",
+        "canonical_company_domain_not_independently_verified"
+      ],
+      "evidence": [
+        {
+          "id": "meta-source-1",
+          "url": "https://techxplore.com/news/2026-01-meta-job-shifts-metaverse-ai.pdf",
+          "source_type": "reporting",
+          "published_at": "2026-01-13",
+          "access_status": "full_text_retrieved",
+          "verified_at": "2026-11-04",
+          "short_quote": "we plan to reinvest the savings to support the growth of wearables this year",
+          "quote_language": "en",
+          "supports": [
+            "event_scope",
+            "attribution_assessment"
+          ],
+          "human_review_status": "not_performed",
+          "publisher": "Bloomberg via TechXplore",
+          "title": "Meta begins job cuts as it shifts from Metaverse to AI devices",
+          "quote_verification": "agent_read_source_excerpt_no_archived_text_or_human_check"
+        }
+      ],
+      "notes": [
+        "Bloomberg reporting on Reality Labs cuts and pivot toward AI wearables; VR losses and sustainability also cited. Do not merge with separate October 2025 AI-unit cuts or March 2026 speculation."
+      ],
+      "legal_identity": "Meta Platforms Inc.",
+      "seed_dedup_status": "no_name_or_alias_match_domain_comparison_unavailable",
+      "publication_approved": false,
+      "scope": "One bounded event per company; not an exhaustive company history."
+    },
+    {
+      "id": "mizuho",
+      "name": "Mizuho",
+      "aliases": [],
+      "domain": null,
+      "discovery_status": "roundup_presence_verified",
+      "status": "redeployment_not_layoff",
+      "seed_match": null,
+      "confirmed": {
+        "event_type": "redeployment_plan",
+        "event_date": "2026-02-27",
+        "event_date_precision": "day",
+        "reported_job_count": null,
+        "count_qualifier": "up_to_5000_workload_equivalents",
+        "AI_attribution": "AI_workload_reduction_not_layoffs",
+        "outcome_completion_verified": false,
+        "evidence_ids": [
+          "mizuho-source-1"
+        ],
+        "AI_causality_independently_proven": false,
+        "workload_equivalent_positions": 5000,
+        "event_date_semantics": "reported_event_date_not_completed_reduction_date"
+      },
+      "unknown": [
+        "actual_completed_reductions",
+        "independent_AI_causal_allocation",
+        "original_company_document_not_located",
+        "canonical_company_domain_not_independently_verified"
+      ],
+      "evidence": [
+        {
+          "id": "mizuho-source-1",
+          "url": "https://newsdig.tbs.co.jp/articles/withbloomberg/2495846?display=1",
+          "source_type": "reporting",
+          "published_at": "2026-02-27",
+          "access_status": "full_text_retrieved",
+          "verified_at": "2026-11-04",
+          "short_quote": "業務の見直しによる人員の解雇はせず",
+          "quote_language": "ja",
+          "supports": [
+            "event_scope",
+            "attribution_assessment"
+          ],
+          "human_review_status": "not_performed",
+          "publisher": "TBS CROSS DIG with Bloomberg",
+          "title": "みずほFG AI活用で事務職5000人分業務削減へ",
+          "quote_verification": "agent_read_source_excerpt_no_archived_text_or_human_check"
+        }
+      ],
+      "notes": [
+        "TBS reports up to 5,000 clerical job-equivalents of work over ten years, with redeployment and reskilling, explicitly no dismissals. Must not be counted as 5,000 layoffs."
+      ],
+      "legal_identity": "Mizuho Financial Group",
+      "seed_dedup_status": "no_name_or_alias_match_domain_comparison_unavailable",
+      "publication_approved": false,
+      "scope": "One bounded event per company; not an exhaustive company history."
+    },
+    {
+      "id": "nike",
+      "name": "Nike",
+      "aliases": [],
+      "domain": null,
+      "discovery_status": "roundup_presence_verified",
+      "status": "AI_causality_unresolved",
+      "seed_match": null,
+      "confirmed": {
+        "event_type": "reported_layoff",
+        "event_date": "2026-01-26",
+        "event_date_precision": "day",
+        "reported_job_count": 775,
+        "count_qualifier": "reported",
+        "AI_attribution": "automation_only_AI_causal_claim_not_established",
+        "outcome_completion_verified": false,
+        "evidence_ids": [
+          "nike-source-1"
+        ],
+        "AI_causality_independently_proven": false,
+        "event_date_semantics": "reported_event_date_not_completed_reduction_date"
+      },
+      "unknown": [
+        "actual_completed_reductions",
+        "independent_AI_causal_allocation",
+        "original_company_document_not_located",
+        "canonical_company_domain_not_independently_verified"
+      ],
+      "evidence": [
+        {
+          "id": "nike-source-1",
+          "url": "https://www.investing.com/news/stock-market-news/nike-to-cut-775-jobs-in-us-distribution-centers-cnbc-reports-4465903?ampMode=1",
+          "source_type": "reporting",
+          "published_at": "2026-01-26",
+          "access_status": "full_text_retrieved",
+          "verified_at": "2026-11-04",
+          "short_quote": "accelerate its use of automation",
+          "quote_language": "en",
+          "supports": [
+            "event_scope",
+            "attribution_assessment"
+          ],
+          "human_review_status": "not_performed",
+          "publisher": "Reuters via Investing.com",
+          "title": "Nike slashes 775 jobs in US to speed up automation, boost profit",
+          "quote_verification": "agent_read_source_excerpt_no_archived_text_or_human_check"
+        }
+      ],
+      "notes": [
+        "US distribution centers; company statement stresses discipline and profitable growth. AI comment is an analyst inference; warehouses may have excess capacity. Automation must not automatically be labeled generative AI replacement."
+      ],
+      "legal_identity": "Nike",
+      "seed_dedup_status": "no_name_or_alias_match_domain_comparison_unavailable",
+      "publication_approved": false,
+      "scope": "One bounded event per company; not an exhaustive company history."
+    },
+    {
+      "id": "pinterest",
+      "name": "Pinterest",
+      "aliases": [],
+      "domain": null,
+      "discovery_status": "roundup_presence_verified",
+      "status": "source_backed_research",
+      "seed_match": null,
+      "confirmed": {
+        "event_type": "layoff_plan",
+        "event_date": "2026-01-26",
+        "event_date_precision": "day",
+        "reported_job_count": null,
+        "count_qualifier": "less_than_15_percent",
+        "AI_attribution": "AI_investment_reallocation",
+        "outcome_completion_verified": false,
+        "evidence_ids": [
+          "pinterest-source-1"
+        ],
+        "AI_causality_independently_proven": false,
+        "event_date_semantics": "reported_event_date_not_completed_reduction_date"
+      },
+      "unknown": [
+        "actual_completed_reductions",
+        "independent_AI_causal_allocation",
+        "canonical_company_domain_not_independently_verified"
+      ],
+      "evidence": [
+        {
+          "id": "pinterest-source-1",
+          "url": "https://www.sec.gov/Archives/edgar/data/1506293/000150629326000009/pins-20260122.htm",
+          "source_type": "filing",
+          "published_at": "2026-01-27",
+          "access_status": "full_text_retrieved",
+          "verified_at": "2026-11-04",
+          "short_quote": "reallocating resources to AI-focused roles and teams",
+          "quote_language": "en",
+          "supports": [
+            "event_scope",
+            "attribution_assessment"
+          ],
+          "human_review_status": "not_performed",
+          "publisher": "Pinterest via SEC EDGAR",
+          "title": "Pinterest, Inc. Form 8-K, filed January 27, 2026",
+          "quote_verification": "agent_read_source_excerpt_no_archived_text_or_human_check"
+        }
+      ],
+      "notes": [
+        "8-K says plan announced January 26 and filed January 27; also office reductions and sales transformation. No absolute job count in filing; media rounding must not override less than 15%."
+      ],
+      "legal_identity": "Pinterest, Inc.",
+      "seed_dedup_status": "no_name_or_alias_match_domain_comparison_unavailable",
+      "publication_approved": false,
+      "scope": "One bounded event per company; not an exhaustive company history."
+    },
+    {
+      "id": "proximus",
+      "name": "Proximus",
+      "aliases": [],
+      "domain": "proximus.com",
+      "discovery_status": "roundup_presence_verified",
+      "status": "source_backed_research",
+      "seed_match": null,
+      "confirmed": {
+        "event_type": "attrition_and_retirement_plan",
+        "event_date": "2026-02-27",
+        "event_date_precision": "day",
+        "reported_job_count": null,
+        "count_qualifier": "count_not_in_release",
+        "AI_attribution": "AI_and_simplification_workload_reduction",
+        "outcome_completion_verified": false,
+        "evidence_ids": [
+          "proximus-source-1"
+        ],
+        "AI_causality_independently_proven": false,
+        "event_date_semantics": "reported_event_date_not_completed_reduction_date"
+      },
+      "unknown": [
+        "actual_completed_reductions",
+        "independent_AI_causal_allocation"
+      ],
+      "evidence": [
+        {
+          "id": "proximus-source-1",
+          "url": "https://www.proximus.com/news/2026/202602-proximus-group-presents-new-domestic-and-global-strategies.html",
+          "source_type": "company",
+          "published_at": "2026-02-27",
+          "access_status": "full_text_retrieved",
+          "verified_at": "2026-11-04",
+          "short_quote": "capitalizing upon natural attrition and retirements",
+          "quote_language": "en",
+          "supports": [
+            "event_scope",
+            "attribution_assessment"
+          ],
+          "human_review_status": "not_performed",
+          "publisher": "Proximus Group",
+          "title": "Proximus Group presents new strategic plans Amplify and Elevate for its Domestic and Global segments, and announces 2028-2030 financial ambitions",
+          "quote_verification": "agent_read_source_excerpt_no_archived_text_or_human_check"
+        }
+      ],
+      "notes": [
+        "Primary release links lower workloads to simplification and AI with controlled gradual reduction; does not give the Reuters-reported 1,200 figure. Not necessarily forced layoffs."
+      ],
+      "legal_identity": "Proximus Group",
+      "seed_dedup_status": "no_name_or_alias_match_domain_comparison_unavailable",
+      "publication_approved": false,
+      "scope": "One bounded event per company; not an exhaustive company history."
+    },
+    {
+      "id": "seb",
+      "name": "SEB",
+      "aliases": [
+        "Groupe SEB",
+        "SEB S.A."
+      ],
+      "domain": "groupeseb.com",
+      "discovery_status": "roundup_presence_verified",
+      "status": "AI_causality_unresolved",
+      "seed_match": null,
+      "confirmed": {
+        "event_type": "layoff_plan",
+        "event_date": "2026-02-25",
+        "event_date_precision": "day",
+        "reported_job_count": 2100,
+        "count_qualifier": "maximum",
+        "AI_attribution": "AI_in_strategy_causal_allocation_unknown",
+        "outcome_completion_verified": false,
+        "evidence_ids": [
+          "seb-source-1"
+        ],
+        "AI_causality_independently_proven": false,
+        "event_date_semantics": "reported_event_date_not_completed_reduction_date"
+      },
+      "unknown": [
+        "actual_completed_reductions",
+        "independent_AI_causal_allocation"
+      ],
+      "evidence": [
+        {
+          "id": "seb-source-1",
+          "url": "https://www.groupeseb.com/sites/default/files/2026-02/Groupe%20SEB%20-%20Communiqu%C3%A9%20de%20Presse%20-%20R%C3%A9sultats%20annuels%202025%20-%2025022026.pdf",
+          "source_type": "company",
+          "published_at": "2026-02-25",
+          "access_status": "full_text_retrieved",
+          "verified_at": "2026-11-04",
+          "short_quote": "jusqu’à 2 100 postes à l’échelle mondiale",
+          "quote_language": "fr",
+          "supports": [
+            "event_scope",
+            "attribution_assessment"
+          ],
+          "human_review_status": "not_performed",
+          "publisher": "Groupe SEB",
+          "title": "Résultats annuels 2025",
+          "quote_verification": "agent_read_source_excerpt_no_archived_text_or_human_check"
+        }
+      ],
+      "notes": [
+        "French appliance group, not SEB bank. Rebond savings include indirect procurement, industrial efficiency and overheads; AI mentioned for innovation/customer interactions. Direct AI replacement of all 2,100 not established. Up to 500 French departures voluntary."
+      ],
+      "legal_identity": "Groupe SEB",
+      "seed_dedup_status": "no_name_or_alias_match_domain_comparison_unavailable",
+      "publication_approved": false,
+      "scope": "One bounded event per company; not an exhaustive company history."
+    },
+    {
+      "id": "snap",
+      "name": "Snap",
+      "aliases": [],
+      "domain": "snap.com",
+      "discovery_status": "roundup_presence_verified",
+      "status": "source_backed_research",
+      "seed_match": null,
+      "confirmed": {
+        "event_type": "layoff_plan",
+        "event_date": "2026-04-15",
+        "event_date_precision": "day",
+        "reported_job_count": 1000,
+        "count_qualifier": "approximately",
+        "AI_attribution": "company_claim_AI_efficiency_and_profitability",
+        "outcome_completion_verified": false,
+        "evidence_ids": [
+          "snap-source-1"
+        ],
+        "AI_causality_independently_proven": false,
+        "event_date_semantics": "reported_event_date_not_completed_reduction_date"
+      },
+      "unknown": [
+        "actual_completed_reductions",
+        "independent_AI_causal_allocation"
+      ],
+      "evidence": [
+        {
+          "id": "snap-source-1",
+          "url": "https://newsroom.snap.com/organizational-changes-at-snap",
+          "source_type": "company",
+          "published_at": "2026-04-15",
+          "access_status": "full_text_retrieved",
+          "verified_at": "2026-11-04",
+          "short_quote": "rapid advancements in artificial intelligence enable our teams to reduce repetitive work",
+          "quote_language": "en",
+          "supports": [
+            "event_scope",
+            "attribution_assessment"
+          ],
+          "human_review_status": "not_performed",
+          "publisher": "Snap Newsroom",
+          "title": "Organizational Changes at Snap",
+          "quote_verification": "agent_read_source_excerpt_no_archived_text_or_human_check"
+        }
+      ],
+      "notes": [
+        "About 1,000 team members, including 16% full-time staff; separately more than 300 open roles closed. Profitability and prioritization also cited; unfilled openings are not additional layoffs."
+      ],
+      "legal_identity": "Snap Inc.",
+      "seed_dedup_status": "no_name_or_alias_match_domain_comparison_unavailable",
+      "publication_approved": false,
+      "scope": "One bounded event per company; not an exhaustive company history.",
+      "backfill_record_id": "snap:2026-04-15"
+    },
+    {
+      "id": "standard-chartered",
+      "name": "Standard Chartered",
+      "aliases": [],
+      "domain": "sc.com",
+      "discovery_status": "roundup_presence_verified",
+      "status": "source_backed_research",
+      "seed_match": null,
+      "confirmed": {
+        "event_type": "workforce_reduction_plan",
+        "event_date": "2026-05-19",
+        "event_date_precision": "day",
+        "reported_job_count": 7000,
+        "count_qualifier": "more_than_media_calculation",
+        "AI_attribution": "reported_AI_task_automation_and_retraining",
+        "outcome_completion_verified": false,
+        "evidence_ids": [
+          "standard-chartered-source-1",
+          "standard-chartered-source-2"
+        ],
+        "AI_causality_independently_proven": false,
+        "event_date_semantics": "reported_event_date_not_completed_reduction_date"
+      },
+      "unknown": [
+        "actual_completed_reductions",
+        "independent_AI_causal_allocation"
+      ],
+      "evidence": [
+        {
+          "id": "standard-chartered-source-1",
+          "url": "https://www.investing.com/news/stock-market-news/stanchart-to-cut-more-than-7000-jobs-as-bank-steps-up-ai-adoption-4697509",
+          "source_type": "reporting",
+          "published_at": "2026-05-19",
+          "access_status": "full_text_retrieved",
+          "verified_at": "2026-11-04",
+          "short_quote": "driven by automation and adoption of artificial intelligence as some staff retrain",
+          "quote_language": "en",
+          "supports": [
+            "event_scope",
+            "attribution_assessment"
+          ],
+          "human_review_status": "not_performed",
+          "publisher": "Reuters via Investing.com",
+          "title": "StanChart to cut over 7,000 jobs, boost AI to replace lower-value human capital",
+          "quote_verification": "agent_read_source_excerpt_no_archived_text_or_human_check"
+        },
+        {
+          "id": "standard-chartered-source-2",
+          "url": "https://www.sc.com/en/uploads/sites/66/content/docs/standard-chartered-may-2026-day-1-investor-event-presentation.pdf",
+          "source_type": "company",
+          "publisher": "Standard Chartered",
+          "title": "Day 1 Presentation: May 2026 Investor Event",
+          "published_at": "2026-05-19",
+          "access_status": "full_text_retrieved",
+          "verified_at": "2026-11-04",
+          "short_quote": ">15% reduction in corporate functions headcount by 2030",
+          "quote_language": "en",
+          "supports": [
+            "corporate_function_percentage_target",
+            "AI_operating_model"
+          ],
+          "human_review_status": "not_performed",
+          "quote_verification": "agent_read_PDF_text_no_human_check"
+        }
+      ],
+      "notes": [
+        "Reuters calculation from corporate-function staff; original presentation confirms greater than 15% reduction by 2030. Keep calculation separate from company-disclosed percentage; future plan not completed outcome."
+      ],
+      "legal_identity": "Standard Chartered",
+      "seed_dedup_status": "no_name_or_alias_match_domain_comparison_unavailable",
+      "publication_approved": false,
+      "scope": "One bounded event per company; not an exhaustive company history."
+    },
+    {
+      "id": "telstra",
+      "name": "Telstra",
+      "aliases": [],
+      "domain": null,
+      "discovery_status": "roundup_presence_verified",
+      "status": "source_backed_research",
+      "seed_match": null,
+      "confirmed": {
+        "event_type": "layoff_and_outsourcing_proposals",
+        "event_date": "2026-02-11",
+        "event_date_precision": "day",
+        "reported_job_count": 650,
+        "count_qualifier": "up_to_reported",
+        "AI_attribution": "mixed_AI_and_offshoring",
+        "outcome_completion_verified": false,
+        "evidence_ids": [
+          "telstra-source-1"
+        ],
+        "AI_causality_independently_proven": false,
+        "event_date_semantics": "reported_event_date_not_completed_reduction_date"
+      },
+      "unknown": [
+        "actual_completed_reductions",
+        "independent_AI_causal_allocation",
+        "original_company_document_not_located",
+        "canonical_company_domain_not_independently_verified"
+      ],
+      "evidence": [
+        {
+          "id": "telstra-source-1",
+          "url": "https://www.abc.net.au/news/2026-02-11/telstra-axes-600-roles-in-redundancy-round-outsourcing-to-india/106331708",
+          "source_type": "reporting",
+          "published_at": "2026-02-11",
+          "access_status": "full_text_retrieved",
+          "verified_at": "2026-11-04",
+          "short_quote": "Another 209 jobs are expected to go due to a joint venture with Accenture",
+          "quote_language": "en",
+          "supports": [
+            "event_scope",
+            "attribution_assessment"
+          ],
+          "human_review_status": "not_performed",
+          "publisher": "ABC News Australia",
+          "title": "Telstra to axe up to 650 roles in mass redundancy round, some jobs to be outsourced to India",
+          "quote_verification": "agent_read_source_excerpt_no_archived_text_or_human_check"
+        }
+      ],
+      "notes": [
+        "ABC saw staff emails: about 440 in proposed Infosys outsourcing plus 209 in Accenture AI JV involving AI and India hub. Cannot attribute all ~650 to AI automation or combine with July 2025 cuts."
+      ],
+      "legal_identity": "Telstra",
+      "seed_dedup_status": "no_name_or_alias_match_domain_comparison_unavailable",
+      "publication_approved": false,
+      "scope": "One bounded event per company; not an exhaustive company history."
+    },
+    {
+      "id": "wisetech",
+      "name": "WiseTech",
+      "aliases": [
+        "WiseTech Global"
+      ],
+      "domain": "wisetechglobal.com",
+      "discovery_status": "roundup_presence_verified",
+      "status": "source_backed_research",
+      "seed_match": null,
+      "confirmed": {
+        "event_type": "layoff_plan",
+        "event_date": "2026-02-25",
+        "event_date_precision": "day",
+        "reported_job_count": 2000,
+        "count_qualifier": "approximately",
+        "AI_attribution": "company_claim_AI_task_automation",
+        "outcome_completion_verified": false,
+        "evidence_ids": [
+          "wisetech-source-1"
+        ],
+        "AI_causality_independently_proven": false,
+        "event_date_semantics": "reported_event_date_not_completed_reduction_date"
+      },
+      "unknown": [
+        "actual_completed_reductions",
+        "independent_AI_causal_allocation"
+      ],
+      "evidence": [
+        {
+          "id": "wisetech-source-1",
+          "url": "https://www.wisetechglobal.com/media/bc1jtpfs/wisetech-1h26-results-briefing-combined-scripts.pdf",
+          "source_type": "company",
+          "published_at": "2026-02-25",
+          "access_status": "full_text_retrieved",
+          "verified_at": "2026-11-04",
+          "short_quote": "roles where we have seen AI dramatically improve throughput",
+          "quote_language": "en",
+          "supports": [
+            "event_scope",
+            "attribution_assessment"
+          ],
+          "human_review_status": "not_performed",
+          "publisher": "WiseTech Global",
+          "title": "1H26 results briefing combined scripts",
+          "quote_verification": "agent_read_source_excerpt_no_archived_text_or_human_check"
+        }
+      ],
+      "notes": [
+        "FY26-FY27 program also targets margins and high-performance culture; transcript separately mentions more than 500 earlier role reductions. Do not add earlier 500 to 2,000 without overlap reconciliation."
+      ],
+      "legal_identity": "WiseTech Global",
+      "seed_dedup_status": "no_name_or_alias_match_domain_comparison_unavailable",
+      "publication_approved": false,
+      "scope": "One bounded event per company; not an exhaustive company history."
+    }
+  ],
+  "methodology": {
+    "reviewer": "AI research agent; no human verification claimed",
+    "search_scope": "Each of the 26 candidates searched individually, prioritizing company announcements, investor documents and regulatory filings. Selected pages opened and read.",
+    "count_policy": "No combined job-loss total: units, conditionality, attrition, redeployment, outsourcing and completion status differ.",
+    "dedup_policy": "Normalized names, seed slugs and aliases compared; all seed website_url fields are null, so domain matching against seed cannot be completed.",
+    "publication_gate": "No candidate is approved for publication or ingestion. Unknowns and counterevidence require editorial review."
+  },
+  "counts": {
+    "candidates": 26,
+    "with_individual_full_text_source": 26,
+    "with_company_or_filing_source": 16,
+    "statuses": {
+      "AI_causality_unresolved": 4,
+      "redeployment_not_layoff": 1,
+      "source_backed_research": 20,
+      "unconfirmed_plan_report": 1
+    },
+    "seed_matches": 0,
+    "publication_approved": 0,
+    "human_verified": 0
+  },
+  "access_anomalies": [
+    {
+      "url": "https://d18rn0p25nwr6d.cloudfront.net/CIK-0001506293/e9cba155-56df-4d74-a1a3-5f2506b33fb3.pdf",
+      "status": "misdirected_document",
+      "note": "Search excerpt suggested 2026 restructuring but opening redirected to a November 2024 filing. Rejected; correct SEC filing found via StockTitan original-source link."
+    },
+    {
+      "url": "https://www.japantimes.co.jp/business/2026/02/27/companies/mizuho-clerical-jobs-ai/",
+      "status": "payment_required_402",
+      "note": "Not used as event evidence; accessible TBS reporting used instead."
+    },
+    {
+      "url": "https://dev.eurofound.europa.eu/restructuring-events/detail/204364",
+      "status": "open_timed_out_after_search_excerpt",
+      "note": "Not used for final SEB evidence; original Groupe SEB results PDF used instead."
+    },
+    {
+      "url": "https://apps.eurofound.europa.eu/restructuring-events/",
+      "status": "404",
+      "note": "Root path did not load; verified individual Allianz factsheet remains available on alternative Eurofound application host."
+    }
+  ]
+}

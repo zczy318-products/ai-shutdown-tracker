@@ -31,7 +31,7 @@ const VIEWPORTS = [
 ];
 const MIN_TARGET_PX = 24;
 
-const browser = await chromium.launch();
+const browser = await chromium.launch({ channel: process.env.PLAYWRIGHT_CHANNEL || undefined });
 let failures = 0;
 
 for (const vp of VIEWPORTS) {
@@ -43,6 +43,11 @@ for (const vp of VIEWPORTS) {
     const response = await page.goto(BASE + path, { waitUntil: "networkidle" });
     if (!response || response.status() !== 200) {
       console.log(`  ${path} — FAIL: status ${response?.status() ?? "no response"}`);
+      failures++;
+      continue;
+    }
+    if (await page.getByRole("heading", { name: "数据暂时读取失败", exact: true }).count()) {
+      console.log(`  ${path} — FAIL: database error page cannot validate the intended content`);
       failures++;
       continue;
     }

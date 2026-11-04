@@ -27,10 +27,13 @@ async function main() {
 
     const pool = new pg.Pool({
       connectionString: target.connectionString,
+      max: 1,
       // Same reasoning as src/db/index.ts: verify the server certificate.
       ssl: target.ssl ? { rejectUnauthorized: true } : undefined,
     });
     try {
+      // Serialize migration runners across concurrent production builds.
+      await pool.query("SELECT pg_advisory_lock(726470510)");
       await migrate(drizzle(pool, { schema }), { migrationsFolder: MIGRATIONS_FOLDER });
     } finally {
       await pool.end();

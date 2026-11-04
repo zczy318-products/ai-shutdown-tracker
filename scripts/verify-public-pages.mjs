@@ -315,8 +315,13 @@ try {
   console.log("\n--- 榜单页 / ---");
   const home = await get("/");
   eq("GET / is 200", home.status, 200);
+  eq("首页默认展示语义表格", (home.html.match(/<table\b/g) ?? []).length, 1);
+  eq("事件表有六个列标题", (home.html.match(/scope="col"/g) ?? []).length, 6);
+  check("表格滚动区域有可访问名称并可键盘聚焦", /class="archive-table-scroll"[^>]*role="region"[^>]*aria-label="[^"]+"[^>]*tabindex="0"/.test(home.html));
+  check("首页保留来源与反证入口", home.html.includes("#sources-") && home.html.includes("有反方证据"));
+  check("不将自动发布描述为人工核验", !home.html.includes("公开报道的人工标注") && !home.html.includes("人工评出置信度"));
   eq("已发布记录总数", num(home.html, "result-total"), live.length);
-  eq("第 1 页卡片数", attrs(home.html, "record-id").length, PAGE_SIZE);
+  eq("第 1 页事件行数", attrs(home.html, "record-id").length, PAGE_SIZE);
   eq("总页数", num(home.html, "result-pages"), Math.ceil(live.length / PAGE_SIZE));
   check(
     "置信度标签在榜单可见",
@@ -330,7 +335,7 @@ try {
     const { html } = await get(`/?page=${page}`);
     const ids = attrs(html, "record-id");
     const expected = Math.min(PAGE_SIZE, live.length - (page - 1) * PAGE_SIZE);
-    eq(`第 ${page} 页卡片数`, ids.length, expected);
+    eq(`第 ${page} 页事件行数`, ids.length, expected);
     for (const id of ids) seen.add(id);
   }
   eq("三页合计去重后条数", seen.size, live.length);
@@ -497,6 +502,8 @@ try {
       .filter((row) => row.slug === slug)
       .flatMap((row) => row.sources);
     renderedSources += attrs(html, "source-id").length;
+    eq(`${slug} 人工核验提示只来自明确标记`, (html.match(/已人工打开核对/g) ?? []).length,
+      expectedSources.filter((item) => item.manually_verified === true).length);
 
     if (attrs(html, "source-id").length !== expectedSources.length) {
       check(`${slug} 来源条数`, false, `${attrs(html, "source-id").length} / ${expectedSources.length}`);
@@ -544,6 +551,7 @@ try {
   console.log("\n--- 统计仪表盘 /stats ---");
   const stats = await get("/stats");
   eq("GET /stats is 200", stats.status, 200);
+  check("统计页不一概声称人工标注或评级", !stats.html.includes("公开报道的人工标注") && !stats.html.includes("人工评级"));
   const tiles = pairs(stats.html, "stat-name", "stat-value");
   eq("记录数", tiles.get("records"), live.length);
   eq("公司数", tiles.get("companies"), liveSlugs.length);

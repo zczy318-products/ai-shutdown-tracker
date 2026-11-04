@@ -1,0 +1,30 @@
+{
+  "checkedAt": "2026-11-04T10:19:09.475Z",
+  "scope": "Live public-source retrieval using existing importer retrieveSource only; no database access or publication.",
+  "results": [
+    {
+      "id": "dnb:2026-10-06",
+      "url": "https://ir.dnb.no/press-and-reports/press-releases/dnb-making-organisational-changes-technology-services-2485833",
+      "error": "source_address_not_public",
+      "quoteMatched": false
+    },
+    {
+      "id": "fico:2026-10-01",
+      "url": "https://investors.fico.com/node/30041/html",
+      "error": "source_address_not_public",
+      "quoteMatched": false
+    },
+    {
+      "id": "freshworks:2026-05-05",
+      "url": "https://www.sec.gov/Archives/edgar/data/1544522/000154452226000088/frsh-20260505.htm",
+      "error": "source_address_not_public",
+      "quoteMatched": false
+    },
+    {
+      "id": "snap:2026-04-15",
+      "url": "https://newsroom.snap.com/organizational-changes-at-snap",
+      "error": "source_address_not_public",
+      "quoteMatched": false
+    }
+  ]
+}

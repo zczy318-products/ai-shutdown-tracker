@@ -119,3 +119,47 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Public workspace tokens are scoped away from authentication and admin pages. */
+.public-site {
+  --background: #f7f8fb;
+  --foreground: #232833;
+  --card: #ffffff;
+  --card-foreground: #232833;
+  --primary: #315be8;
+  --primary-foreground: #ffffff;
+  --secondary: #edf2ff;
+  --secondary-foreground: #2849b7;
+  --muted: #f1f4f9;
+  --muted-foreground: #657086;
+  --border: #e0e5ee;
+  --input: #c7d0df;
+  --ring: #315be8;
+  --accent: #edf2ff;
+  --accent-foreground: #2849b7;
+  --archive-focus: #7896ff;
+  --archive-shadow: #22304b15;
+  --archive-subtle: #f2f5fa;
+  --archive-soft-border: #e7ebf3;
+  --archive-icon: #68778f;
+  --archive-accent-border: #d9e4ff;
+  --archive-accent: #edf2ff;
+  --archive-accent-text: #466196;
+  --archive-muted-surface: #f0f3f8;
+  --archive-muted-text: #657086;
+  --archive-table-heading: #f7f9fc;
+  --archive-row-border: #e9edf4;
+  --archive-row-hover: #f9fbff;
+  --archive-monogram-border: #e2e8f2;
+  --archive-monogram-text: #65738c;
+  --archive-secondary-text: #566176;
+  --archive-summary-text: #5d6980;
+  --archive-source-border: #d5dfee;
+  --archive-source-hover-border: #aebff3;
+  --archive-notice: #f5f8ff;
+  --archive-notice-text: #5c719a;
+  --archive-sticky-border: #e5ebf5;
+  --archive-sticky-shadow: #25334d05;
+  --archive-scroll-thumb: #c5cede;
+  --archive-scroll-track: #f6f8fb;
+}

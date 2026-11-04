@@ -1,0 +1,55 @@
+{
+  "researched_at": "2026-11-04",
+  "channels": [
+    {
+      "name": "SEC EDGAR",
+      "url": "https://www.sec.gov/search-filings",
+      "type": "regulatory_primary",
+      "access_status": "retrieved",
+      "use": "Search 8-K Item 2.05 and earnings exhibits for workforce plans and exact wording. Distinguish approved plans from completed outcomes."
+    },
+    {
+      "name": "California WARN notices",
+      "url": "https://edd.ca.gov/en/jobs_and_training/layoff_services_warn/",
+      "type": "government_primary",
+      "access_status": "retrieved",
+      "use": "Corroborate affected sites, effective dates and local counts. WARN alone does not establish an AI cause or global total."
+    },
+    {
+      "name": "Eurofound ERM individual factsheets",
+      "url": "https://restructuringeventsprod.azurewebsites.net/restructuring-events/detail/204064",
+      "type": "institutional_secondary",
+      "access_status": "retrieved",
+      "use": "Find European restructuring across non-tech industries and follow original source references. Root application URL returned 404 in this run."
+    },
+    {
+      "name": "Company announcements and investor transcripts",
+      "url": "https://www.atlassian.com/blog/announcements/atlassian-team-update-march-2026?trk=article-ssr-frontend-pulse_little-text-block",
+      "type": "company_primary",
+      "access_status": "retrieved",
+      "use": "Use company blogs, filings and results presentations to distinguish AI investment reallocation from automation replacement and explicit denials."
+    },
+    {
+      "name": "Trade-union disclosures",
+      "url": "https://finansforbundet.dk/en/local-unions/finansforbundet-in-danske-bank-en/news-from-finansforbundet-i-danske-bank/2026/tough-day-at-danske-bank/",
+      "type": "stakeholder_primary",
+      "access_status": "retrieved",
+      "use": "Cross-check layoffs, worker impact and management narratives; retain stakeholder attribution."
+    },
+    {
+      "name": "Layoffs.fyi",
+      "url": "https://layoffs.fyi/",
+      "type": "discovery_tracker",
+      "access_status": "landing_page_retrieved_embedded_table_not_extracted",
+      "use": "Discover tech layoffs, then verify original event and AI linkage. No new candidate count claimed from this channel."
+    },
+    {
+      "name": "GenAI Brief",
+      "url": "https://www.genaibrief.com/data/ai-layoffs/",
+      "type": "discovery_tracker",
+      "access_status": "retrieved",
+      "use": "Follow source-linked events and JSON/CSV export links. Tracker classifications and totals are not verified evidence; BAT outsourced roles illustrate the need for independent count reconciliation."
+    }
+  ],
+  "new_candidates_claimed": 0
+}

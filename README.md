@@ -188,7 +188,7 @@ company 1 ──< ai_impact 1 ──< source
 - `company` — 公司本身**不带归因结论**。`region` 由 `country_code` 推导后落库，
   国家用 `char(2)` + 应用层白名单，不做枚举。
 - `ai_impact` — 一次「AI 影响事件」。一家公司可以有多条（Chegg 2023 / 2025 各一条）。
-  `impact_type` 与 `attribution_confidence` **都没有数据库默认值**：没人工选过就建不出这行。
+  `impact_type` and `attribution_confidence` have no database defaults: an editor or an audited machine assessment must supply both explicitly.
 - `source` — 一条来源引述，挂在 `ai_impact` 上。`url` / `media_name` / `published_at` / `quote`
   全部 NOT NULL。
 
@@ -219,10 +219,11 @@ company 1 ──< ai_impact 1 ──< source
 5. （§1.9）`link_health = 'bot_blocked'` 的来源必须 `manually_verified = true`。
 
 任一条不满足就拒绝发布，并在界面上逐条列出原因与补救办法。
-这些规则校验的是「**所声称的**置信度有没有证据支撑」，不替录入人判断归因：
-置信度只能由人工选择，降档也只能由人工决定。
-
-**本代码库不含任何自动推断「是否因 AI 倒闭」的逻辑**，归因只来自人工标注 + 来源留痕。
+These rules validate the claimed evidence strength; they do not independently prove AI causation.
+Editors can select confidence in the admin form. Machine ingestion requires an explicit assessment,
+fresh source retrieval, matching quotations, and an audit trail without human-review stamps.
+See [Machine ingestion](docs/INGESTION.md) for the historical batch, authenticated daily retry,
+deployment prerequisites, and the separate new-company discovery capability.
 
 ### 删除与下架
 

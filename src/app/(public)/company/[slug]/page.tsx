@@ -248,7 +248,7 @@ function EventSection({ event }: { event: PublicEvent }) {
                 {item.linkHealth !== "ok" ? (
                   <Badge
                     variant="outline"
-                    title="链接状态由人工核对；原文可能需要换用归档链接访问"
+                    title="记录所列的来源链接校验状态；原文可能需要换用归档链接访问"
                   >
                     链接状态：{labelOf(LINK_HEALTH, item.linkHealth)}
                   </Badge>
@@ -307,7 +307,7 @@ function EventSection({ event }: { event: PublicEvent }) {
                 ) : null}
                 {item.manuallyVerified ? (
                   <span className="text-muted-foreground">已人工打开核对</span>
-                ) : null}
+                ) : <span className="text-muted-foreground">未标记人工核验</span>}
               </div>
             </li>
           ))}

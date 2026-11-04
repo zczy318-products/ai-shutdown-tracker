@@ -57,8 +57,8 @@ type Props = {
 
 export function SubscribeForm({
   source,
-  title = "订阅新增记录",
-  description = "有新记录发布时收一封邮件。只需要一个邮箱，不用注册、不用设密码，退订一步生效。",
+  title = "跟进新增记录与重要修订",
+  description = "登记邮箱，关注新增档案与重要修订。当前仅收集订阅，邮件发送尚未开放。",
 }: Props) {
   const pathname = usePathname();
   const [state, formAction, pending] = useActionState<SubscribeFormState, FormData>(
@@ -69,7 +69,7 @@ export function SubscribeForm({
   const copy = state?.status === "ok" ? successCopy(state.canDeliver) : null;
 
   return (
-    <section className="bg-muted/40 rounded-lg border p-5">
+    <section className="subscribe-panel bg-card rounded-lg border p-5">
       <h2 className="text-base font-medium">{title}</h2>
       <p className="text-muted-foreground mt-1 text-sm">{description}</p>
 
@@ -81,7 +81,7 @@ export function SubscribeForm({
       ) : (
         <form action={formAction} className="mt-4 flex flex-wrap items-end gap-3">
           <input type="hidden" name="source" value={source ?? pathname} />
-          <div className="min-w-56 flex-1 space-y-2">
+          <div className="min-w-0 flex-1 space-y-2">
             <Label htmlFor="subscribe-email">邮箱</Label>
             <Input
               id="subscribe-email"
@@ -94,7 +94,7 @@ export function SubscribeForm({
             />
           </div>
           <Button type="submit" disabled={pending}>
-            {pending ? "提交中…" : "订阅"}
+            {pending ? "提交中…" : "登记订阅"}
           </Button>
           {state?.status === "error" ? (
             <p role="alert" className="text-destructive w-full text-sm">

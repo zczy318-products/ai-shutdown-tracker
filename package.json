@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "build:vercel": "node scripts/vercel-build.mjs",
     "start": "next start",
     "typecheck": "tsc --noEmit",
     "db:generate": "drizzle-kit generate",
@@ -19,7 +20,11 @@
     "verify:saas": "node scripts/verify-saas-flow.mjs",
     "capture:acceptance": "node scripts/capture-acceptance.mjs",
     "verify:subscribe": "tsx scripts/verify-subscribe-flow.mts",
-    "verify:a11y": "node scripts/verify-a11y.mjs"
+    "verify:a11y": "node scripts/verify-a11y.mjs",
+    "import:research": "node --import tsx scripts/import-research.mts",
+    "verify:ingestion": "node --import tsx scripts/verify-ingestion.mts",
+    "verify:table": "node scripts/verify-table-ui.mjs",
+    "verify:build-gate": "node scripts/verify-build-gate.mjs"
   },
   "dependencies": {
     "@radix-ui/react-label": "^2.1.17",

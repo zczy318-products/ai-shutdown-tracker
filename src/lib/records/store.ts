@@ -223,9 +223,9 @@ export class RecordWriteError extends Error {
  */
 export async function saveRecord(
   input: RecordInput,
-  options: { impactId?: string; reviewedBy?: string | null } = {},
+  options: { impactId?: string; reviewedBy?: string | null; database?: Pick<Awaited<ReturnType<typeof getDb>>, "transaction">; machine?: boolean } = {},
 ): Promise<string> {
-  const db = await getDb();
+  const db = options.database ?? await getDb();
   const now = new Date();
 
   return db.transaction(async (tx) => {
@@ -343,7 +343,7 @@ export async function saveRecord(
     }
 
     // --- review stamp ------------------------------------------------------
-    if (input.status === "published" || input.status === "rejected") {
+    if (!options.machine && (input.status === "published" || input.status === "rejected")) {
       await tx
         .update(aiImpact)
         .set({ reviewedBy: options.reviewedBy ?? null, reviewedAt: now })
