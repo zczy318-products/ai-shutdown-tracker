@@ -1,0 +1,814 @@
+{
+  "schema_version": 1,
+  "research_date": "2026-11-04",
+  "title": "Confirmed historical company shutdowns",
+  "scope": "AI-related companies with completed whole-company operational cessation. Not a list of companies proven killed by AI, nor a current legal-dissolution census.",
+  "publication_status": "research_only",
+  "counts": {
+    "companies": 8,
+    "sources": 20,
+    "AI_displacement_causes_established": 0,
+    "production_records_written": 0
+  },
+  "methodology": {
+    "selection": "Company or founder statement and/or substantive reporting explicitly confirming completed company-wide closure. Announcements alone require follow-up confirmation.",
+    "dates": "Announcement dates are separate from closure dates and confirmed-closed-by dates. Null and unknown are intentional.",
+    "asset_continuation": "Subsequent asset sales do not erase a prior closure. Acquisitions without evidence of cessation do not qualify.",
+    "source_access": "Read source text via Firecrawl; quotes are short evidence anchors. No claim of manual human review or successful runtime-importer fetch.",
+    "current_status_limit": "Historical outcomes were checked. Legal dissolution, continuous operating status through 2026, and every later transaction were not exhaustively audited.",
+    "Jev_used": false,
+    "Firecrawl_reported_credits": 87,
+    "cost_note": "44 root plus 43 research-agent credits from returned receipts. Monetary charge was not returned; no new paid service was enabled."
+  },
+  "companies": [
+    {
+      "id": "nintee",
+      "name": "Nintee",
+      "business": "AI-driven weight-loss/habit-coaching startup, later consumer learning experiments.",
+      "closure_status": "ceased_operations",
+      "closure_scope": "whole_company",
+      "closure_date": {
+        "value": "2024",
+        "precision": "year",
+        "basis": "April 30 is the dated founder announcement. The year-end founder retrospective proves actual closure during 2024; exact final operating day/month and legal dissolution are unverified."
+      },
+      "announced_on": "2024-04-30",
+      "announcement_month": null,
+      "confirmed_closed_by": "2024-12-31",
+      "closure_evidence_summary": "Founder farewell concerns Nintee itself and severance for everyone; year-end founder account explicitly confirms the startup was shut down and remaining funding was returned.",
+      "ai_relationship": "AI-driven weight-loss/habit-coaching startup, later consumer learning experiments.",
+      "ai_displacement_causation": "not_established",
+      "closure_reason": "Not established. Founder cites unvalidated business hypothesis, difficulty changing habits, lack of product-market fit and VC-scale conviction; this is an AI business failure, not demonstrated displacement by AI.",
+      "historical_scale": {
+        "employees_approximate": 10,
+        "employees_at_exact_closure": null,
+        "source_ids": [
+          "nintee-founder-retrospective"
+        ],
+        "note": "Founder retrospectively describes a team of about ten. Do not infer exact layoffs or census at closure.",
+        "scope": "whole_company_or_startup_team_as_reported_not_confirmed_closure_day_census",
+        "period": "during_startup_life_before_2024_closure_as_recalled_2024_12_31"
+      },
+      "legal_entity_name": null,
+      "legal_dissolution_status": "not_verified",
+      "subsequent_developments": "Original farewell offered four months severance and jobs at VWO; retrospective reports six months and offers at Wingify. Preserve the discrepancy; job offers at another company do not mean Nintee kept operating.",
+      "followup_check": {
+        "completed": true,
+        "evidence_ids": [
+          "nintee-founder-retrospective",
+          "nintee-founder-farewell"
+        ],
+        "finding": "Founder retrospective confirms actual closure, not merely future intent; live Nintee site still presents farewell. No Nintee restart established in the read sources. This is not an exhaustive current company-register check."
+      },
+      "unknown_fields": [
+        "exact_legal_entity",
+        "legal_dissolution",
+        "exact_last_operating_day",
+        "final_staff_transfer_count",
+        "reason_for_severance_month_discrepancy"
+      ],
+      "verification_scope": "Historical whole-company operational closure; no exhaustive current registry audit.",
+      "publication_status": "research_only",
+      "machine_record_generated": false,
+      "sources": [
+        {
+          "id": "nintee-founder-farewell",
+          "url": "https://nintee.com/",
+          "publisher": "Paras Chopra / Nintee",
+          "published_at": "2024-04-30",
+          "quotes": [
+            "We're officially wrapping up Nintee"
+          ],
+          "quote_language": "en",
+          "source_type": "founder_statement",
+          "direct_read_status": "full_page_text_retrieved",
+          "retrieval_tool": "Firecrawl scrape",
+          "retrieved_on": "2026-11-04",
+          "human_verified": false,
+          "supports": [
+            "dated_company_wide_farewell",
+            "AI_business_identity",
+            "whole_team_severance_offer"
+          ],
+          "access_status": "full_page_text_retrieved",
+          "source_kind": "founder_statement"
+        },
+        {
+          "id": "nintee-founder-retrospective",
+          "url": "https://invertedpassion.com/2024-wrapped/",
+          "publisher": "Paras Chopra",
+          "published_at": "2024-12-31",
+          "quotes": [
+            "Earlier in the year, I shut down my startup",
+            "I had an amazing team of ~10 people."
+          ],
+          "quote_language": "en",
+          "source_type": "founder_retrospective",
+          "direct_read_status": "full_page_text_retrieved",
+          "retrieval_tool": "Firecrawl scrape",
+          "retrieved_on": "2026-11-04",
+          "human_verified": false,
+          "supports": [
+            "actual_startup_shutdown",
+            "historical_team_size",
+            "funding_return",
+            "alternative_causes"
+          ],
+          "access_status": "full_page_text_retrieved",
+          "source_kind": "founder_retrospective"
+        }
+      ]
+    },
+    {
+      "id": "ghost-autonomy",
+      "name": "Ghost Autonomy",
+      "business": "Autonomous driving software",
+      "closure_date": {
+        "value": "2024-04-03",
+        "precision": "day",
+        "basis": "Company statement reported on the effective date"
+      },
+      "announced_on": "2024-04-03",
+      "ai_relationship": "AI/autonomous-driving company; OpenAI-backed",
+      "closure_reason": "Company and CEO cited funding constraints and the long commercialization runway.",
+      "subsequent_developments": "Applied Intuition bought the patent portfolio in October 2024. This is an asset sale following closure, not evidence Ghost continued operations.",
+      "sources": [
+        {
+          "id": "ghost-closure",
+          "url": "https://techcrunch.com/2024/04/03/openai-backed-ghost-autonomy-shuts-down/",
+          "published_at": "2024-04-03",
+          "source_kind": "reporting",
+          "supports": "whole-company cessation; approximate headcount; AI business; cause",
+          "quote_language": "en",
+          "access_status": "full_text_read",
+          "retrieved_on": "2026-11-04",
+          "http_status": 200,
+          "cache_state": "hit",
+          "cached_at": "2026-11-04T11:05:47.393Z",
+          "human_reviewed": false,
+          "quotes": [
+            "it ended worldwide operations and wound down the company"
+          ],
+          "retrieval_tool": "Firecrawl scrape"
+        },
+        {
+          "id": "ghost-patents",
+          "url": "https://www.appliedintuition.com/press-releases/applied-intuition-ghost-autonomy-patents",
+          "published_at": "2024-10-22",
+          "source_kind": "buyer_statement",
+          "supports": "subsequent patent sale",
+          "quote_language": "en",
+          "access_status": "full_text_read",
+          "retrieved_on": "2026-11-04",
+          "http_status": 200,
+          "cache_state": "miss",
+          "cached_at": null,
+          "human_reviewed": false,
+          "quotes": [
+            "today announced its acquisition of Ghost Autonomy’s patent portfolio."
+          ],
+          "retrieval_tool": "Firecrawl scrape"
+        }
+      ],
+      "closure_status": "ceased_operations",
+      "closure_scope": "whole_company",
+      "legal_dissolution_status": "not_verified",
+      "ai_displacement_causation": "not_established",
+      "verification_scope": "Evidence supports a historical whole-company closure; no registry dissolution or exhaustive current-status audit.",
+      "publication_status": "research_only",
+      "machine_record_generated": false,
+      "legal_entity_name": null,
+      "confirmed_closed_by": "2024-04-03",
+      "historical_scale": {
+        "value": 100,
+        "qualifier": "approximately",
+        "scope": "company",
+        "as_of": "2024-04",
+        "source_ids": [
+          "ghost-closure"
+        ]
+      },
+      "closure_evidence_summary": "Company statement confirms worldwide operations ended and company wound down on April 3, 2024."
+    },
+    {
+      "id": "olive-ai",
+      "name": "Olive AI (formerly CrossChx)",
+      "business": "Healthcare revenue-cycle and prior-authorization automation using AI, machine learning and other automation.",
+      "closure_status": "ceased_operations",
+      "closure_scope": "whole_company",
+      "closure_date": {
+        "value": "2023-10",
+        "precision": "month",
+        "basis": "October 31 is announcement date. Public company profile explicitly dates cessation to October; exact final operating day is not proven."
+      },
+      "announced_on": "2023-10-31",
+      "announcement_month": null,
+      "confirmed_closed_by": "2024-06-20",
+      "closure_evidence_summary": "Original announcement described winding down all remainder after selling core units; adviser confirms completed asset transactions, current public company profile explicitly states cessation in October 2023, and subsequent reporting describes the original company as shuttered.",
+      "ai_relationship": "Healthcare revenue-cycle and prior-authorization automation using AI, machine learning and other automation.",
+      "ai_displacement_causation": "not_established",
+      "closure_reason": "Transaction adviser cites operational/macroeconomic constraints, liquidity problems, debt-service inability and uncertain profitability. No evidence read establishes displacement by competing AI.",
+      "historical_scale": {
+        "employees_approximate": null,
+        "employees_at_exact_closure": null,
+        "source_ids": [],
+        "note": "The read sources report earlier job cuts, not a reliable whole-company workforce census. No total inferred.",
+        "scope": "whole_company_or_startup_team_as_reported_not_confirmed_closure_day_census",
+        "period": null
+      },
+      "legal_entity_name": null,
+      "legal_dissolution_status": "not_verified",
+      "subsequent_developments": "Waystar acquired Clearinghouse and Patient Access; Humata Health acquired Prior Authorization. Those businesses and technology continued under buyers. Original Olive company cessation must not be presented as every product being discontinued or Humata being the same surviving company.",
+      "followup_check": {
+        "completed": true,
+        "evidence_ids": [
+          "olive-adviser",
+          "olive-profile",
+          "olive-2024-retrospective"
+        ],
+        "finding": "Adviser confirms closed sales; June 2024 reporting discusses Humata as successor asset buyer and original Olive as shuttered. Old Olive announcement URL now redirects to Waystar. Profile metadata can contain stale product listings; only its explicit cessation statement is used."
+      },
+      "unknown_fields": [
+        "exact_legal_entity",
+        "legal_dissolution",
+        "exact_last_operating_day",
+        "final_employee_total",
+        "total_job_losses_after_staff_transfers"
+      ],
+      "verification_scope": "Historical whole-company operational closure; no exhaustive current registry audit.",
+      "publication_status": "research_only",
+      "machine_record_generated": false,
+      "sources": [
+        {
+          "id": "olive-announcement-report",
+          "url": "https://www.fiercehealthcare.com/health-tech/once-high-flying-unicorn-olive-ai-sells-two-key-businesses-winds-down-operations",
+          "publisher": "Fierce Healthcare",
+          "published_at": "2023-10-31",
+          "quotes": [
+            "With the sale of our core business units, Olive will wind down the remainder of its business"
+          ],
+          "quote_language": "en",
+          "source_type": "reporting",
+          "direct_read_status": "full_article_text_retrieved",
+          "retrieval_tool": "Firecrawl scrape",
+          "retrieved_on": "2026-11-04",
+          "human_verified": false,
+          "supports": [
+            "whole_company_winddown_scope",
+            "sale_units",
+            "company_statement_quote",
+            "alternative_drivers"
+          ],
+          "access_status": "full_article_text_retrieved",
+          "source_kind": "reporting"
+        },
+        {
+          "id": "olive-adviser",
+          "url": "https://www.lincolninternational.com/transactions/olive-ai-has-sold-substantially-all-of-its-assets-to-waystar-and-humata-health/",
+          "publisher": "Lincoln International",
+          "published_at": null,
+          "quotes": [
+            "successfully close two out-of-court transactions before the company’s liquidity ended."
+          ],
+          "quote_language": "en",
+          "source_type": "transaction_adviser",
+          "direct_read_status": "full_page_text_retrieved",
+          "retrieval_tool": "Firecrawl scrape",
+          "retrieved_on": "2026-11-04",
+          "human_verified": false,
+          "supports": [
+            "completed_asset_sales",
+            "liquidity_and_debt_constraints",
+            "buyer_identity"
+          ],
+          "access_status": "full_page_text_retrieved",
+          "source_kind": "transaction_adviser"
+        },
+        {
+          "id": "olive-profile",
+          "url": "https://www.cbinsights.com/company/crosschx",
+          "publisher": "CB Insights",
+          "published_at": null,
+          "quotes": [
+            "Olive ceased operations in October 2023."
+          ],
+          "quote_language": "en",
+          "source_type": "public_company_profile",
+          "direct_read_status": "public_profile_text_retrieved",
+          "retrieval_tool": "Firecrawl scrape",
+          "retrieved_on": "2026-11-04",
+          "human_verified": false,
+          "supports": [
+            "retrospective_actual_cessation",
+            "cessation_month",
+            "entity_alias"
+          ],
+          "access_status": "public_profile_text_retrieved",
+          "source_kind": "public_company_profile"
+        },
+        {
+          "id": "olive-2024-retrospective",
+          "url": "https://www.axios.com/pro/health-tech-deals/2024/06/20/ex-olive-exec-gets-25m-for-humata-health",
+          "publisher": "Axios",
+          "published_at": "2024-06-20",
+          "quotes": [
+            "now-shuttered"
+          ],
+          "quote_language": "en",
+          "source_type": "reporting",
+          "direct_read_status": "article_text_returned_with_paywall_notice",
+          "retrieval_tool": "Firecrawl scrape",
+          "retrieved_on": "2026-11-04",
+          "human_verified": false,
+          "supports": [
+            "retrospective_company_cessation",
+            "Humata_asset_continuation"
+          ],
+          "access_status": "article_text_returned_with_paywall_notice",
+          "source_kind": "reporting"
+        }
+      ]
+    },
+    {
+      "id": "argo-ai",
+      "name": "Argo AI",
+      "business": "Autonomous-driving software company using machine learning and robotics.",
+      "closure_status": "ceased_operations",
+      "closure_scope": "whole_company",
+      "closure_date": {
+        "value": null,
+        "precision": "unknown",
+        "basis": "October 26, 2022 is the announcement/report date only. March 2, 2023 reporting confirms winding-down already occurred; the read sources do not independently establish a final operating day or completion month."
+      },
+      "announced_on": "2022-10-26",
+      "announcement_month": null,
+      "confirmed_closed_by": "2023-03-02",
+      "closure_evidence_summary": "Initial October report is future-tense; March 2023 retrospective explicitly says operations were wound down, while Ford confirms hiring former Argo workers into a newly established subsidiary.",
+      "ai_relationship": "Autonomous-driving software company using machine learning and robotics.",
+      "ai_displacement_causation": "not_established",
+      "closure_reason": "Sources establish withdrawal/reallocation of automaker backing and shift toward driver-assist work, not displacement by a competing AI product.",
+      "historical_scale": {
+        "employees_lower_bound": 2000,
+        "qualifier": "more_than",
+        "period": "after_July_2022_reduction",
+        "employees_at_exact_closure": null,
+        "source_ids": [
+          "argo-2022-reuters"
+        ],
+        "note": "Workforce size is not net layoffs: some people transferred to Ford or Volkswagen.",
+        "scope": "whole_company_or_startup_team_as_reported_not_confirmed_closure_day_census"
+      },
+      "legal_entity_name": null,
+      "legal_dissolution_status": "not_verified",
+      "subsequent_developments": "Technology, assets and some employees moved to Ford and Volkswagen. Ford Latitude AI is a distinct subsidiary using former Argo talent, not proof original Argo remained operating. No 2,000-person layoff claim is made.",
+      "followup_check": {
+        "completed": true,
+        "evidence_ids": [
+          "argo-2023-retrospective",
+          "argo-ford-latitude"
+        ],
+        "finding": "March 2023 reporting confirms Argo closure already occurred. Ford official announcement confirms about 550 former Argo hires into Latitude and a strategic change. No original-company restart established in the sources read."
+      },
+      "unknown_fields": [
+        "exact_legal_entity",
+        "legal_dissolution",
+        "final_operating_day",
+        "final_headcount",
+        "net_job_losses",
+        "complete_asset_disposition"
+      ],
+      "verification_scope": "Historical whole-company operational closure; no exhaustive current registry audit.",
+      "publication_status": "research_only",
+      "machine_record_generated": false,
+      "sources": [
+        {
+          "id": "argo-2022-reuters",
+          "url": "https://www.reuters.com/technology/ford-volkswagen-backed-argo-ai-shut-down-techcrunch-2022-10-26/",
+          "publisher": "Reuters",
+          "published_at": "2022-10-26",
+          "quotes": [
+            "It still had over 2,000 employees globally after the job cuts."
+          ],
+          "quote_language": "en",
+          "source_type": "reporting",
+          "direct_read_status": "full_article_text_retrieved",
+          "retrieval_tool": "Firecrawl scrape",
+          "retrieved_on": "2026-11-04",
+          "human_verified": false,
+          "supports": [
+            "announcement_date",
+            "historical_workforce",
+            "transfer_uncertainty"
+          ],
+          "access_status": "full_article_text_retrieved",
+          "source_kind": "reporting"
+        },
+        {
+          "id": "argo-2023-retrospective",
+          "url": "https://www.cnbc.com/2023/03/02/ford-launches-automated-driving-unit-latitude-ai-months-after-winding-down-argo-.html",
+          "publisher": "Reuters via CNBC",
+          "published_at": "2023-03-02",
+          "quotes": [
+            "months after winding down operations of its former self-driving technology unit Argo AI."
+          ],
+          "quote_language": "en",
+          "source_type": "reporting",
+          "direct_read_status": "full_article_text_retrieved",
+          "retrieval_tool": "Firecrawl scrape",
+          "retrieved_on": "2026-11-04",
+          "human_verified": false,
+          "supports": [
+            "retrospective_actual_company_closure",
+            "successor_limits"
+          ],
+          "access_status": "full_article_text_retrieved",
+          "source_kind": "reporting"
+        },
+        {
+          "id": "argo-ford-latitude",
+          "url": "https://www.fromtheroad.ford.com/us/en/articles/2023/ford-establishes-latitude-ai-to-develop-future-automated-driving-technology",
+          "publisher": "Ford",
+          "published_at": "2023-03-02",
+          "quotes": [
+            "Ford hired about 550 employees formerly of Argo AI"
+          ],
+          "quote_language": "en",
+          "source_type": "investor_successor_announcement",
+          "direct_read_status": "full_page_text_retrieved",
+          "retrieval_tool": "Firecrawl scrape",
+          "retrieved_on": "2026-11-04",
+          "human_verified": false,
+          "supports": [
+            "staff_transfer",
+            "distinct_new_subsidiary",
+            "strategic_shift"
+          ],
+          "access_status": "full_page_text_retrieved",
+          "source_kind": "investor_successor_announcement"
+        }
+      ]
+    },
+    {
+      "id": "kite",
+      "name": "Kite (AI coding assistant company)",
+      "business": "Startup selling AI-assisted programming and code completion.",
+      "closure_status": "ceased_operations",
+      "closure_scope": "whole_company",
+      "closure_date": {
+        "value": null,
+        "precision": "unknown",
+        "basis": "Public farewell was in November 2022; founder describes the venture as operating from 2014 to 2021 and software had been unavailable earlier. Do not manufacture a precise 2022 shutdown day."
+      },
+      "announced_on": null,
+      "announcement_month": "2022-11",
+      "confirmed_closed_by": "2022-11-21",
+      "closure_evidence_summary": "DevClass explicitly reports that the company has officially closed down; Silicon Republic says it will not continue as a business and quotes founder saying development and support have stopped.",
+      "ai_relationship": "Startup selling AI-assisted programming and code completion.",
+      "ai_displacement_causation": "not_established",
+      "closure_reason": "Founder says model capability was not mature enough and monetization failed; no verified claim that another AI replaced the company. Competition discussion is not proof of causality.",
+      "historical_scale": {
+        "employees_approximate": 15,
+        "employees_at_exact_closure": null,
+        "source_ids": [
+          "kite-devclass"
+        ],
+        "note": "Historical size reported by DevClass, not a closure-time payroll count.",
+        "scope": "whole_company_or_startup_team_as_reported_not_confirmed_closure_day_census",
+        "period": "unspecified_historical_time_before_2022_11_21_report"
+      },
+      "legal_entity_name": null,
+      "legal_dissolution_status": "not_verified",
+      "subsequent_developments": "Much of the code was open sourced. A surviving public repository and installable forks do not show an operating Kite business. Original farewell URL now redirects to a domain-inquiry landing page.",
+      "followup_check": {
+        "completed": true,
+        "evidence_ids": [
+          "kite-devclass",
+          "kite-siliconrepublic",
+          "kite-repository"
+        ],
+        "finding": "Directly read public code repository preserves old code and past-tense project history; it is not a restart notice. Original corporate blog is unavailable at its historical URL. No restart of the original company established in the read sources."
+      },
+      "unknown_fields": [
+        "exact_legal_entity",
+        "exact_last_operating_day",
+        "final_headcount",
+        "legal_dissolution",
+        "any_later_asset_owner"
+      ],
+      "verification_scope": "Historical whole-company operational closure; no exhaustive current registry audit.",
+      "publication_status": "research_only",
+      "machine_record_generated": false,
+      "sources": [
+        {
+          "id": "kite-devclass",
+          "url": "https://www.devclass.com/development/2022/11/21/kite-ai-coding-pulled-down-to-earth-because-our-500k-developers-would-not-pay-to-use-it-now-open-source/1631387",
+          "publisher": "DevClass",
+          "published_at": "2022-11-21",
+          "quotes": [
+            "has officially closed down",
+            "grew to have around 15 employees."
+          ],
+          "quote_language": "en",
+          "source_type": "reporting",
+          "direct_read_status": "full_article_text_retrieved",
+          "retrieval_tool": "Firecrawl scrape",
+          "retrieved_on": "2026-11-04",
+          "human_verified": false,
+          "supports": [
+            "actual_company_shutdown",
+            "historical_size"
+          ],
+          "access_status": "full_article_text_retrieved",
+          "source_kind": "reporting"
+        },
+        {
+          "id": "kite-siliconrepublic",
+          "url": "https://www.siliconrepublic.com/machines/kite-ai-developer-assistant-coding-adam-smith-open-source",
+          "publisher": "Silicon Republic",
+          "published_at": "2022-11-22",
+          "quotes": [
+            "While Kite will not be going forward as a business any longer"
+          ],
+          "quote_language": "en",
+          "source_type": "reporting",
+          "direct_read_status": "full_article_text_retrieved",
+          "retrieval_tool": "Firecrawl scrape",
+          "retrieved_on": "2026-11-04",
+          "human_verified": false,
+          "supports": [
+            "company_not_product_scope",
+            "founder_explanation",
+            "open_source_continuation"
+          ],
+          "access_status": "full_article_text_retrieved",
+          "source_kind": "reporting"
+        },
+        {
+          "id": "kite-repository",
+          "url": "https://github.com/kiteco/kiteco-public",
+          "publisher": "Kite / Adam Smith",
+          "published_at": null,
+          "quotes": [
+            "This is a public version of the main Kite repo"
+          ],
+          "quote_language": "en",
+          "source_type": "company_code_repository",
+          "direct_read_status": "public_repository_text_retrieved",
+          "retrieval_tool": "Firecrawl scrape",
+          "retrieved_on": "2026-11-04",
+          "human_verified": false,
+          "supports": [
+            "source_code_survival_not_business_continuation"
+          ],
+          "access_status": "public_repository_text_retrieved",
+          "source_kind": "company_code_repository"
+        }
+      ]
+    },
+    {
+      "id": "starsky-robotics",
+      "name": "Starsky Robotics",
+      "business": "Autonomous trucking",
+      "closure_date": {
+        "value": "2020",
+        "precision": "year",
+        "basis": "Later retrospective confirms 2020; March 19 is announcement date, not a verified final operating day"
+      },
+      "announced_on": "2020-03-19",
+      "ai_relationship": "Autonomous-driving company; founder discusses limitations and unmet expectations of AI",
+      "closure_reason": "Founder cited failed Series B financing, investor disinterest, safety commercialization challenges and trucking recession.",
+      "subsequent_developments": "Founder later started a different company, Polymath Robotics. The 2022 report describes Starsky as already shut down; it does not report a Starsky restart.",
+      "sources": [
+        {
+          "id": "starsky-founder",
+          "url": "https://medium.com/starsky-robotics-blog/the-end-of-starsky-robotics-acb8a6a8a5f5",
+          "published_at": "2020-03-19",
+          "source_kind": "founder_statement",
+          "supports": "founder closure account; financing explanation",
+          "quote_language": "en",
+          "access_status": "full_text_read",
+          "retrieved_on": "2026-11-04",
+          "http_status": 200,
+          "cache_state": "miss",
+          "cached_at": null,
+          "human_reviewed": false,
+          "quotes": [
+            "And in 2020, we’re shutting down."
+          ],
+          "retrieval_tool": "Firecrawl scrape"
+        },
+        {
+          "id": "starsky-retrospective",
+          "url": "https://www.therobotreport.com/polymath-robotics-exits-stealth-plug-and-play-autonomy/",
+          "published_at": "2022-08-10",
+          "source_kind": "reporting",
+          "supports": "completed historical closure; distinct later company",
+          "quote_language": "en",
+          "access_status": "full_text_read",
+          "retrieved_on": "2026-11-04",
+          "http_status": 200,
+          "cache_state": "miss",
+          "cached_at": null,
+          "human_reviewed": false,
+          "quotes": [
+            "that shut down in 2020"
+          ],
+          "retrieval_tool": "Firecrawl scrape"
+        }
+      ],
+      "closure_status": "ceased_operations",
+      "closure_scope": "whole_company",
+      "legal_dissolution_status": "not_verified",
+      "ai_displacement_causation": "not_established",
+      "verification_scope": "Evidence supports a historical whole-company closure; no registry dissolution or exhaustive current-status audit.",
+      "publication_status": "research_only",
+      "machine_record_generated": false,
+      "legal_entity_name": null,
+      "confirmed_closed_by": "2022-08-10",
+      "historical_scale": {
+        "value": null,
+        "qualifier": "unknown",
+        "scope": "company",
+        "as_of": null,
+        "source_ids": [],
+        "note": "Founder mentions 30 engineers, which is not total company headcount."
+      },
+      "closure_evidence_summary": "Founder announced closure in March 2020; retrospective explicitly confirms company shut down in 2020."
+    },
+    {
+      "id": "aria-insights",
+      "name": "Aria Insights (formerly CyPhy Works)",
+      "business": "Drone analytics and autonomous systems",
+      "closure_date": {
+        "value": "2019-03-21",
+        "precision": "day",
+        "basis": "Explicit effective date in company statement"
+      },
+      "announced_on": "2019-03-22",
+      "ai_relationship": "Company pivoted to AI/data-driven drone analytics before closure",
+      "closure_reason": "Not disclosed in the retrieved closure statement.",
+      "subsequent_developments": "FLIR acquired IP and certain operating assets in October 2019 and integrated them into its division. FLIR explicitly confirms the original company ceased operating in March.",
+      "sources": [
+        {
+          "id": "aria-closure",
+          "url": "https://techcrunch.com/2019/03/22/drone-analytics-startup-aria-insights-suddenly-shutters/",
+          "published_at": "2019-03-22",
+          "source_kind": "reporting",
+          "supports": "company statement; precise cessation date; AI business",
+          "quote_language": "en",
+          "access_status": "full_text_read",
+          "retrieved_on": "2026-11-04",
+          "http_status": 200,
+          "cache_state": "miss",
+          "cached_at": null,
+          "human_reviewed": false,
+          "quotes": [
+            "Aria Insights has ceased operations effective March 21, 2019."
+          ],
+          "retrieval_tool": "Firecrawl scrape"
+        },
+        {
+          "id": "aria-flir",
+          "url": "https://www.flir.com/news-center/press-releases/flir-acquires-tethered-drone-assets-and-technology-from-aria-insights/",
+          "published_at": "2019-10-02",
+          "source_kind": "buyer_statement",
+          "supports": "completed cessation; subsequent asset sale",
+          "quote_language": "en",
+          "access_status": "full_text_read",
+          "retrieved_on": "2026-11-04",
+          "http_status": 200,
+          "cache_state": "miss",
+          "cached_at": null,
+          "human_reviewed": false,
+          "quotes": [
+            "The company ceased operations in March 2019."
+          ],
+          "retrieval_tool": "Firecrawl scrape"
+        }
+      ],
+      "closure_status": "ceased_operations",
+      "closure_scope": "whole_company",
+      "legal_dissolution_status": "not_verified",
+      "ai_displacement_causation": "not_established",
+      "verification_scope": "Evidence supports a historical whole-company closure; no registry dissolution or exhaustive current-status audit.",
+      "publication_status": "research_only",
+      "machine_record_generated": false,
+      "legal_entity_name": null,
+      "confirmed_closed_by": "2019-03-22",
+      "historical_scale": {
+        "value": null,
+        "qualifier": "unknown",
+        "scope": "company",
+        "as_of": null,
+        "source_ids": []
+      },
+      "closure_evidence_summary": "Company explicitly states March 21, 2019 cessation; asset buyer subsequently confirms it."
+    },
+    {
+      "id": "lighthouse-ai",
+      "name": "Lighthouse AI",
+      "business": "AI home security cameras",
+      "closure_date": {
+        "value": "2018-12",
+        "precision": "month",
+        "basis": "March 2019 retrospective explicitly confirms closure in the previous December"
+      },
+      "announced_on": "2018-12-18",
+      "ai_relationship": "AI and 3D-sensing consumer camera company",
+      "closure_reason": "CEO cited lack of commercial success. Reporting discussed crowded market and price; AI replacement causation is unestablished.",
+      "subsequent_developments": "Apple acquired its patents, reported in March 2019. Do not confuse this company with later businesses named Lighthouse.",
+      "sources": [
+        {
+          "id": "lighthouse-announcement",
+          "url": "https://techcrunch.com/2018/12/18/smart-security-camera-maker-lighthouse-ai-shuts-down/",
+          "published_at": "2018-12-18",
+          "source_kind": "reporting",
+          "supports": "CEO statement; AI business; closure announced",
+          "quote_language": "en",
+          "access_status": "full_text_read",
+          "retrieved_on": "2026-11-04",
+          "http_status": 200,
+          "cache_state": "miss",
+          "cached_at": null,
+          "human_reviewed": false,
+          "quotes": [
+            "we did not achieve the commercial success we were looking for"
+          ],
+          "retrieval_tool": "Firecrawl scrape"
+        },
+        {
+          "id": "lighthouse-completed",
+          "url": "https://www.cepro.com/news/apple_patents_smart_security_start_up_lighthouse_ai/7904/",
+          "published_at": "2019-03-08",
+          "source_kind": "reporting",
+          "supports": "completed company closure; patent disposition",
+          "quote_language": "en",
+          "access_status": "full_text_read",
+          "retrieved_on": "2026-11-04",
+          "http_status": 200,
+          "cache_state": "miss",
+          "cached_at": null,
+          "human_reviewed": false,
+          "quotes": [
+            "The company shut down last December due to a lack of commercial success."
+          ],
+          "retrieval_tool": "Firecrawl scrape"
+        }
+      ],
+      "closure_status": "ceased_operations",
+      "closure_scope": "whole_company",
+      "legal_dissolution_status": "not_verified",
+      "ai_displacement_causation": "not_established",
+      "verification_scope": "Evidence supports a historical whole-company closure; no registry dissolution or exhaustive current-status audit.",
+      "publication_status": "research_only",
+      "machine_record_generated": false,
+      "legal_entity_name": null,
+      "confirmed_closed_by": "2019-03-08",
+      "historical_scale": {
+        "value": null,
+        "qualifier": "unknown",
+        "scope": "company",
+        "as_of": null,
+        "source_ids": []
+      },
+      "closure_evidence_summary": "CEO announced company closure; March 2019 retrospective explicitly confirms it shut down in December 2018."
+    }
+  ],
+  "excluded_or_deferred": [
+    {
+      "name": "Abundant Robotics / Abundant Robots",
+      "disposition": "excluded_from_simple_closed_company_list",
+      "reason": "Original business closed in 2021 but IP was acquired and the brand/business relaunched under new leadership. Preserve entity history before any future inclusion.",
+      "source_url": "https://www.therobotreport.com/will-core-changes-be-enough-for-abundant-robots/",
+      "source_access": "full_text_read",
+      "source_date": "2022-02-14"
+    },
+    {
+      "name": "Utrip",
+      "disposition": "deferred",
+      "reason": "Read announcement says company is ceasing operations and services will remain online until June 7, 2019. Completed company-wide cessation was not corroborated within this batch.",
+      "source_url": "https://www.geekwire.com/2019/seattle-travel-planning-startup-utrip-will-shut-critical-deal-falls/",
+      "source_access": "full_text_read",
+      "source_date": "2019-05-07"
+    }
+  ],
+  "access_limitations": [
+    {
+      "url": "https://www.kite.com/blog/product/kite-is-saying-farewell/",
+      "final_url": "https://kite.com/",
+      "status": "redirect_to_domain_inquiry_landing_page",
+      "used_as_closure_evidence": false
+    },
+    {
+      "url": "https://oliveai.com/media-center/olive-announcement-oct-2023",
+      "final_url": "https://www.waystar.com/",
+      "status": "redirect_to_successor_homepage",
+      "used_as_original_announcement_evidence": false
+    },
+    {
+      "url": "https://www.bizjournals.com/columbus/news/2023/11/16/olive-ai-unicorn-shutdown-columbus-venture-capital.html",
+      "status": "paywall_preview_only",
+      "used_as_primary_qualification_evidence": false
+    }
+  ]
+}
