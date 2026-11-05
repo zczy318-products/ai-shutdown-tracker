@@ -1,6 +1,6 @@
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { requireUser } from "@/lib/auth";
+import { requireAdmin } from "@/lib/auth";
 import { SUBSCRIBER_STATUS, SUBSCRIBER_STATUS_VALUES, labelOf, type SubscriberStatus } from "@/lib/enums";
 import { getMailer } from "@/lib/mailer";
 import { countSubscribersByStatus, listRecentSubscribers } from "@/lib/subscribe/store";
@@ -52,11 +52,11 @@ function formatTimestamp(value: Date | null): string {
 }
 
 export default async function SubscribersPage() {
-  // Before any read, not only in the layout: see `requireUser`. A layout that
+  // Before any read, not only in the layout: see `requireAdmin`. A layout that
   // redirects still lets this page's queries run, and subscriber addresses are
   // the last thing that should be rendered into a response that is on its way
   // to someone being turned away.
-  await requireUser();
+  await requireAdmin();
 
   const [counts, rows] = await Promise.all([
     countSubscribersByStatus(),
@@ -88,7 +88,7 @@ export default async function SubscribersPage() {
             <>
               <p>
                 还没有接通邮件服务，当前是 <span className="font-mono">log</span>{" "}
-                驱动：确认邮件只写进服务端日志，并被标记为未送达。
+                驱动：邮件不会送出，日志默认隐藏邮箱和确认链接。
               </p>
               <p className="text-muted-foreground">
                 所以订阅会长期停在「待确认」——这是预期结果，不是故障。「已确认」的含义是本人点过邮件里的链接；没发过邮件就没人点过，

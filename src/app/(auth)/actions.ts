@@ -2,12 +2,16 @@
 
 import { eq } from "drizzle-orm";
 import { redirect } from "next/navigation";
+import { headers } from "next/headers";
 
 import { getDb } from "@/db";
 import { users } from "@/db/schema";
 import { createSession, destroyCurrentSession } from "@/lib/auth";
 import { hashPassword, verifyPassword } from "@/lib/password";
 import { credentialsSchema } from "@/lib/validation";
+import { consumeAuthBudget } from "@/lib/auth-rate-limit";
+import { clientAddress } from "@/lib/client-ip";
+import { isAdmin } from "@/lib/authorization";
 
 export type AuthFormState = { error: string } | null;
 
@@ -28,6 +32,9 @@ export async function register(
   }
 
   const { email, password } = parsed.data;
+  if (!(await consumeAuthBudget(email, clientAddress(await headers())))) {
+    return { error: "尝试过于频繁，请稍后再试。" };
+  }
   const db = await getDb();
 
   const existing = await db
@@ -53,7 +60,7 @@ export async function register(
   }
 
   await createSession(userId);
-  redirect("/admin");
+  redirect("/account");
 }
 
 export async function login(
@@ -66,6 +73,9 @@ export async function login(
   }
 
   const { email, password } = parsed.data;
+  if (!(await consumeAuthBudget(email, clientAddress(await headers())))) {
+    return { error: "尝试过于频繁，请稍后再试。" };
+  }
   const db = await getDb();
 
   const rows = await db
@@ -77,12 +87,15 @@ export async function login(
   const user = rows.at(0);
   // Same message for unknown email and wrong password: do not leak which
   // addresses are registered.
-  if (!user || !(await verifyPassword(password, user.passwordHash))) {
+  const matches = user
+    ? await verifyPassword(password, user.passwordHash)
+    : (await hashPassword(password), false);
+  if (!user || !matches) {
     return { error: "邮箱或密码不正确" };
   }
 
   await createSession(user.id);
-  redirect("/admin");
+  redirect(isAdmin(user) ? "/admin" : "/account");
 }
 
 export async function logout(): Promise<void> {

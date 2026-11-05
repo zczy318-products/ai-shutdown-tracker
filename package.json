@@ -17,7 +17,6 @@
     "verify:public": "node scripts/verify-public-pages.mjs",
     "verify:db": "node scripts/verify-db-constraints.mjs",
     "verify:pg": "node scripts/verify-postgres-migration.mjs",
-    "verify:saas": "node scripts/verify-saas-flow.mjs",
     "capture:acceptance": "node scripts/capture-acceptance.mjs",
     "verify:subscribe": "tsx scripts/verify-subscribe-flow.mts",
     "verify:a11y": "node scripts/verify-a11y.mjs",
@@ -25,7 +24,10 @@
     "verify:ingestion": "node --import tsx scripts/verify-ingestion.mts",
     "verify:table": "node scripts/verify-table-ui.mjs",
     "verify:build-gate": "node scripts/verify-build-gate.mjs",
-    "verify:shutdowns": "node --import tsx scripts/verify-shutdown-data.mts"
+    "verify:shutdowns": "node --import tsx scripts/verify-shutdown-data.mts",
+    "verify:account": "node scripts/verify-account-flow.mjs",
+    "verify:security": "node --import tsx scripts/verify-security.mts",
+    "security:secrets": "gitleaks git . --log-opts=\"--all --full-history\" --redact --no-banner"
   },
   "dependencies": {
     "@radix-ui/react-label": "^2.1.17",
@@ -55,5 +57,10 @@
     "tailwindcss": "^4.3.4",
     "tsx": "^4.23.15",
     "typescript": "^5.9.3"
+  },
+  "overrides": {
+    "@esbuild-kit/core-utils": {
+      "esbuild": "^0.25.12"
+    }
   }
 }

@@ -1,33 +1,28 @@
 import { headers } from "next/headers";
 
-/**
- * Absolute URLs for the links that go into an email.
- *
- * `NEXT_PUBLIC_APP_URL`, then Vercel's `VERCEL_URL`, then the request's own
- * `Host`. The header fallback is what lets local development and the
- * verification script produce working links on any port with no configuration.
- *
- * That fallback trusts `Host`, which a client controls. Survivable here and
- * nowhere else: the only links built this way are mailed to the address the
- * same request supplied, so a forged `Host` sends a broken link to the forger.
- * Never reuse this for a password reset or anything sent to a third party.
- *
- * (`src/lib/billing/config.ts` resolves an origin too, for Stripe's redirects.
- * It is a private function there and has no request to fall back on, so the
- * two stay separate rather than one importing the other.)
- */
+/** Require a trusted deployment origin; request headers are only used for loopback development. */
+export function trustedOrigin(raw: string): string {
+  const url = new URL(raw);
+  const loopback = ["localhost", "127.0.0.1", "[::1]"].includes(url.hostname);
+  if (url.username || url.password || url.search || url.hash || url.pathname !== "/" ||
+      (url.protocol !== "https:" && !(url.protocol === "http:" && loopback))) {
+    throw new Error("Invalid application origin");
+  }
+  return url.origin;
+}
+
 export async function siteOrigin(): Promise<string> {
   const configured = process.env.NEXT_PUBLIC_APP_URL?.trim();
-  if (configured) return configured.replace(/\/+$/, "");
-
+  if (configured) return trustedOrigin(configured);
   const vercel = process.env.VERCEL_URL?.trim();
-  if (vercel) return `https://${vercel.replace(/\/+$/, "")}`;
-
+  if (vercel) return trustedOrigin(`https://${vercel}`);
   const h = await headers();
   const host = h.get("host") ?? "127.0.0.1:3000";
-  const isLoopback = /^(127\.0\.0\.1|localhost|\[::1\])(:|$)/.test(host);
-  const proto = h.get("x-forwarded-proto")?.split(",")[0]?.trim() ?? (isLoopback ? "http" : "https");
-  return `${proto}://${host}`;
+  const url = new URL(`http://${host}`);
+  if (!["127.0.0.1", "localhost", "[::1]"].includes(url.hostname)) {
+    throw new Error("NEXT_PUBLIC_APP_URL is required outside loopback development");
+  }
+  return trustedOrigin(url.href);
 }
 
 export async function confirmUrl(token: string): Promise<string> {

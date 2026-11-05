@@ -70,7 +70,7 @@ function RevokeButton({ keyId }: { keyId: string }) {
   );
 }
 
-export function ApiKeysPanel({ keys, enabled }: { keys: KeyRow[]; enabled: boolean }) {
+export function ApiKeysPanel({ keys }: { keys: KeyRow[] }) {
   const [state, action, pending] = useActionState<ApiKeyFormState, FormData>(issueApiKey, null);
   const issued = state && "token" in state ? state : null;
 
@@ -83,27 +83,21 @@ export function ApiKeysPanel({ keys, enabled }: { keys: KeyRow[]; enabled: boole
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-5">
-        {enabled ? (
-          <form action={action} className="flex flex-wrap items-end gap-3">
-            <div className="min-w-50 flex-1 space-y-2">
-              <Label htmlFor="key-name">名称</Label>
-              <Input
-                id="key-name"
-                name="name"
-                placeholder="例如：研究脚本 / 看板同步"
-                maxLength={80}
-                required
-              />
-            </div>
-            <Button type="submit" disabled={pending}>
-              {pending ? "生成中…" : "生成新的 key"}
-            </Button>
-          </form>
-        ) : (
-          <p className="rounded-md border border-dashed p-4 text-sm">
-            API key 属于专业版。升级后可以在这里生成。
-          </p>
-        )}
+        <form action={action} className="flex flex-wrap items-end gap-3">
+          <div className="min-w-50 flex-1 space-y-2">
+            <Label htmlFor="key-name">名称</Label>
+            <Input
+              id="key-name"
+              name="name"
+              placeholder="例如：研究脚本 / 看板同步"
+              maxLength={80}
+              required
+            />
+          </div>
+          <Button type="submit" disabled={pending}>
+            {pending ? "生成中…" : "生成新的 key"}
+          </Button>
+        </form>
 
         <Feedback state={state} />
 

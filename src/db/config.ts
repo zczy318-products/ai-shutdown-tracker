@@ -45,12 +45,25 @@ export function resolveDbTarget(env: NodeJS.ProcessEnv = process.env): DbTarget 
   const url = env.DATABASE_URL?.trim();
 
   if (url) {
+    // pg lets URL SSL options override Pool.ssl. Enforce verification even if
+    // a copied connection string contains sslmode=no-verify or libpq overrides.
+    const ssl = env.DATABASE_SSL?.trim().toLowerCase() !== "false";
+    let connection: URL;
+    try {
+      connection = new URL(url);
+      if (!["postgres:", "postgresql:"].includes(connection.protocol)) throw new Error();
+    } catch {
+      // URL parsing errors otherwise carry their original input, including passwords.
+      throw new Error("DATABASE_URL must be a valid Postgres connection URL");
+    }
+    connection.searchParams.delete("uselibpqcompat");
+    connection.searchParams.set("sslmode", ssl ? "verify-full" : "disable");
     // Managed providers terminate TLS, but a self-hosted Postgres on a private
     // network may not. Default to on and let DATABASE_SSL=false opt out.
     return {
       kind: "postgres",
-      connectionString: url,
-      ssl: env.DATABASE_SSL?.trim().toLowerCase() !== "false",
+      connectionString: connection.toString(),
+      ssl,
       poolMax: positiveInt(env.DATABASE_POOL_MAX, DEFAULT_POOL_MAX),
       idleTimeoutMillis: positiveInt(env.DATABASE_IDLE_TIMEOUT_MS, DEFAULT_IDLE_TIMEOUT_MS),
     };

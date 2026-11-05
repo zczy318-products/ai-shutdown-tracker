@@ -4,6 +4,7 @@ import { FileText, Mail } from "lucide-react";
 import { PublicNav } from "@/components/public/public-nav";
 import { SubscribeForm } from "@/components/subscribe/subscribe-form";
 import { getCurrentUser } from "@/lib/auth";
+import { isAdmin } from "@/lib/authorization";
 
 import "./public.css";
 
@@ -19,7 +20,7 @@ export default async function PublicLayout({ children }: { children: React.React
           <PublicNav />
           <div className="public-header-actions">
             {user ? (
-              <><Link href="/account">账户</Link><Link href="/admin">进入后台</Link></>
+              <><Link href="/account">账户</Link>{isAdmin(user) && <Link href="/admin">进入后台</Link>}</>
             ) : <Link href="/login" className="public-editor-login">编辑登录</Link>}
             <Link href="#public-subscribe" className="public-subscribe-link"><Mail aria-hidden="true" />登记订阅</Link>
           </div>
@@ -43,7 +44,7 @@ async function readSessionQuietly() {
   try {
     return await getCurrentUser();
   } catch (error) {
-    console.error("[public] session read failed, rendering as anonymous:", error);
+    console.error("[public] session read failed, rendering as anonymous:");
     return null;
   }
 }

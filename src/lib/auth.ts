@@ -6,6 +6,7 @@ import { redirect } from "next/navigation";
 
 import { getDb } from "@/db";
 import { sessions, users, type User } from "@/db/schema";
+import { isAdmin } from "@/lib/authorization";
 
 /**
  * Session handling for the admin backoffice.
@@ -45,7 +46,7 @@ export async function createSession(userId: string): Promise<void> {
 export async function getCurrentUser(): Promise<User | null> {
   const store = await cookies();
   const token = store.get(SESSION_COOKIE)?.value;
-  if (!token) return null;
+  if (!token || !/^[A-Za-z0-9_-]{43}$/.test(token)) return null;
 
   const db = await getDb();
   const id = hashToken(token);
@@ -85,6 +86,13 @@ export async function getCurrentUser(): Promise<User | null> {
 export async function requireUser(): Promise<User> {
   const user = await getCurrentUser();
   if (!user) redirect("/login");
+  return user;
+}
+
+/** Call before every admin read and mutation, including server actions. */
+export async function requireAdmin(): Promise<User> {
+  const user = await requireUser();
+  if (!isAdmin(user)) redirect("/account");
   return user;
 }
 

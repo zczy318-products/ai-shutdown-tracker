@@ -1,11 +1,13 @@
 import Link from "next/link";
+import { requireAdmin } from "@/lib/auth";
 
 import { createRecord } from "../actions";
 import { RecordForm } from "../record-form";
 
 export const dynamic = "force-dynamic";
 
-export default function NewRecordPage() {
+export default async function NewRecordPage() {
+  await requireAdmin();
   return (
     <div className="space-y-6">
       <div className="space-y-1">

@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { Badge } from "@/components/ui/badge";
-import { requireUser } from "@/lib/auth";
+import { requireAdmin } from "@/lib/auth";
 import { SOURCE_TYPE, labelOf } from "@/lib/enums";
 import { checkPublishable } from "@/lib/records/publish";
 import { getRecord } from "@/lib/records/store";
@@ -15,7 +15,7 @@ import { ConfidenceBadge, LinkHealthBadge, StatusBadge } from "../status-badge";
 export const dynamic = "force-dynamic";
 
 export default async function EditRecordPage({ params }: { params: Promise<{ id: string }> }) {
-  await requireUser();
+  await requireAdmin();
 
   const { id } = await params;
   const record = await getRecord(id);

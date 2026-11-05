@@ -52,10 +52,11 @@ export async function verifyPassword(password: string, stored: string): Promise<
   const N = Number(rawN);
   const r = Number(rawR);
   const p = Number(rawP);
-  if (!Number.isInteger(N) || !Number.isInteger(r) || !Number.isInteger(p)) return false;
+  if (N !== PARAMS.N || r !== PARAMS.r || p !== PARAMS.p) return false;
 
   const salt = Buffer.from(rawSalt, "base64url");
   const expected = Buffer.from(rawHash, "base64url");
+  if (salt.length !== SALT_LENGTH || expected.length !== KEY_LENGTH) return false;
 
   let derived: Buffer;
   try {

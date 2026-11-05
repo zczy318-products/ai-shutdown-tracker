@@ -4,7 +4,7 @@ import { authenticateApiKey, readApiKeyFromHeaders } from "@/lib/api-keys";
 import { listPublishedRecords } from "@/lib/records/store";
 
 /**
- * The pro read-only API.
+ * The free, authenticated read-only API.
  *
  * `GET /api/v1/records` — published records with their full source list,
  * authenticated by an API key. Read-only by construction: this file exports
@@ -35,7 +35,7 @@ export async function GET(request: Request) {
       {
         error: auth.failure.code,
         message: auth.failure.messageZh,
-        docs: new URL("/pricing", request.url).toString(),
+        docs: new URL("/account", request.url).toString(),
       },
       {
         status: auth.failure.status,

@@ -83,7 +83,7 @@ export const sourceTypeEnum = pgEnum("source_type", SOURCE_TYPE_VALUES);
 export const recordStatusEnum = pgEnum("record_status", RECORD_STATUS_VALUES);
 export const linkHealthEnum = pgEnum("link_health", LINK_HEALTH_VALUES);
 
-/** Commercial packaging, not part of the dictionary — see `src/lib/plans.ts`. */
+/** Inert legacy enums retained for applied migration compatibility. */
 export const planEnum = pgEnum("plan", PLAN_VALUES);
 export const planSourceEnum = pgEnum("plan_source", PLAN_SOURCE_VALUES);
 
@@ -100,14 +100,13 @@ export const users = pgTable(
     /** scrypt digest, never a reversible encoding. Format in `src/lib/password.ts`. */
     passwordHash: text("password_hash").notNull(),
     /**
-     * Gates bulk export and API keys only (ZCZ-7 §0). Never gates reading:
-     * the public pages do not look at this column, and must not start to.
+     * Inert legacy value. Account access never depends on this column.
      */
     plan: planEnum("plan").notNull().default("free"),
-    /** Why the account is on this plan. `null` while it has never changed. */
+    /** Inert historical metadata; no application code changes plans. */
     planSource: planSourceEnum("plan_source"),
     planUpdatedAt: timestamp("plan_updated_at", { withTimezone: true }),
-    /** Stripe *test mode* ids. Nothing here is ever a live-mode object. */
+    /** Inert historical identifiers, retained without any payment integration. */
     stripeCustomerId: text("stripe_customer_id"),
     stripeSubscriptionId: text("stripe_subscription_id"),
     ...timestamps,
@@ -164,14 +163,8 @@ export const apiKeys = pgTable(
 // ---------------------------------------------------------------------------
 
 /**
- * An append-only log of every plan change, and the idempotency ledger for the
- * Stripe webhook.
- *
- * Stripe retries a webhook until it gets a 2xx, so the same
- * `checkout.session.completed` arrives more than once as a matter of course.
- * The unique index on `external_id` is what makes the second delivery a no-op
- * instead of a second upgrade. Simulated upgrades are logged here too, tagged
- * as such, so the demo trail and the Stripe trail read the same way.
+ * Inert historical table retained for applied migration compatibility.
+ * Payment handlers are removed; no current runtime code reads or writes it.
  */
 export const billingEvents = pgTable(
   "billing_events",

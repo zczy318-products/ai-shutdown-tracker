@@ -4,7 +4,6 @@ import { and, desc, eq, isNull } from "drizzle-orm";
 
 import { getDb } from "@/db";
 import { apiKeys, users, type ApiKey, type User } from "@/db/schema";
-import { can, type Plan } from "@/lib/plans";
 
 /**
  * Issuing, listing, revoking and authenticating API keys.
@@ -15,14 +14,12 @@ import { can, type Plan } from "@/lib/plans";
  * dictionary to attack and a slow KDF would only add latency to every API
  * request.
  *
- * Authentication checks the plan on every call rather than at issue time. A
- * key issued while an account was pro must stop working when the subscription
- * ends, otherwise "cancel" would not actually cancel anything.
+ * Every account can issue keys. Authentication checks ownership and revocation;
+ * legacy subscription fields never grant or restrict access.
  */
 
-/** `rip` = Rest In Prompts. The `_test` segment is deliberate: nothing in this
- *  project is production billing, and a leaked key should say so on sight. */
-const KEY_PREFIX = "rip_test_";
+/** Old key prefixes remain valid because authentication uses the complete digest. */
+const KEY_PREFIX = "rip_";
 const PREFIX_DISPLAY_LENGTH = 16;
 const MAX_ACTIVE_KEYS = 5;
 
@@ -53,42 +50,25 @@ export async function listApiKeys(userId: string): Promise<ApiKey[]> {
 }
 
 export async function createApiKey(user: User, name: string): Promise<IssuedKey> {
-  if (!can(user.plan as Plan, "apiKeys")) {
-    throw new ApiKeyError("当前套餐不包含 API key。升级到专业版后即可生成。");
-  }
-
   const label = name.trim();
   if (!label) throw new ApiKeyError("请给这个 key 起一个名字，方便之后认出它。");
   if (label.length > 80) throw new ApiKeyError("名字过长（最多 80 字符）。");
 
-  const active = await listActiveKeys(user.id);
-  if (active.length >= MAX_ACTIVE_KEYS) {
-    throw new ApiKeyError(
-      `每个账号最多同时持有 ${MAX_ACTIVE_KEYS} 个有效 key。请先吊销一个不用的。`,
-    );
-  }
-
   const token = KEY_PREFIX + randomBytes(32).toString("base64url");
   const db = await getDb();
-  const [row] = await db
-    .insert(apiKeys)
-    .values({
-      userId: user.id,
-      name: label,
-      tokenHash: hashKey(token),
-      tokenPrefix: token.slice(0, PREFIX_DISPLAY_LENGTH),
-    })
-    .returning();
-
-  return { row, token };
-}
-
-async function listActiveKeys(userId: string): Promise<ApiKey[]> {
-  const db = await getDb();
-  return db
-    .select()
-    .from(apiKeys)
-    .where(and(eq(apiKeys.userId, userId), isNull(apiKeys.revokedAt)));
+  return db.transaction(async (tx) => {
+    // Serialize issuance per owner so concurrent requests cannot exceed the cap.
+    const [owner] = await tx.select({ id: users.id }).from(users).where(eq(users.id, user.id)).for("update");
+    if (!owner) throw new ApiKeyError("账号不存在。");
+    const active = await tx.select({ id: apiKeys.id }).from(apiKeys)
+      .where(and(eq(apiKeys.userId, user.id), isNull(apiKeys.revokedAt)));
+    if (active.length >= MAX_ACTIVE_KEYS) {
+      throw new ApiKeyError(`每个账号最多同时持有 ${MAX_ACTIVE_KEYS} 个有效 key。请先吊销一个不用的。`);
+    }
+    const [row] = await tx.insert(apiKeys).values({ userId: user.id, name: label,
+      tokenHash: hashKey(token), tokenPrefix: token.slice(0, PREFIX_DISPLAY_LENGTH) }).returning();
+    return { row, token };
+  });
 }
 
 /**
@@ -111,8 +91,8 @@ export async function revokeApiKey(userId: string, keyId: string): Promise<boole
 
 export type ApiAuthFailure = {
   /** HTTP status the route should answer with. */
-  status: 401 | 402;
-  code: "missing_key" | "invalid_key" | "revoked_key" | "plan_required";
+  status: 401;
+  code: "missing_key" | "invalid_key" | "revoked_key";
   messageZh: string;
 };
 
@@ -151,6 +131,10 @@ export async function authenticateApiKey(token: string | null): Promise<ApiAuthR
     };
   }
 
+  if (!/^rip_(?:test_)?[A-Za-z0-9_-]{43}$/.test(token)) {
+    return { ok: false, failure: { status: 401, code: "invalid_key", messageZh: "API key 无效。" } };
+  }
+
   const db = await getDb();
   const rows = await db
     .select({ key: apiKeys, user: users })
@@ -178,24 +162,13 @@ export async function authenticateApiKey(token: string | null): Promise<ApiAuthR
     };
   }
 
-  if (!can(row.user.plan as Plan, "apiKeys")) {
-    return {
-      ok: false,
-      failure: {
-        status: 402,
-        code: "plan_required",
-        messageZh: "该账号当前不是专业版，API 访问已暂停。恢复订阅后 key 会自动重新生效。",
-      },
-    };
-  }
-
   // Fire-and-forget: a failed bookkeeping write must not fail the request the
   // caller actually made.
   void db
     .update(apiKeys)
     .set({ lastUsedAt: new Date() })
     .where(eq(apiKeys.id, row.key.id))
-    .catch((error) => console.error("[api-keys] lastUsedAt update failed:", error));
+    .catch(() => console.error("[api-keys] lastUsedAt update failed"));
 
   return { ok: true, user: row.user, key: row.key };
 }

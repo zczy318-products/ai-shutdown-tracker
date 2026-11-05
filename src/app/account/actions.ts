@@ -34,7 +34,7 @@ export async function issueApiKey(
     return { ok: true, token, name: row.name };
   } catch (error) {
     if (error instanceof ApiKeyError) return { error: error.message };
-    console.error("[api-keys] issue failed:", error);
+    console.error("[api-keys] issue failed");
     return { error: "生成 API key 失败，请稍后重试。" };
   }
 }
@@ -47,7 +47,9 @@ export async function revokeApiKeyAction(
   if (!user) redirect("/login");
 
   const keyId = String(formData.get("keyId") ?? "");
-  if (!keyId) return { error: "缺少 key id。" };
+  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(keyId)) {
+    return { error: "key id 无效。" };
+  }
 
   const revoked = await revokeApiKey(user.id, keyId);
   if (!revoked) {

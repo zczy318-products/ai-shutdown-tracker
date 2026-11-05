@@ -13,11 +13,22 @@
  * action bypasses the browser's `required` attributes, which is exactly the
  * "someone skipped the form" case the server layer has to refuse on its own.
  *
- * Each run uses a fresh throwaway account and a unique company slug, so it is
- * safe to re-run against the same database.
+ * Each run uses an explicitly provisioned local admin fixture and a unique
+ * company slug. Set ADMIN_TEST_EMAIL and ADMIN_TEST_PASSWORD; the server must
+ * allowlist that fixture user ID through ADMIN_USER_IDS.
  */
 const BASE = process.env.BASE_URL ?? "http://127.0.0.1:3000";
+if (!["localhost", "127.0.0.1", "[::1]"].includes(new URL(BASE).hostname)) {
+  console.error("This mutating verification requires a local test server.");
+  process.exit(1);
+}
 const RUN = Date.now();
+const ADMIN_EMAIL = process.env.ADMIN_TEST_EMAIL;
+const ADMIN_PASSWORD = process.env.ADMIN_TEST_PASSWORD;
+if (!ADMIN_EMAIL || !ADMIN_PASSWORD) {
+  console.error("Set ADMIN_TEST_EMAIL and ADMIN_TEST_PASSWORD for an allowlisted local admin fixture.");
+  process.exit(1);
+}
 let cookie = "";
 let failures = 0;
 
@@ -83,7 +94,7 @@ async function postAction(path, fields) {
     method: "POST",
     body: fd,
     redirect: "manual",
-    headers: cookie ? { cookie } : {},
+    headers: { origin: BASE, ...(cookie ? { cookie } : {}) },
   });
   captureCookies(res);
   return { res, body: visibleText(await res.text()) };
@@ -173,13 +184,13 @@ function sourceFields(index, overrides = {}) {
 // 0. A session, because every record action is behind the auth gate.
 // ---------------------------------------------------------------------------
 {
-  const { body } = await get("/register");
-  await postAction("/register", {
+  const { body } = await get("/login");
+  await postAction("/login", {
     ...actionFieldsFor(body, 'name="email"'),
-    email: `t3-${RUN}@example.com`,
-    password: "correct-horse-8",
+    email: ADMIN_EMAIL,
+    password: ADMIN_PASSWORD,
   });
-  check("signed in for the record flow", cookie.startsWith("aist_session="));
+  check("local admin fixture signs in for the record flow", cookie.startsWith("aist_session="));
 }
 
 // `new` renders the editor; its action fields are reused by every POST below.
@@ -339,7 +350,7 @@ let draftId = "";
 {
   // Checked anonymously: a draft must be invisible to a visitor, not merely
   // hidden from the logged-in editor's own view of the public page.
-  const published = await get("/");
+  const published = await get(`/impact?keyword=${encodeURIComponent(SLUG)}`);
   check("a published record is visible on the public page", published.body.includes(COMPANY_NAME));
 
   const r = await postAction("/admin/records/new", {
@@ -356,7 +367,7 @@ let draftId = "";
 
   const saved = cookie;
   cookie = "";
-  const anon = await get("/");
+  const anon = await get(`/impact?keyword=${encodeURIComponent(SLUG)}`);
   check("the draft is not on the public page", !anon.body.includes(`Draft Only ${RUN}`));
   check("the published record still is", anon.body.includes(COMPANY_NAME));
   cookie = saved;
@@ -381,7 +392,7 @@ if (recordId) {
 
   const saved = cookie;
   cookie = "";
-  const anon = await get("/");
+  const anon = await get(`/impact?keyword=${encodeURIComponent(SLUG)}`);
   check("the archived record is gone from the public page", !anon.body.includes(COMPANY_NAME));
   cookie = saved;
 }
@@ -428,7 +439,7 @@ console.log("\n-- 鉴权 --");
   // Reads, too — and not only the status code. A layout that calls `redirect()`
   // does not stop the page under it from rendering, so the 307 turning an
   // anonymous visitor away used to carry the rendered backoffice list in its
-  // body. Every /admin page that reads anything now calls `requireUser()`
+  // body. Every /admin page that reads anything now calls `requireAdmin()`
   // itself; this is what holds that line.
   const list = await get("/admin/records");
   check(

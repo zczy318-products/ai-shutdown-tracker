@@ -8,7 +8,7 @@ import { register } from "../actions";
 import { CredentialsForm } from "../credentials-form";
 
 export default async function RegisterPage() {
-  if (await getCurrentUser()) redirect("/admin");
+  if (await getCurrentUser()) redirect("/account");
 
   return (
     <main className="mx-auto flex min-h-screen max-w-md flex-col justify-center px-6 py-16">
@@ -16,7 +16,7 @@ export default async function RegisterPage() {
         <CardHeader>
           <CardTitle>注册</CardTitle>
           <CardDescription>
-            T2 阶段开放自助注册，后续会收紧为邀请制（见 T4 后台权限）。
+            注册免费账户以导出资料和管理 API 密钥。
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">

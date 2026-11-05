@@ -11,7 +11,6 @@ export function PublicNav() {
         { href: "/", label: "停运公司", active: pathname === "/" || pathname.startsWith("/shutdown/") },
         { href: "/impact", label: "影响事件", active: pathname === "/impact" || pathname.startsWith("/company/") },
         { href: "/stats", label: "事件统计", active: pathname === "/stats" },
-        { href: "/pricing", label: "定价", active: pathname === "/pricing" },
       ].map(({ href, label, active }) => <Link key={href} href={href} aria-current={active ? "page" : undefined}>{label}</Link>)}
     </nav>
   );

@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
-import { getCurrentUser } from "@/lib/auth";
+import { requireAdmin } from "@/lib/auth";
 import type { RecordStatus } from "@/lib/enums";
 import { parseRecordForm } from "@/lib/records/form-data";
 import { checkPublishable, type SourceFacts } from "@/lib/records/publish";
@@ -48,12 +48,6 @@ export type RecordFormState = {
   ok?: boolean;
 } | null;
 
-async function requireUser() {
-  const user = await getCurrentUser();
-  if (!user) redirect("/login");
-  return user;
-}
-
 /** Source rows as `checkPublishable` wants them, straight from the input. */
 function sourceFactsOf(input: RecordInput): SourceFacts[] {
   return input.sources.map((item) => ({
@@ -97,7 +91,7 @@ function explainDbError(error: unknown): string {
     return error.message;
   }
 
-  console.error("[records] write failed:", error);
+  console.error("[records] write failed:");
   return "保存失败：数据库拒绝了这次写入。请检查字段后重试。";
 }
 
@@ -107,7 +101,7 @@ async function saveFromForm(
   formData: FormData,
   options: SaveOptions,
 ): Promise<RecordFormState> {
-  const user = await requireUser();
+  const user = await requireAdmin();
 
   // Layer 2a — shape and required fields, including "at least one source".
   const parsed = recordInputSchema.safeParse(parseRecordForm(formData));
@@ -201,7 +195,7 @@ export async function publishRecord(
   _prev: RecordFormState,
   formData: FormData,
 ): Promise<RecordFormState> {
-  const user = await requireUser();
+  const user = await requireAdmin();
   const impactId = String(formData.get("impactId") ?? "");
   if (!impactId) return { errors: ["缺少记录 ID。"] };
 
@@ -242,7 +236,7 @@ export async function changeRecordStatus(
   _prev: RecordFormState,
   formData: FormData,
 ): Promise<RecordFormState> {
-  const user = await requireUser();
+  const user = await requireAdmin();
   const impactId = String(formData.get("impactId") ?? "");
   const status = String(formData.get("nextStatus") ?? "") as RecordStatus;
   const reviewNote = String(formData.get("reviewNote") ?? "").trim() || null;
@@ -272,7 +266,7 @@ export async function deleteRecord(
   _prev: RecordFormState,
   formData: FormData,
 ): Promise<RecordFormState> {
-  await requireUser();
+  await requireAdmin();
   const impactId = String(formData.get("impactId") ?? "");
   if (!impactId) return { errors: ["缺少记录 ID。"] };
 

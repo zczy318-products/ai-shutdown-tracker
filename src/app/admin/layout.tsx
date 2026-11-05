@@ -2,7 +2,7 @@ import Link from "next/link";
 
 import { logout } from "@/app/(auth)/actions";
 import { Button } from "@/components/ui/button";
-import { requireUser } from "@/lib/auth";
+import { requireAdmin } from "@/lib/auth";
 
 /**
  * The chrome and the *outer* auth gate for everything under /admin.
@@ -12,11 +12,11 @@ import { requireUser } from "@/lib/auth";
  * It is not the only gate, and must not be treated as one: Next renders this
  * layout and the page under it concurrently, so redirecting here does not stop
  * the page from running its queries. Every page under /admin that reads
- * anything calls `requireUser()` in its own body as well. See the note on
- * `requireUser` for the leak that proved it.
+ * anything calls `requireAdmin()` in its own body as well. See the note on
+ * `requireAdmin` for the leak that proved it.
  */
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
-  const user = await requireUser();
+  const user = await requireAdmin();
 
   return (
     <div className="min-h-screen">

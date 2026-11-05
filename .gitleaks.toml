@@ -1,0 +1,10 @@
+title = "Repository secret detection"
+
+[extend]
+useDefault = true
+
+[[rules]]
+id = "rest-in-prompts-api-key"
+description = "Rest In Prompts bearer API key"
+regex = '''\brip_(?:test_)?[A-Za-z0-9_-]{43}\b'''
+keywords = ["rip_"]

@@ -36,7 +36,7 @@ async function createDb(target: DbTarget): Promise<Database> {
     // A pool error with no listener is an unhandled 'error' event, which takes
     // the whole function instance down. Neon dropping an idle socket is normal.
     pool.on("error", (error) => {
-      console.error("[db] idle client error:", error);
+      console.error("[db] idle client error:");
     });
     return drizzle(pool, { schema }) as unknown as Database;
   }

@@ -8,14 +8,14 @@ import { login } from "../actions";
 import { CredentialsForm } from "../credentials-form";
 
 export default async function LoginPage() {
-  if (await getCurrentUser()) redirect("/admin");
+  if (await getCurrentUser()) redirect("/account");
 
   return (
     <main className="mx-auto flex min-h-screen max-w-md flex-col justify-center px-6 py-16">
       <Card>
         <CardHeader>
           <CardTitle>登录</CardTitle>
-          <CardDescription>登录后可访问录入与审核后台。</CardDescription>
+          <CardDescription>登录后可导出资料和管理 API 密钥。</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <CredentialsForm action={login} submitLabel="登录" mode="login" />

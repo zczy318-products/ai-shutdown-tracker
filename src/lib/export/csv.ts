@@ -12,7 +12,7 @@ import {
 import type { FullRecord } from "@/lib/records/store";
 
 /**
- * The pro export.
+ * The authenticated export.
  *
  * Shape: **one row per source**, with the company and event columns repeated.
  * The alternative — one row per event with the sources packed into a cell —
@@ -86,7 +86,7 @@ function escapeCell(value: unknown): string {
   if (value === null || value === undefined) return "";
   let text = typeof value === "boolean" ? (value ? "true" : "false") : String(value);
 
-  if (/^[=+\-@\t\r]/.test(text)) text = `'${text}`;
+  if (/^[=+\-@\t\r\n]/.test(text)) text = `'${text}`;
 
   if (/[",\r\n]/.test(text)) {
     return `"${text.replaceAll('"', '""')}"`;

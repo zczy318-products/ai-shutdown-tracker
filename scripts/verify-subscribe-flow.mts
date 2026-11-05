@@ -32,7 +32,7 @@
  *      (a token past its expiry, and the mailable-recipients query).
  */
 import { spawn, type ChildProcess } from "node:child_process";
-import { createHash } from "node:crypto";
+import { createHash, randomBytes, randomUUID } from "node:crypto";
 import { cp, mkdir, rm } from "node:fs/promises";
 import path from "node:path";
 
@@ -52,6 +52,7 @@ const COPIED = [
   "components.json",
   "next-env.d.ts",
   "drizzle.config.ts",
+  "research/2026-11-04-confirmed-shutdowns/companies.json",
 ];
 
 let failures = 0;
@@ -243,32 +244,72 @@ const app = path.join(scratch, "app");
 const dataDir = path.join(scratch, "pglite");
 let server: ChildProcess | undefined;
 
+/** Stop the owned server group, including Next's compiler workers. */
+function signalServer(signal: NodeJS.Signals) {
+  if (!server?.pid) return;
+  try {
+    if (process.platform !== "win32") process.kill(-server.pid, signal);
+    else server.kill(signal);
+  } catch {
+    // The owned process group may already have exited.
+  }
+}
+const operator = email("operator");
+const operatorId = randomUUID();
+const operatorPassword = randomBytes(24).toString("base64url");
+
 try {
   await rm(scratch, { recursive: true, force: true });
   await mkdir(app, { recursive: true });
   for (const entry of COPIED) {
+    await mkdir(path.dirname(path.join(app, entry)), { recursive: true });
     await cp(path.join(REPO, entry), path.join(app, entry), { recursive: true });
   }
   console.log(`isolated copy: ${path.relative(REPO, app)}\n`);
 
   const env: NodeJS.ProcessEnv = {
     PGLITE_DATA_DIR: dataDir,
+    DATABASE_URL: "",
+    ADMIN_USER_IDS: operatorId,
+    VERIFY_OPERATOR_EMAIL: operator,
+    VERIFY_OPERATOR_ID: operatorId,
+    VERIFY_OPERATOR_PASSWORD: operatorPassword,
+    MAIL_LOG_CONTENT: "true",
+    TRUST_PROXY: "true",
+    VERCEL: "",
     // Unset so the confirm links are built from the request Host, i.e. point at
     // this script's own server rather than at a deployment.
     NEXT_PUBLIC_APP_URL: "",
     VERCEL_URL: "",
-    // Nothing to set for mail: `src/lib/mailer.ts` has one driver and reads no
-    // environment at all, so this run cannot accidentally inherit a provider.
+    // Raw mail content is explicitly enabled only in this isolated local fixture.
     NODE_ENV: "development",
   };
 
   const migrated = await run("npx", ["tsx", "src/db/migrate.ts"], app, env);
-  check("migrations apply to a fresh database", migrated.code === 0, migrated.output.trim().split("\n").at(-1));
-  if (migrated.code !== 0) throw new Error(migrated.output);
+  check("migrations apply to a fresh database", migrated.code === 0, `exit=${migrated.code}`);
+  if (migrated.code !== 0) throw new Error("fixture migration failed; raw output suppressed");
 
-  server = spawn("npx", ["next", "dev", "-p", String(APP_PORT), "-H", "127.0.0.1"], {
+  const provisioned = await run("npx", ["tsx", "-e", `
+    import { getDb } from "./src/db/index.ts";
+    import { users } from "./src/db/schema.ts";
+    import { hashPassword } from "./src/lib/password.ts";
+    (async () => {
+      const db = await getDb();
+      await db.insert(users).values({
+        id: process.env.VERIFY_OPERATOR_ID,
+        email: process.env.VERIFY_OPERATOR_EMAIL,
+        passwordHash: await hashPassword(process.env.VERIFY_OPERATOR_PASSWORD!),
+      });
+      process.exit(0);
+    })().catch(() => { console.error("admin_fixture_provision_failed"); process.exit(1); });
+  `], app, env);
+  check("local admin fixture is provisioned before server startup", provisioned.code === 0);
+  if (provisioned.code !== 0) throw new Error("admin fixture provisioning failed; raw output suppressed");
+
+  server = spawn(process.execPath, [path.join(REPO, "node_modules/next/dist/bin/next"), "dev", "-p", String(APP_PORT), "-H", "127.0.0.1"], {
     cwd: app,
     env: { ...process.env, ...env },
+    detached: process.platform !== "win32",
     stdio: ["ignore", "pipe", "pipe"],
   });
   server.stdout?.on("data", (c) => (serverLog += c));
@@ -279,14 +320,14 @@ try {
 
   try {
     await waitFor(
-      async () => (await fetch(`${BASE}/`, { redirect: "manual" })).status === 200,
+      async () => (await fetch(`${BASE}/`, { redirect: "manual", signal: AbortSignal.timeout(5000) })).status === 200,
       180_000,
       "the dev server to answer on /",
     );
   } catch (error) {
     // Without this the failure is just "timed out", which says nothing about
     // why the server would not start.
-    console.error("\n--- server output ---\n" + serverLog.slice(-4000));
+    console.error("Server startup failed; raw fixture output suppressed to protect mail tokens.");
     throw error;
   }
 
@@ -300,7 +341,7 @@ try {
   check(
     "no session cookie is set just by loading the listing",
     listing.setCookie.length === 0,
-    listing.setCookie.join(" ") || "no Set-Cookie",
+    listing.setCookie.length ? "unexpected Set-Cookie present" : "no Set-Cookie",
   );
   subscribeFields = actionFieldsFor(listing.body, 'name="source"');
   check(
@@ -339,11 +380,11 @@ try {
 
   const aliceConfirmLinks = loggedLinks("confirm", alice);
   const aliceUnsubLinks = loggedLinks("unsubscribe", alice);
-  check("the log driver writes a usable confirm link", aliceConfirmLinks.length === 1, aliceConfirmLinks[0] ?? "none");
+  check("the log driver writes a usable confirm link", aliceConfirmLinks.length === 1, aliceConfirmLinks[0] ? "confirm link captured (redacted)" : "none");
   check(
     "the confirmation mail also carries a one-click unsubscribe link",
     aliceUnsubLinks.length === 1,
-    aliceUnsubLinks[0] ?? "none",
+    aliceUnsubLinks[0] ? "unsubscribe link captured (redacted)" : "none",
   );
 
   // --- server-side validation, with the browser's hints bypassed ------------
@@ -361,7 +402,7 @@ try {
   check(
     "confirming creates no session (it is not a login)",
     confirmed.setCookie.length === 0,
-    confirmed.setCookie.join(" ") || "no Set-Cookie",
+    confirmed.setCookie.length ? "unexpected Set-Cookie present" : "no Set-Cookie",
   );
 
   const replayed = await get(new URL(confirmUrl).pathname + new URL(confirmUrl).search);
@@ -469,7 +510,7 @@ try {
   const dave = email("dave");
   await postSubscribe(dave, "198.51.100.8");
   const daveConfirm = loggedLinks("confirm", dave)[0];
-  check("a token is available for the expiry check", Boolean(daveConfirm), daveConfirm ?? "none");
+  check("a token is available for the expiry check", Boolean(daveConfirm), daveConfirm ? "expiry link captured (redacted)" : "none");
 
   // -------------------------------------------------------------------------
   // Phase 1b — the /admin read-only subscriber view
@@ -503,30 +544,24 @@ try {
     leaked.length ? `leaked ${leaked.length}: ${leaked.slice(0, 2).join(", ")}` : `${anonymousAdmin.body.length}B, 0 of ${expectedStored.size} addresses`,
   );
 
-  // An operator account, created the ordinary way. This is the only session in
-  // the whole script — and it belongs to `users`, not to any subscriber.
-  const operator = email("operator");
-  const registerPage = await get("/register");
-  const registerForm = new FormData();
-  for (const [k, v] of Object.entries(actionFieldsFor(registerPage.body, 'name="password"'))) {
-    registerForm.append(k, v);
+  // Only the explicitly allowlisted pre-provisioned fixture may read admin data.
+  const loginPage = await get("/login");
+  const loginForm = new FormData();
+  for (const [k, v] of Object.entries(actionFieldsFor(loginPage.body, 'name="password"'))) {
+    loginForm.append(k, v);
   }
-  registerForm.set("email", operator);
-  registerForm.set("password", "verify-subscribe-pw");
-  const registered = await fetch(`${BASE}/register`, {
+  loginForm.set("email", operator);
+  loginForm.set("password", operatorPassword);
+  const loggedIn = await fetch(`${BASE}/login`, {
     method: "POST",
-    body: registerForm,
+    body: loginForm,
     redirect: "manual",
     headers: { origin: BASE },
   });
-  const cookie = (registered.headers.getSetCookie?.() ?? [])
+  const cookie = (loggedIn.headers.getSetCookie?.() ?? [])
     .map((value) => value.split(";")[0])
     .join("; ");
-  check(
-    "an operator can register and gets a session",
-    cookie.length > 0,
-    cookie ? "session cookie issued" : `HTTP ${registered.status}`,
-  );
+  check("the allowlisted local operator can log in", cookie.includes("aist_session="), `HTTP ${loggedIn.status}`);
 
   const adminView = await getAs("/admin/subscribers", cookie);
   const expectedTotal = expectedStored.size;
@@ -557,7 +592,7 @@ try {
   );
   check(
     "the view names the driver that is actually in use",
-    adminView.body.includes("只写进服务端日志") && adminView.body.includes(">log<"),
+    adminView.body.includes("日志默认隐藏邮箱和确认链接") && adminView.body.includes(">log<"),
   );
 
   // Read-only, structurally: the layout's logout form and its button are the
@@ -578,7 +613,7 @@ try {
   check(
     "the view renders no token digest",
     !adminView.body.includes(frankDigest),
-    `looked for ${frankDigest.slice(0, 16)}…`,
+    "digest checked without printing it",
   );
 
   const dashboard = await getAs("/admin", cookie);
@@ -593,11 +628,11 @@ try {
   // -------------------------------------------------------------------------
   console.log("\n--- phase 2: database and store, server stopped ---");
 
-  server.kill("SIGTERM");
+  signalServer("SIGTERM");
   await new Promise<void>((resolve) => {
     server!.once("exit", () => resolve());
     setTimeout(() => {
-      server!.kill("SIGKILL");
+      signalServer("SIGKILL");
       resolve();
     }, 15_000);
   });
@@ -756,7 +791,7 @@ try {
     confirmedRows.rows.map((r) => r.email.replace(`-${RUN}@example.com`, "")).join(", ") || "none",
   );
 } finally {
-  if (server && server.exitCode === null) server.kill("SIGKILL");
+  if (server && server.exitCode === null) signalServer("SIGKILL");
   // A just-killed Turbopack still has writes in flight, so the first rmdir can
   // lose a race with it. Retry rather than failing a passing run on cleanup.
   for (let attempt = 0; attempt < 5; attempt++) {

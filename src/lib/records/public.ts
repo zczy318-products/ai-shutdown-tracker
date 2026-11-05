@@ -504,7 +504,7 @@ export async function loadPublic<T>(load: () => Promise<T>): Promise<LoadResult<
     return { ok: true, data: await load() };
   } catch (error) {
     // The one place this is observable: the server log. Nothing is swallowed.
-    console.error("[public] query failed:", error);
+    console.error("[public] query failed:");
     return { ok: false, error };
   }
 }

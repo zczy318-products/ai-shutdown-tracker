@@ -17,8 +17,8 @@ next-env.d.ts
 
 # secrets — only .env.example is tracked
 .env
-.env.local
-.env.*.local
+.env.*
+!.env.example
 
 # agent harness settings — machine-local absolute paths, not project config
 /.claude/settings.local.json
@@ -27,3 +27,14 @@ next-env.d.ts
 .DS_Store
 *.pem
 npm-debug.log*
+
+# Local deployment metadata, credentials, and generated security reports
+.vercel/
+*.key
+*.p12
+*.pfx
+*.log
+security-reports/
+
+# Generated authenticated acceptance captures stay local.
+/docs/acceptance/local/
